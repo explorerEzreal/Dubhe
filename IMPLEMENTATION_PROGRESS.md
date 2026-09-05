@@ -73,6 +73,14 @@
 - Web 的生产独立安装包、下载服务、TLS/WSS 和 Docker 端到端验收留至 M8。
 - Compose 缺少反向代理、TLS/WSS、自动验收和完整私有化流程。
 
+### 2026-09-06 服务器部署记录
+
+- 服务器：`106.55.36.91`（Ubuntu 24.04，Docker 29.1.3，Compose 2.40.3），部署目录 `/home/ubuntu/Dubhe`。
+- 域名与代理：`supershiba.cn` 已解析；宿主机 Nginx 代理 Web `127.0.0.1:8080`、Cloud `127.0.0.1:3000`，`/agent` 启用 WSS；使用用户提供的 TrustAsia 证书（有效期至 2026-12-04）。
+- Compose：PostgreSQL、迁移、Cloud、Web 均 healthy；Agent Linux x86_64 发布任务成功；管理员 `youxiutc@77.com` 初始化并登录接口返回 200。
+- 远程验收：`https://supershiba.cn/healthz` 返回 `{"status":"ok"}`，`/readyz` 返回 `{"status":"ready"}`。
+- 部署修正：镜像固定 pnpm 9.15.9；Cloud runtime 携带迁移所需 `src`；Fastify 插件升级到 Fastify 5 兼容版本；服务器使用专用 Compose 覆盖文件。上述 Dockerfile、Cloud 依赖和 Agent 配置忽略规则需提交回 GitHub，避免后续拉取丢失。
+
 ### 未实现
 
 - Docker + Ollama 端到端验收及 1000 条 WSS 稳定性测试。
