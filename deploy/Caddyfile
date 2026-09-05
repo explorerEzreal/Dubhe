@@ -1,0 +1,7 @@
+{$PUBLIC_DOMAIN} {
+  encode gzip
+
+  @cloud path /api/* /v1/* /agent* /downloads/* /healthz /readyz
+  reverse_proxy @cloud cloud:3000
+  reverse_proxy web:80
+}

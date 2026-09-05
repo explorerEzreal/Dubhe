@@ -1,0 +1,18 @@
+export const ERROR_CODES = {
+  INVALID_REQUEST: 'INVALID_REQUEST',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  MODEL_OFFLINE: 'MODEL_OFFLINE',
+  MODEL_NOT_READY: 'MODEL_NOT_READY',
+  AGENT_BUSY: 'AGENT_BUSY',
+  AGENT_DISCONNECTED: 'AGENT_DISCONNECTED',
+  INFERENCE_TIMEOUT: 'INFERENCE_TIMEOUT',
+  UPSTREAM_ERROR: 'UPSTREAM_ERROR',
+} as const;
+
+export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
+
+export interface ApiError {
+  message: string;
+  type: string;
+  code: ErrorCode;
+}

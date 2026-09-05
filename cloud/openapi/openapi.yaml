@@ -1,0 +1,258 @@
+openapi: 3.0.3
+info:
+  title: Local Model Platform Cloud API
+  version: 1.0.0
+  description: 管理 API 与 OpenAI 兼容推理 API。Web 与调用者均通过此 API 访问。
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: auth
+  - name: enrollment
+  - name: keys
+  - name: agents
+  - name: models
+  - name: inference
+paths:
+  /healthz:
+    get:
+      summary: 存活检查
+      responses:
+        '200':
+          description: ok
+  /readyz:
+    get:
+      summary: 就绪检查（含数据库连通性）
+      responses:
+        '200':
+          description: ready
+        '503':
+          description: database unavailable
+  /api/auth/register:
+    post:
+      tags: [auth]
+      summary: 用户注册
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credentials' }
+      responses:
+        '201': { description: created }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: 用户登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credentials' }
+      responses:
+        '200': { description: token issued }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      summary: 撤销当前会话
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: revoked }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/enrollment-tokens:
+    post:
+      tags: [enrollment]
+      summary: 生成一次性部署令牌
+      security:
+        - bearerAuth: []
+      responses:
+        '201': { description: token issued }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/keys:
+    get:
+      tags: [keys]
+      summary: 列出 API Key
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: list }
+    post:
+      tags: [keys]
+      summary: 创建 API Key（明文只返回一次）
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                models:
+                  type: array
+                  maxItems: 100
+                  items: { type: string }
+                expiresAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        '201': { description: created with plaintext }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/keys/{id}/disable:
+    post:
+      tags: [keys]
+      summary: 禁用 API Key
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: disabled }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/keys/{id}:
+    delete:
+      tags: [keys]
+      summary: 删除 API Key
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/agents:
+    get:
+      tags: [agents]
+      summary: 列出当前用户的 Agent
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: list }
+  /api/agents/{id}:
+    get:
+      tags: [agents]
+      summary: 查询 Agent 详情
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: detail }
+  /api/agents/{id}/credentials/rotate:
+    post:
+      tags: [agents]
+      summary: 轮换 Agent 设备凭证（明文只返回一次）
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: rotated }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/agents/{id}/credentials/revoke:
+    post:
+      tags: [agents]
+      summary: 撤销 Agent 设备凭证
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: revoked }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/models:
+    get:
+      tags: [models]
+      summary: 列出平台模型
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/usage:
+    get:
+      tags: [inference]
+      summary: 查询调用摘要
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: usage }
+  /v1/models:
+    get:
+      tags: [models]
+      summary: 列出当前 Key 可用的模型
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: list }
+  /v1/chat/completions:
+    post:
+      tags: [inference]
+      summary: OpenAI 兼容 Chat Completions
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [model, messages]
+              properties:
+                model: { type: string }
+                messages: { type: array, items: { type: object } }
+                stream: { type: boolean, default: false }
+      responses:
+        '200': { description: completion JSON or OpenAI-compatible SSE stream }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: model not permitted }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { description: model offline / busy }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Credentials:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 320 }
+        password: { type: string, minLength: 8, maxLength: 256 }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [message, type, code]
+          properties:
+            message: { type: string }
+            type: { type: string }
+            code: { type: string }
+  responses:
+    InvalidRequest:
+      description: invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: rate limited
+      headers:
+        Retry-After:
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

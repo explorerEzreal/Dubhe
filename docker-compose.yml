@@ -1,0 +1,124 @@
+services:
+  proxy:
+    image: caddy:2.8-alpine
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+      cloud:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_BASE_URL: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}
+    expose:
+      - "80"
+    depends_on:
+      cloud:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    build:
+      context: ./cloud
+    command: ["node", "--import", "tsx", "scripts/migrate.ts"]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-cloud}:${POSTGRES_PASSWORD:?请在 .env 中设置 POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cloud}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  agent-release:
+    platform: linux/amd64
+    build:
+      context: ./agent
+    command: ["sh", "-c", "AGENT_RELEASE_OUTPUT_DIR=/release /app/release/build-linux-x86_64.sh"]
+    volumes:
+      - agent-releases:/release
+    restart: "no"
+
+  seed-admin:
+    build:
+      context: ./cloud
+    command: ["node", "--import", "tsx", "scripts/seed-admin.ts"]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-cloud}:${POSTGRES_PASSWORD:?请在 .env 中设置 POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cloud}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  cloud:
+    build:
+      context: ./cloud
+    expose:
+      - "3000"
+    environment:
+      PORT: "3000"
+      HOST: "0.0.0.0"
+      DATABASE_URL: postgres://${POSTGRES_USER:-cloud}:${POSTGRES_PASSWORD:?请在 .env 中设置 POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cloud}
+      JWT_SECRET: ${JWT_SECRET:?请在 .env 中设置 JWT_SECRET}
+      API_KEY_PEPPER: ${API_KEY_PEPPER:?请在 .env 中设置 API_KEY_PEPPER}
+      PUBLIC_BASE_URL: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}
+      WEB_BASE_URL: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}
+      AGENT_DOWNLOAD_URL: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}/downloads/agent
+      AGENT_RELEASE_DIR: /app/releases
+      AGENT_RELEASE_VERSION: ${AGENT_RELEASE_VERSION:-0.1.0}
+      CORS_ORIGINS: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}
+      AGENT_REQUIRE_TLS: "true"
+      TRUST_PROXY: "true"
+    depends_on:
+      agent-release:
+        condition: service_completed_successfully
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - agent-releases:/app/releases
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cloud}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请在 .env 中设置 POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-cloud}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cloud} -d ${POSTGRES_DB:-cloud}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
+  caddy-data:
+  caddy-config:
+  agent-releases:

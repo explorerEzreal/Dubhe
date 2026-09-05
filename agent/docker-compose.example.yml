@@ -1,0 +1,9 @@
+# Agent 开发验证示例。Agent 通常运行在部署者机器，不随 Cloud 一起部署。
+services:
+  agent:
+    build: .
+    environment:
+      CLOUD_URL: wss://api.example.com/agent
+      OLLAMA_URL: http://host.docker.internal:11434
+      MODELS: llama3:8b
+    restart: unless-stopped
