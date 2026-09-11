@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   App,
+  AutoComplete,
   Button,
   Card,
   Col,
@@ -10,7 +11,6 @@ import {
   Input,
   Modal,
   Row,
-  Select,
   Space,
   Statistic,
   Tag,
@@ -118,7 +118,7 @@ export function DeployerDashboardPage() {
     null,
   );
   const [selectedModel, setSelectedModel] = useState('');
-  const [localUrl, setLocalUrl] = useState('http://127.0.0.1:11434');
+  const [localUrl, setLocalUrl] = useState('http://127.0.0.1:8080');
   const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
@@ -208,17 +208,26 @@ export function DeployerDashboardPage() {
             label='共享模型'
             extra='每个 Agent 进程绑定一个模型和一个本地 OpenAI 兼容服务地址。'
           >
-            <Select
-              placeholder='选择模型'
+            <AutoComplete
+              placeholder='选择或输入模型名'
               value={selectedModel || undefined}
               onChange={setSelectedModel}
               options={models.map((model) => ({
                 label: model.name,
                 value: model.name,
               }))}
+              filterOption={(input, option) =>
+                String(option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
             />
           </Form.Item>
-          <Form.Item label='本地模型服务地址' required>
+          <Form.Item
+            label='本地模型服务地址'
+            required
+            extra='需要提供 OpenAI 兼容的 /v1/models 和 /v1/chat/completions 接口。'
+          >
             <Input
               value={localUrl}
               onChange={(event) => setLocalUrl(event.target.value)}
