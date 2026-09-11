@@ -1,4 +1,16 @@
 import { z } from 'zod';
+import os from 'node:os';
+import { join } from 'node:path';
+
+function defaultCredentialsPath(): string {
+  if (process.platform === 'darwin') {
+    return join(os.homedir(), 'Library', 'Application Support', 'Dubhe Agent', 'credentials.json');
+  }
+  if (process.platform === 'win32') {
+    return join(process.env.LOCALAPPDATA ?? join(os.homedir(), 'AppData', 'Local'), 'Dubhe Agent', 'credentials.json');
+  }
+  return join(process.env.XDG_STATE_HOME ?? join(os.homedir(), '.local', 'state'), 'dubhe-agent', 'credentials.json');
+}
 
 const cloudUrlSchema = z
   .string()
@@ -9,14 +21,15 @@ const cloudUrlSchema = z
 
 const envSchema = z.object({
   CLOUD_URL: cloudUrlSchema,
-  OLLAMA_URL: z.string().url().default('http://127.0.0.1:11434'),
+  LOCAL_MODEL_URL: z.string().url().default('http://127.0.0.1:8000'),
+  LOCAL_API_KEY: z.string().optional(),
   AGENT_ID: z.string().optional(),
   AGENT_CREDENTIAL: z.string().optional(),
-  CREDENTIALS_PATH: z.string().default('./config/credentials.json'),
+  CREDENTIALS_PATH: z.string().trim().min(1).default(defaultCredentialsPath()),
   ENROLLMENT_TOKEN: z.string().min(1).optional(),
   AGENT_NAME: z.string().trim().min(1).max(200).default('Dubhe Agent'),
   DEVICE_ID: z.string().trim().min(1).max(256).optional(),
-  MODELS: z.string().default(''),
+  MODELS: z.string().trim().min(1),
   HEARTBEAT_INTERVAL_MS: z.coerce.number().int().positive().default(15000),
   RECONNECT_INITIAL_MS: z.coerce.number().int().positive().default(1000),
   RECONNECT_MAX_MS: z.coerce.number().int().positive().default(300000),

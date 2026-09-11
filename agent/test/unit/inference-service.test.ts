@@ -7,13 +7,12 @@ async function* chunks() {
 }
 
 describe('agent inference service', () => {
-  it('aggregates Ollama chunks and emits infer_done', async () => {
+  it('aggregates local service chunks and emits infer_done', async () => {
     const sent: unknown[] = [];
     const service = createInferenceService({
       listModels: async () => ['llama3:8b'],
       chat: () => chunks(),
       health: async () => true,
-      pullModel: async () => undefined,
     }, 1, { warn: () => undefined });
     await service.handleRequest({ request_id: 'req-1', payload: { model: 'llama3:8b', messages: [{ role: 'user', content: 'hi' }], stream: false } }, { send: async (message) => { sent.push(message); } });
     expect(sent[0]).toMatchObject({ type: 'infer_done', request_id: 'req-1', payload: { content: 'hello', usage: { total_tokens: 4 } } });
@@ -25,7 +24,6 @@ describe('agent inference service', () => {
       listModels: async () => [],
       chat: async function* () { yield 'unused'; },
       health: async () => true,
-      pullModel: async () => undefined,
     }, 1, { warn: () => undefined });
     await service.handleRequest({ request_id: 'req-2', payload: { model: 'missing', messages: [{ role: 'user', content: 'hi' }], stream: false } }, { send: async (message) => { sent.push(message); } });
     expect(sent[0]).toMatchObject({ type: 'infer_error', payload: { code: 'MODEL_NOT_READY' } });
@@ -38,7 +36,6 @@ describe('agent inference service', () => {
       listModels: async () => ['llama3:8b'],
       chat: () => chunks(),
       health: async () => true,
-      pullModel: async () => undefined,
     }, 1, { warn: () => undefined });
     await service.handleRequest({ request_id: 'req-stream', payload: { model: 'llama3:8b', messages: [{ role: 'user', content: 'hi' }], stream: true } }, { send: async (message) => { sent.push(message); } });
     expect(sent).toEqual(expect.arrayContaining([

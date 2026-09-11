@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import crypto from 'node:crypto';
 import type { MessageSender } from '../../interfaces/websocket/message-sender.js';
+import { registeredMessageSchema } from '../../interfaces/websocket/schemas.js';
 
 export interface CloudClient extends MessageSender {
   connect(): Promise<void>;
@@ -110,12 +111,16 @@ export async function registerDevice(
     socket.on('error', fail);
     socket.on('message', (raw) => {
       try {
-        const message = JSON.parse(raw.toString()) as { type?: string; payload?: { agentId?: string; credential?: string } };
-        if (message.type !== 'registered' || !message.payload?.agentId || !message.payload.credential) return;
+        const parsed = registeredMessageSchema.safeParse(JSON.parse(raw.toString()));
+        if (!parsed.success) {
+          socket.close(1003, 'invalid registration response');
+          fail(new Error('invalid registration response'));
+          return;
+        }
         socket.close();
         succeed({
-          agentId: message.payload.agentId,
-          credential: message.payload.credential,
+          agentId: parsed.data.payload.agentId,
+          credential: parsed.data.payload.credential,
           deviceId,
         });
       } catch {

@@ -8,9 +8,6 @@ const envSchema = z.object({
   API_KEY_PEPPER: z.string().min(32),
   PUBLIC_BASE_URL: z.string().url().default('http://localhost:3000'),
   WEB_BASE_URL: z.string().url().default('http://localhost:5173'),
-  AGENT_DOWNLOAD_URL: z.string().url().default('http://localhost:3000/downloads/agent'),
-  AGENT_RELEASE_DIR: z.string().default('./releases'),
-  AGENT_RELEASE_VERSION: z.string().trim().min(1).default('0.1.0'),
   CORS_ORIGINS: z.string().min(1).default('http://localhost:5173'),
   AGENT_WS_PATH: z.string().regex(/^\/[A-Za-z0-9/_-]*$/).default('/agent'),
   AGENT_REQUIRE_TLS: z

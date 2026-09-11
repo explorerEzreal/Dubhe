@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS agent_credentials (
 CREATE TABLE IF NOT EXISTS models (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL,
-  engine      TEXT NOT NULL DEFAULT 'ollama',
+  engine      TEXT NOT NULL DEFAULT 'openai-compatible',
   description TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );

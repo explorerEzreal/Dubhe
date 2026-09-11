@@ -1,11 +1,10 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package.json pnpm-lock.yaml* ./
-RUN corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --no-frozen-lockfile
+COPY package.json yarn.lock ./
+RUN corepack enable && yarn install --frozen-lockfile
 COPY tsconfig.json ./
 COPY src ./src
-COPY release ./release
-RUN pnpm build
+RUN yarn build
 
 FROM node:22-alpine
 WORKDIR /app
@@ -13,5 +12,4 @@ ENV NODE_ENV=production
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY package.json ./
-COPY --from=build /app/release ./release
 ENTRYPOINT ["node", "dist/main.js"]

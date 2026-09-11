@@ -96,7 +96,7 @@
     },
     {
       "if": { "properties": { "type": { "const": "infer_error" } }, "required": ["type"] },
-      "then": { "required": ["request_id"], "properties": { "payload": { "type": "object", "required": ["code"], "additionalProperties": false, "properties": { "code": { "enum": ["MODEL_NOT_READY", "MODEL_NOT_FOUND", "OLLAMA_UNAVAILABLE", "INFERENCE_TIMEOUT", "UPSTREAM_ERROR", "CONCURRENCY_LIMIT"] }, "message": { "type": "string", "maxLength": 500 } } } } }
+      "then": { "required": ["request_id"], "properties": { "payload": { "type": "object", "required": ["code"], "additionalProperties": false, "properties": { "code": { "enum": ["MODEL_NOT_READY", "MODEL_NOT_FOUND", "LOCAL_SERVICE_UNAVAILABLE", "INFERENCE_TIMEOUT", "UPSTREAM_ERROR", "CONCURRENCY_LIMIT"] }, "message": { "type": "string", "maxLength": 500 } } } } }
     },
     {
       "if": { "properties": { "type": { "const": "infer_cancel" } }, "required": ["type"] },

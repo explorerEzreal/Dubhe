@@ -22,7 +22,8 @@ export function registerInferenceRoutes(
   app: FastifyInstance,
   services: HttpServices,
 ): void {
-  app.get('/v1/models', async (request, reply) => {
+  for (const prefix of ['/v1', '/api/v1'] as const) {
+    app.get(`${prefix}/models`, async (request, reply) => {
     try {
       const key = await authenticatedKey(request, services);
       const limit = services.apiLimiter.consume(`${key.id}:models`);
@@ -39,9 +40,9 @@ export function registerInferenceRoutes(
     } catch (error) {
       return sendError(reply, error);
     }
-  });
+    });
 
-  app.post('/v1/chat/completions', async (request, reply) => {
+    app.post(`${prefix}/chat/completions`, async (request, reply) => {
     let requestId: string | undefined;
     let streamCreated = Math.floor(Date.now() / 1000);
     let settled = false;
@@ -123,5 +124,6 @@ export function registerInferenceRoutes(
       }
       return sendError(reply, error);
     }
-  });
+    });
+  }
 }

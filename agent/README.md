@@ -1,60 +1,34 @@
-# Agent
+# Dubhe Agent
 
-部署者机器上的本地客户端。管理本地 Ollama、保持到 Cloud 的出站 WSS 连接，并执行 Cloud 下发的推理请求。
+## 安装与接入
 
-## 职责
-
-- 保存 Cloud URL、Agent ID、设备凭证和本地模型配置。
-- 建立并维护出站 WSS 长连接，支持心跳、指数退避重连和状态重同步。
-- 首次使用部署令牌注册设备，换取可撤销的设备凭证。
-- 检查 Ollama 健康状态，拉取和查询模型。
-- 接收推理任务，调用本机 Ollama HTTP API，按 `request_id` 转发流式 chunk、完成和错误。
-- 执行本地并发限制、超时和任务清理。
-- 采集 CPU、内存、GPU 可用信息和最小运行状态。
-- 输出脱敏日志并支持优雅关闭。
-
-## 非职责
-
-- 不访问 PostgreSQL。
-- 不处理用户登录、API Key 或调用者鉴权。
-- 不直接接收公网调用者请求。
-- 不执行由请求内容拼接出的 shell 命令或任意本地代码。
-- 不要求终端用户安装 Node.js（正式交付逐步提供 Linux 独立可执行包）。
-
-## 目录结构
-
-```text
-src/
-├── main.ts            # CLI 入口和进程生命周期
-├── cli/               # 命令解析与参数校验
-├── config/            # 配置加载与校验
-├── domain/            # 纯业务状态、实体、错误，不依赖基础设施
-├── application/       # 用例编排：注册、重连、模型同步、推理、指标
-├── infrastructure/    # WSS 客户端、Ollama HTTP、系统采集、凭证存储、日志
-└── interfaces/        # 对外输入适配（CLI 输入、消息处理）
-```
-
-依赖方向：`interfaces -> application -> domain <- infrastructure`。`domain` 不 import 任何基础设施代码。
-
-## 运行
+运行环境为 Node.js 22+。本地模型服务必须提供 OpenAI 兼容接口：`GET /v1/models` 和 `POST /v1/chat/completions`。
 
 ```bash
-pnpm install
-pnpm dev -- doctor          # 环境自检
-pnpm dev -- start           # 启动 Agent 常驻运行时
-pnpm build
-pnpm test
-pnpm lint
+npm install -g dubhe-agent
+dubhe service install --cloud-url 'https://你的域名' --token '<一次性令牌>' --model '<模型名>' --local-url 'http://127.0.0.1:8000'
 ```
 
-## 环境变量
+`service install` 只使用一次性令牌完成注册，随后将设备凭证保存到平台用户数据目录，默认权限为 `0600`。常驻服务配置不保存 enrollment token。
 
-见 `.env.example`。Agent 只依赖可配置的 `CLOUD_URL`，不写死官方域名。`CLOUD_URL` 必须使用 `wss://`；首次启动可设置一次性 `ENROLLMENT_TOKEN` 自动注册，成功后凭证以 `0600` 权限写入 `CREDENTIALS_PATH`。
+## 服务管理
 
-## 与 Cloud 的通信
+```bash
+dubhe service status
+dubhe service uninstall
+dubhe doctor
+```
 
-通过版本化 WSS 协议，详见 `docs/protocol-v1.md` 和 `protocol/agent-messages.schema.json`。Agent 只建立出站连接，不开放公网端口；连接成功后立即同步 Ollama 模型与系统快照，按配置周期发送心跳，断线按带抖动的指数退避重连。
+Linux 使用用户级 systemd，日志查看：
 
-## 官方托管与私有化部署
+```bash
+journalctl --user -u dubhe-agent.service -f
+```
 
-两者使用同一 Agent 工程，仅需修改 `CLOUD_URL` 指向目标 Cloud 地址。
+macOS 使用 launchd，日志位于 `~/Library/Logs/dubhe-agent.log` 和 `~/Library/Logs/dubhe-agent.error.log`。
+
+`CLOUD_URL` 必须为 `wss://`，或通过 CLI 传入 `https://` 由 Agent 转换为 `/agent` 路径。令牌过期或重复使用会注册失败；Cloud 撤销或轮换凭证后，旧 Agent 会停止重连，需要重新生成凭证。
+
+## 配置
+
+可通过环境变量覆盖默认值。凭证路径使用 `CREDENTIALS_PATH` 覆盖，模型使用逗号分隔的 `MODELS`，本地服务使用 `LOCAL_MODEL_URL`，日志级别使用 `LOG_LEVEL`。

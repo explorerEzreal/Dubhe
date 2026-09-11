@@ -52,8 +52,13 @@ export function CallerDashboardPage() {
     try { await copyText(value); message.success(success); } catch { message.error('请求失败，请稍后重试'); }
   }
 
-  const curl = createdKey ? `curl ${config.apiBaseUrl}/v1/chat/completions \\\n+  -H "Authorization: Bearer ${createdKey.plaintext}" \\\n+  -H "Content-Type: application/json" \\\n+  -d '{"model":"${models[0]?.name ?? 'llama3:8b'}","messages":[{"role":"user","content":"你好"}]}'` : '';
-  const sdk = createdKey ? `from openai import OpenAI\nclient = OpenAI(api_key="${createdKey.plaintext}", base_url="${config.apiBaseUrl}/v1")\nresponse = client.chat.completions.create(model="${models[0]?.name ?? 'llama3:8b'}", messages=[{"role": "user", "content": "你好"}])` : '';
+  const curl = createdKey ? [
+    `curl ${config.apiBaseUrl}/api/v1/chat/completions \\`,
+    `  -H "Authorization: Bearer ${createdKey.plaintext}" \\`,
+    '  -H "Content-Type: application/json" \\',
+    `  -d '{"model":"${models[0]?.name ?? 'my-model'}","messages":[{"role":"user","content":"你好"}]}'`,
+  ].join('\n') : '';
+  const sdk = createdKey ? `from openai import OpenAI\nclient = OpenAI(api_key="${createdKey.plaintext}", base_url="${config.apiBaseUrl}/api/v1")\nresponse = client.chat.completions.create(model="${models[0]?.name ?? 'my-model'}", messages=[{"role": "user", "content": "你好"}])` : '';
 
   if (loading && !usage) return <LoadingState />;
   return <section>
@@ -61,7 +66,7 @@ export function CallerDashboardPage() {
     {error && <ErrorState onRetry={() => void load()} />}
     <div className="metric-grid"><Card><Statistic title="总调用数" value={usage?.totalCalls ?? 0} /></Card><Card><Statistic title="错误率" value={((usage?.errorRate ?? 0) * 100).toFixed(1)} suffix="%" /></Card><Card><Statistic title="平均延迟" value={usage?.avgLatencyMs ?? 0} suffix="ms" /></Card></div>
     <Card title="模型目录" style={{ marginBottom: 24 }}>
-      {!models.length && !error ? <EmptyState description="暂无模型" /> : <Row gutter={[16, 16]}>{models.map((model) => { const status = modelStatus(model); return <Col xs={24} md={12} lg={8} key={model.id}><Card size="small" title={model.name} extra={<Tag color={status.color}>{status.text}</Tag>}><Typography.Paragraph type="secondary">{model.description || '本地 Ollama 模型'}</Typography.Paragraph><Typography.Text>就绪实例：{model.readyInstances} / {model.instanceCount}</Typography.Text></Card></Col>; })}</Row>}
+      {!models.length && !error ? <EmptyState description="暂无模型" /> : <Row gutter={[16, 16]}>{models.map((model) => { const status = modelStatus(model); return <Col xs={24} md={12} lg={8} key={model.id}><Card size="small" title={model.name} extra={<Tag color={status.color}>{status.text}</Tag>}><Typography.Paragraph type="secondary">{model.description || 'OpenAI 兼容本地模型服务'}</Typography.Paragraph><Typography.Text>就绪实例：{model.readyInstances} / {model.instanceCount}</Typography.Text></Card></Col>; })}</Row>}
     </Card>
     <Card title="API Key" extra={<Button type="link" onClick={() => setKeyModalOpen(true)}>创建 Key</Button>}>
       {!keys.length && !error ? <EmptyState description="暂无 API Key" /> : <Table rowKey="id" dataSource={keys} pagination={false} scroll={{ x: 720 }} columns={[{ title: '前缀', dataIndex: 'prefix' }, { title: '状态', dataIndex: 'status', render: (status: string) => <Tag color={status === 'active' ? 'green' : 'default'}>{status === 'active' ? '启用' : '已禁用'}</Tag> }, { title: '创建时间', dataIndex: 'createdAt', render: (value: string) => new Date(value).toLocaleString() }, { title: '过期时间', dataIndex: 'expiresAt', render: (value: string | null) => value ? new Date(value).toLocaleDateString() : '永不过期' }, { title: '操作', key: 'actions', render: (_: unknown, record: ApiKeySummary) => <Space><Button disabled={record.status !== 'active'} onClick={() => void keyApi.disable(record.id).then(() => { message.success('API Key 已禁用'); return load(); }).catch(() => message.error('请求失败，请稍后重试'))}>禁用</Button><Popconfirm title="确认删除此 API Key？" okText="删除" cancelText="取消" onConfirm={() => void keyApi.remove(record.id).then(() => { message.success('API Key 已删除'); return load(); }).catch(() => message.error('请求失败，请稍后重试'))}><Button danger>删除</Button></Popconfirm></Space> }]} />}

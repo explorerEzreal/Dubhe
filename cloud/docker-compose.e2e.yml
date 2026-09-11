@@ -1,29 +1,23 @@
 services:
-  ollama:
-    image: ollama/ollama:latest
-    profiles: [e2e]
-    volumes:
-      - ollama-data:/root/.ollama
-    restart: unless-stopped
   agent:
     build:
       context: ../agent
     profiles: [e2e]
     environment:
       CLOUD_URL: ${M8_AGENT_CLOUD_URL:-wss://reverse-proxy/agent}
-      OLLAMA_URL: http://ollama:11434
+      LOCAL_MODEL_URL: ${M8_LOCAL_MODEL_URL:-http://host.docker.internal:8000}
+      LOCAL_API_KEY: ${M8_LOCAL_API_KEY:-}
       ENROLLMENT_TOKEN: ${M8_ENROLLMENT_TOKEN:?M8_ENROLLMENT_TOKEN is required}
       MODELS: ${M8_E2E_MODEL:-smollm2:135m}
       CREDENTIALS_PATH: /var/lib/dubhe-agent/credentials.json
+    extra_hosts:
+      - host.docker.internal:host-gateway
     volumes:
       - agent-data:/var/lib/dubhe-agent
     depends_on:
-      ollama:
-        condition: service_started
       reverse-proxy:
         condition: service_started
     restart: unless-stopped
 
 volumes:
-  ollama-data:
   agent-data:

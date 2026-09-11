@@ -1,12 +1,30 @@
 {
-  "name": "local-model-agent",
-  "private": true,
+  "name": "dubhe-agent",
+  "version": "0.1.0",
+  "description": "Dubhe 本地模型 Agent",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/explorerEzreal/Dubhe.git",
+    "directory": "agent"
+  },
+  "bugs": {
+    "url": "https://github.com/explorerEzreal/Dubhe/issues"
+  },
+  "homepage": "https://github.com/explorerEzreal/Dubhe/tree/main/agent",
+  "bin": {
+    "dubhe": "dist/main.js"
+  },
+  "files": ["dist"],
+  "engines": { "node": ">=22" },
   "type": "module",
   "scripts": {
     "dev": "tsx src/main.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "rm -rf dist && tsc -p tsconfig.json",
     "test": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepack": "npm run build",
+    "pack:check": "npm pack --dry-run"
   },
   "dependencies": {
     "commander": "^12.1.0",

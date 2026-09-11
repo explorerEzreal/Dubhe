@@ -1,5 +1,8 @@
 import type { MessageSender } from '../interfaces/websocket/message-sender.js';
-import type { OllamaClient, OllamaUsage } from '../interfaces/ollama/ollama-client.js';
+import type {
+  InferenceBackend,
+  InferenceUsage,
+} from '../interfaces/inference/index.js';
 
 export interface AgentInferenceRequest {
   request_id: string;
@@ -14,6 +17,7 @@ export interface AgentInferenceRequest {
 export interface AgentInferenceService {
   handleRequest(request: AgentInferenceRequest, sender: MessageSender): Promise<void>;
   cancel(requestId: string): void;
+  cancelAll(): void;
   activeCount(): number;
 }
 
@@ -22,12 +26,12 @@ interface ActiveTask {
   cancelled: boolean;
 }
 
-function emptyUsage(): OllamaUsage {
+function emptyUsage(): InferenceUsage {
   return { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
 }
 
 export function createInferenceService(
-  ollama: OllamaClient,
+  backend: InferenceBackend,
   maxConcurrency: number,
   logger: { warn(object: Record<string, unknown>, message: string): void },
 ): AgentInferenceService {
@@ -63,9 +67,9 @@ export function createInferenceService(
       try {
         let models: string[];
         try {
-          models = await ollama.listModels();
+          models = await backend.listModels();
         } catch {
-          await sendError(request.request_id, sender, 'OLLAMA_UNAVAILABLE');
+          await sendError(request.request_id, sender, 'LOCAL_SERVICE_UNAVAILABLE');
           return;
         }
         if (!models.includes(request.payload.model)) {
@@ -75,7 +79,7 @@ export function createInferenceService(
         let content = '';
         let usage = emptyUsage();
         let seq = 0;
-        for await (const chunk of ollama.chat(
+        for await (const chunk of backend.chat(
           request.payload.model,
           request.payload,
           task.controller.signal,
@@ -109,7 +113,7 @@ export function createInferenceService(
         });
       } catch {
         if (task.cancelled || task.controller.signal.aborted) return;
-        logger.warn({ requestId: request.request_id }, 'ollama inference failed');
+        logger.warn({ requestId: request.request_id }, 'inference backend failed');
         await sendError(request.request_id, sender, 'UPSTREAM_ERROR');
       } finally {
         tasks.delete(request.request_id);
@@ -121,6 +125,15 @@ export function createInferenceService(
       task.cancelled = true;
       task.controller.abort();
       tasks.delete(requestId);
+    },
+    cancelAll(): void {
+      for (const requestId of Array.from(tasks.keys())) {
+        const task = tasks.get(requestId);
+        if (!task) continue;
+        task.cancelled = true;
+        task.controller.abort();
+        tasks.delete(requestId);
+      }
     },
     activeCount(): number {
       return tasks.size;

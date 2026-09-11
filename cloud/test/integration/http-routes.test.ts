@@ -51,7 +51,7 @@ function createServices(authLimit = 10): HttpServices {
       if (key !== 'dsh_live_secret') throw errors.unauthorized();
       return { id: 'key-1', userId: 'user-1', status: 'active', expiresAt: null };
     },
-    listModels: async () => [{ id: 'model-1', name: 'llama3:8b', engine: 'ollama' }],
+    listModels: async () => [{ id: 'model-1', name: 'llama3:8b', engine: 'openai-compatible' }],
     assertModelPermission: async (_keyId: string, model: string) => {
       if (model !== 'llama3:8b') {
         throw errors.forbidden('MODEL_NOT_PERMITTED', '模型未授权');

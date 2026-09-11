@@ -45,15 +45,6 @@ services:
         condition: service_healthy
     restart: "no"
 
-  agent-release:
-    platform: linux/amd64
-    build:
-      context: ./agent
-    command: ["sh", "-c", "AGENT_RELEASE_OUTPUT_DIR=/release /app/release/build-linux-x86_64.sh"]
-    volumes:
-      - agent-releases:/release
-    restart: "no"
-
   seed-admin:
     build:
       context: ./cloud
@@ -80,22 +71,15 @@ services:
       API_KEY_PEPPER: ${API_KEY_PEPPER:?请在 .env 中设置 API_KEY_PEPPER}
       PUBLIC_BASE_URL: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}
       WEB_BASE_URL: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}
-      AGENT_DOWNLOAD_URL: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}/downloads/agent
-      AGENT_RELEASE_DIR: /app/releases
-      AGENT_RELEASE_VERSION: ${AGENT_RELEASE_VERSION:-0.1.0}
       CORS_ORIGINS: https://${PUBLIC_DOMAIN:?请在 .env 中设置 PUBLIC_DOMAIN}
       AGENT_REQUIRE_TLS: "true"
       TRUST_PROXY: "true"
     depends_on:
-      agent-release:
-        condition: service_completed_successfully
       migrate:
         condition: service_completed_successfully
       postgres:
         condition: service_healthy
     restart: unless-stopped
-    volumes:
-      - agent-releases:/app/releases
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
       interval: 5s
@@ -121,4 +105,3 @@ volumes:
   pgdata:
   caddy-data:
   caddy-config:
-  agent-releases:

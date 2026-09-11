@@ -10,8 +10,8 @@ command -v docker >/dev/null 2>&1 || { echo '[m8:e2e] 缺少 Docker' >&2; exit 2
 
 echo '[m8:e2e] 校验 Compose 配置'
 eval "$compose config >/dev/null"
-echo '[m8:e2e] 启动 PostgreSQL、迁移、Cloud、Web、反向代理、Ollama 和 Agent'
-eval "$compose up -d postgres migrate cloud web reverse-proxy ollama agent"
+echo '[m8:e2e] 启动 PostgreSQL、迁移、Cloud、Web 和反向代理；模型服务由验收环境单独提供'
+eval "$compose up -d postgres migrate cloud web reverse-proxy"
 
 cleanup() { eval "$compose down" >/dev/null 2>&1 || true; }
 trap cleanup EXIT INT TERM

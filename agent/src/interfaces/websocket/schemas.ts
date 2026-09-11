@@ -44,3 +44,13 @@ export const inferCancelSchema = z.object({
   request_id: z.string().min(1).max(200),
   payload: z.object({}).strict(),
 }).strict();
+
+export const registeredMessageSchema = z.object({
+  protocol_version: z.literal(1),
+  type: z.literal('registered'),
+  timestamp: z.string().datetime({ offset: true }),
+  payload: z.object({
+    agentId: z.string().min(1).max(200),
+    credential: z.string().min(1).max(512),
+  }).strict(),
+}).strict();

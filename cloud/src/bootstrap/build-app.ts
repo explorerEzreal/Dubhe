@@ -104,11 +104,7 @@ export function buildApp(app: FastifyInstance, config: CloudConfig): Pool {
   registerHealthRoutes(app, new PgDatabaseHealth(pool));
   registerAuthRoutes(app, services);
   registerManagementRoutes(app, services);
-  registerDownloadRoutes(app, {
-    releaseDir: config.AGENT_RELEASE_DIR,
-    releaseVersion: config.AGENT_RELEASE_VERSION,
-    downloadBaseUrl: config.AGENT_DOWNLOAD_URL,
-  });
+  registerDownloadRoutes(app);
   registerInferenceRoutes(app, services);
   registerAgentRoutes(app, {
     path: config.AGENT_WS_PATH,

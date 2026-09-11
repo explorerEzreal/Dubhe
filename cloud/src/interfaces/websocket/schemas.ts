@@ -111,7 +111,7 @@ export const inferErrorMessageSchema = envelopeSchema.extend({
     code: z.enum([
       'MODEL_NOT_READY',
       'MODEL_NOT_FOUND',
-      'OLLAMA_UNAVAILABLE',
+      'LOCAL_SERVICE_UNAVAILABLE',
       'INFERENCE_TIMEOUT',
       'UPSTREAM_ERROR',
       'CONCURRENCY_LIMIT',

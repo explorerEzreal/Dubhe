@@ -2,7 +2,7 @@ import type { AgentConfig } from '../config/config.js';
 import type { AgentState } from '../domain/agent-state.js';
 import type { ModelInstance } from '../domain/model-state.js';
 import type { Credentials } from '../infrastructure/credentials/index.js';
-import type { OllamaClient } from '../interfaces/ollama/ollama-client.js';
+import type { InferenceBackend } from '../interfaces/inference/index.js';
 import type { CloudClient, RegisterDeviceInput } from '../infrastructure/cloud/index.js';
 import type WebSocket from 'ws';
 import { createInferenceService } from './inference-service.js';
@@ -22,7 +22,7 @@ interface HeartbeatSnapshot {
 
 export interface AgentRuntimeOptions {
   config: AgentConfig;
-  ollama: OllamaClient;
+  backend: InferenceBackend;
   logger: AgentLogger;
   collectMetrics(): Promise<Record<string, unknown>>;
   loadCredentials(path: string): Promise<Credentials>;
@@ -41,6 +41,7 @@ export interface AgentRuntime {
 }
 
 export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
+  const backend = options.backend;
   let currentState: AgentState = 'created';
   let credentials: Credentials = {};
   let client: CloudClient | undefined;
@@ -49,7 +50,7 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
   let reconnectAttempt = 0;
   let stopping = false;
   const inference = createInferenceService(
-    options.ollama,
+    backend,
     options.config.MAX_CONCURRENCY,
     options.logger,
   );
@@ -100,7 +101,7 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
     }
 
     try {
-      if (!(await options.ollama.health())) {
+      if (!(await backend.health())) {
         return {
           status: 'degraded',
           hardwareInfo,
@@ -108,7 +109,7 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
         };
       }
 
-      const localModels = new Set(await options.ollama.listModels());
+      const localModels = new Set(await backend.listModels());
       const modelsToSync = configuredModels.length > 0
         ? configuredModels
         : Array.from(localModels);
@@ -146,7 +147,10 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
         timestamp: new Date().toISOString(),
         payload: {
           status: snapshot.status,
-          hardwareInfo: snapshot.hardwareInfo,
+          hardwareInfo: {
+            ...snapshot.hardwareInfo,
+            inferenceProtocol: 'openai-compatible',
+          },
           models: snapshot.models.map(({ model, state }) => ({ name: model, state })),
         },
       });
@@ -199,6 +203,7 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
     if (client !== closedClient) return;
     client = undefined;
     clearHeartbeat();
+    inference.cancelAll();
     if (stopping) return;
     if (code === 1008 || code === 4001) {
       setState('revoked');
@@ -273,6 +278,7 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       reconnectTimer = undefined;
       clearHeartbeat();
+      inference.cancelAll();
       client?.close(1000, 'agent stopped');
       client = undefined;
       setState('offline');

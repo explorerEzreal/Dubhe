@@ -34,10 +34,9 @@ describe('agent-state', () => {
         AGENT_CREDENTIAL: 'credential',
         MODELS: 'llama3:8b',
       }),
-      ollama: {
+      backend: {
         health: async () => true,
         listModels: async () => ['llama3:8b'],
-        pullModel: async () => undefined,
         chat: async () => ({ stream: null }),
       } as never,
       logger: {
