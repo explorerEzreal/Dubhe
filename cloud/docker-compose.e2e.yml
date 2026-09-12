@@ -1,3 +1,4 @@
+# 已废弃：依赖已废弃的 cloud/docker-compose.yml（Nginx 反向代理），随旧入口一并保留，下一周期删除。
 services:
   agent:
     build:

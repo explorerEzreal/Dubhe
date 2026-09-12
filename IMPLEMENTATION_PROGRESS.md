@@ -21,10 +21,11 @@
 | M5 非流式推理链路 | 已完成 | ready 路由、并发占用、超时、取消、断线清理和 JSON 响应完成 | 未做真实模型服务验收 |
 | M6 流式 SSE 与兼容 API | 已完成 | chunk 顺序校验、SSE、`[DONE]`、取消和清理完成 | 未做真实网络恢复验收 |
 | M7 Web 完整控制台 | 已完成 | 部署引导、状态、Key 权限、调用示例和统计完成 | 未做真实浏览器/部署验收 |
-| M8 Docker、自部署和稳定性 | 部分实现 | 根 Compose、Caddy、npm Agent 入口和私有化配置完成 | Docker、TLS/WSS、真实模型服务、1000 条连接 24 小时验收 |
+| M8 Docker、自部署和稳定性 | 部分实现 | 根 Compose 唯一线上入口、Caddy、npm Agent 入口、本地 `pnpm dev:local` 和私有化配置完成 | Docker、TLS/WSS、真实模型服务、1000 条连接 24 小时验收 |
 
 ## 最近验证
 
+- 2026-09-12：部署入口收敛为“根目录 docker-compose.yml（唯一线上入口）+ `pnpm dev:local`（唯一本地入口）”；环境变量收敛为 `.env.example`/`.env.local.example` 两套，删除 `cloud/.env.example`；`cloud/docker-compose.yml`（Nginx 旧入口）标记废弃，脚本引用清除；新增 `cloud/docs/deployment.md` 与本地 PostgreSQL 验收流程（`dubhe_dev`/`dubhe_acceptance`）。待真实 Docker/TLS/WSS 环境验收。
 - 2026-09-11：Agent npm 发布钩子、公开包元数据、systemd/launchd 服务命令、平台凭证目录和本地推理清理已实现；待完成干净目录安装和真实 Cloud/WSS/模型服务验收。
 - 2026-09-06：Compose YAML、Cloud/Agent/Web TypeScript、Vitest、ESLint、协议 schema 和 Shell 语法检查通过。
 - 2026-09-05：全仓 `pnpm test`、`pnpm build`、`pnpm lint`、`pnpm contracts:check` 通过；PostgreSQL 隧道测试和连续两次迁移通过。

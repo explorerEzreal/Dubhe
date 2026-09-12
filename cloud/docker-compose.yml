@@ -1,3 +1,5 @@
+# 已废弃：旧入口。请使用仓库根目录的 docker-compose.yml（Caddy + HTTPS/WSS）。
+# 本文件仅作为迁移过渡保留一个版本周期，确认无使用者后删除；Nginx 方案不再维护。
 services:
   reverse-proxy:
     image: nginx:1.27-alpine

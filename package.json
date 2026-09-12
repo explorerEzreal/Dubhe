@@ -5,6 +5,7 @@
     "build": "pnpm --dir cloud build && pnpm --dir agent build && pnpm --dir web build",
     "test": "pnpm --dir cloud test && pnpm --dir agent test && pnpm --dir web test",
     "test:postgres": "pnpm --dir cloud test:postgres",
+    "dev:local": "node scripts/dev-local.mjs",
     "lint": "pnpm --dir cloud lint && pnpm --dir agent lint && pnpm --dir web lint",
     "contracts:check": "cmp contracts/agent-messages.schema.json cloud/protocol/agent-messages.schema.json && cmp contracts/agent-messages.schema.json agent/protocol/agent-messages.schema.json",
     "m8:e2e": "sh scripts/m8-e2e.sh",
