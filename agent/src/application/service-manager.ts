@@ -143,6 +143,8 @@ export async function writeServiceConfig(config: ServiceConfig): Promise<Service
 
 export async function startService(paths: ServicePaths): Promise<void> {
   if (process.platform === 'darwin') {
+    // launchctl 对已加载任务不会刷新环境变量，先卸载再加载确保使用最新配置。
+    try { await execFileAsync('launchctl', ['unload', '-w', paths.servicePath]); } catch { /* 任务可能尚未加载 */ }
     await execFileAsync('launchctl', ['load', '-w', paths.servicePath]);
     return;
   }
