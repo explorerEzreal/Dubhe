@@ -81,7 +81,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/healthz"]
       interval: 5s
       timeout: 3s
       retries: 10
