@@ -1,5 +1,8 @@
 node_modules/
 dist/
+artifacts/
+pnpm-lock.yaml
+pnpm-workspace.yaml
 .env
 .env.*
 !.env.example
