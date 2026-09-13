@@ -1,0 +1,8 @@
+# 构建上下文不携带宿主机依赖和产物。
+node_modules
+dist
+coverage
+.env*
+*.log
+.git
+.gitignore

@@ -12,7 +12,9 @@ export type ApiErrorBody = {
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = localStorage.getItem('access_token');
   const headers = new Headers(init?.headers);
-  headers.set('Content-Type', 'application/json');
+  if (init?.body !== undefined && init.body !== null && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }

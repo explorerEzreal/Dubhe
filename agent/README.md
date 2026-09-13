@@ -5,7 +5,7 @@
 运行环境为 Node.js 22+。本地模型服务必须提供 OpenAI 兼容接口：`GET /v1/models` 和 `POST /v1/chat/completions`。
 
 ```bash
-npm install -g dubhe-agent
+npm install -g dubhe-agent@0.1.0
 dubhe service install --cloud-url 'https://你的域名' --token '<一次性令牌>' --model '<模型名>' --local-url 'http://127.0.0.1:8000'
 ```
 

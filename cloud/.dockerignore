@@ -1,0 +1,14 @@
+# 构建上下文不携带宿主机依赖、凭证和测试产物。
+node_modules
+dist
+coverage
+.env*
+*.log
+.git
+.gitignore
+test
+docs
+openapi
+protocol
+docker-compose*.yml
+reverse-proxy

@@ -55,6 +55,12 @@ cp .env.local.example .env.local
 pnpm dev:local
 ```
 
+`DATABASE_URL` 对应的用户必须拥有 `dubhe_dev` 数据库及 `public` schema 的建表权限。若数据库由其他管理员创建，可执行：
+
+```sql
+GRANT CREATE ON SCHEMA public TO <数据库用户>;
+```
+
 - Cloud 监听 `http://localhost:3000`，Web 监听 `http://localhost:5173`。
 - 环境变量只分两套：`.env.example`（线上）与 `.env.local.example`（本地）。
 
@@ -63,7 +69,7 @@ pnpm dev:local
 模型设备需要 Node.js 22+、npm，以及提供 `GET /v1/models` 和 `POST /v1/chat/completions` 的本地 HTTP 服务。服务只需监听本机端口，不需要开放公网端口。Agent 支持 Linux systemd 和 macOS launchd 常驻运行。
 
 ```bash
-npm install -g dubhe-agent
+npm install -g dubhe-agent@0.1.0
 dubhe service install --cloud-url 'https://你的域名' --token '<一次性令牌>' --model '<模型名>' --local-url 'http://127.0.0.1:8000'
 ```
 

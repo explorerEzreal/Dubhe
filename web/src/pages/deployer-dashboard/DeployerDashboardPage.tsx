@@ -165,7 +165,7 @@ export function DeployerDashboardPage() {
   const command = tokenResult
     ? (() => {
         const modelName = selectedModel || '<模型名>';
-        return `npm install -g dubhe-agent\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --model ${shellQuote(modelName)} --local-url ${shellQuote(localUrl)}`;
+        return `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --model ${shellQuote(modelName)} --local-url ${shellQuote(localUrl)}`;
       })()
     : '';
 

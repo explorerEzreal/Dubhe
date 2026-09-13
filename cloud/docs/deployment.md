@@ -20,6 +20,13 @@ docker compose up -d
 
 `.env` 只需维护线上所需变量：`PUBLIC_DOMAIN`、`POSTGRES_USER/DB/PASSWORD`、`JWT_SECRET`、`API_KEY_PEPPER`、`ADMIN_EMAIL/ADMIN_PASSWORD`（可选，用于首次自动建管理员）。域名需已解析到本服务器并开放 80/443；Caddy 自动签发 HTTPS 证书。
 
+### 部署前置条件
+
+- Docker Engine、Docker Compose 插件可用；ARM64 主机需确认所用镜像提供对应架构。
+- `PUBLIC_DOMAIN` 已解析到服务器，防火墙放行 TCP 80/443；不要将 PostgreSQL 端口暴露到公网。
+- `.env` 中的 PostgreSQL 密码、JWT Secret、API Key Pepper 均使用随机值，并执行 `chmod 600 .env`。
+- 模型设备单独运行 Agent 和本地 OpenAI 兼容服务，只允许 Agent 出站连接 Cloud 的 WSS 地址。
+
 > 已废弃的旧入口 `cloud/docker-compose.yml`（Nginx 方案）仅作为迁移过渡保留一个版本周期，请勿使用；Nginx 方案不再维护。
 
 ## 迁移
@@ -57,6 +64,27 @@ curl https://你的域名/healthz   # 进程存活
 curl https://你的域名/readyz    # 依赖就绪（数据库可用）
 ```
 
+## PostgreSQL 备份与恢复
+
+备份文件不得提交到 Git，建议每天执行并保留至少 7 个最近版本：
+
+```bash
+mkdir -p backups
+docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom' > "backups/cloud-$(date +%Y%m%d-%H%M%S).dump"
+chmod 600 backups/*.dump
+```
+
+恢复前先停止 Cloud 写入并确认目标数据库，恢复完成后重新启动服务：
+
+```bash
+docker compose stop cloud web proxy
+cat backups/cloud-YYYYMMDD-HHMMSS.dump | docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --exit-on-error'
+docker compose up -d
+docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select count(*) from schema_migrations"'
+```
+
+恢复演练应在隔离数据库执行，并记录备份时间、文件校验和、恢复耗时及 `/readyz` 结果。升级失败时保留旧镜像与最近一次备份，回滚代码和镜像后再次执行幂等迁移。
+
 ## 数据库验收
 
 验收使用**本机 PostgreSQL 服务**，不需要远程测试数据库、SSH 隧道或线上凭证。约定如下：
@@ -85,7 +113,3 @@ TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/dubhe_acceptance p
 ```
 
 `test:postgres` 在验收库中创建随机 schema（`m2_<随机>`）并在结束后 `drop schema cascade`，因此与 `dubhe_dev` 及验收库既有数据完全隔离；未设置 `TEST_DATABASE_URL` 时该测试自动跳过。
-
-## 备份与恢复
-
-PostgreSQL 备份、恢复、定时任务与灾备说明将在下一轮提供，本轮不涉及。

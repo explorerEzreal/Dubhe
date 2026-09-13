@@ -1,0 +1,10 @@
+# Agent 镜像只使用源码和锁文件构建。
+node_modules
+dist
+coverage
+.env*
+*.log
+.git
+.gitignore
+test
+docs
