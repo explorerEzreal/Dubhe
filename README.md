@@ -15,6 +15,8 @@
 - `cloud`：认证、部署令牌、API Key、模型路由、推理中转和用量元数据。
 - `web`：React 控制台，只访问 Cloud API。
 
+Web 与 Agent 保持职责解耦：Web 只管理 Cloud 侧设备元数据、部署令牌、在线/模型状态和凭证生命周期；Agent 的本机配置、模型检测、诊断及 launchd/systemd 服务操作只在模型设备上通过 CLI 完成。Web 不直接连接 Agent，也不远程执行本机命令。
+
 ## 快速开始
 
 线上：`cp .env.example .env` 后 `docker compose up -d`。
@@ -74,6 +76,8 @@ dubhe service install --cloud-url 'https://你的域名' --token '<一次性令�
 ```
 
 令牌由 Web 部署者页面生成且只能使用一次；命令会注册设备、保存 0600 凭证并安装常驻服务，自动连接 `wss://你的域名/agent`。检查服务使用 `dubhe service status`，卸载使用 `dubhe service uninstall`，不会删除凭证。
+
+设备接入后回到 Web 部署者控制台查看在线状态和模型状态。需要修改本地模型服务地址、模型或日志级别时，在模型设备上调整 Agent 配置并重启本地服务；需要撤销设备或轮换凭证时，在 Web 中操作。
 
 ## 调用 API
 

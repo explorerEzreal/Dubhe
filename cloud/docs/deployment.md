@@ -27,6 +27,8 @@ docker compose up -d
 - `.env` 中的 PostgreSQL 密码、JWT Secret、API Key Pepper 均使用随机值，并执行 `chmod 600 .env`。
 - 模型设备单独运行 Agent 和本地 OpenAI 兼容服务，只允许 Agent 出站连接 Cloud 的 WSS 地址。
 
+Web、Cloud、Agent 的控制边界：Web 通过 HTTPS 管理 Cloud 侧设备、令牌、状态和凭证；Cloud 通过 Agent 的出站 WSS 接收心跳并提供路由；Agent 本机的模型服务、配置文件、诊断及 launchd/systemd 服务由模型设备上的 CLI 管理。Cloud 不提供远程 shell 或操作系统服务控制接口，Agent 也不访问 PostgreSQL 或 Web。
+
 > 已废弃的旧入口 `cloud/docker-compose.yml`（Nginx 方案）仅作为迁移过渡保留一个版本周期，请勿使用；Nginx 方案不再维护。
 
 ## 迁移

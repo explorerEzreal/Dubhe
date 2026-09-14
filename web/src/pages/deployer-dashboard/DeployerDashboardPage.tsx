@@ -196,6 +196,13 @@ export function DeployerDashboardPage() {
         </Space>
       </div>
       {error && <ErrorState onRetry={() => void load()} />}
+      <Alert
+        type='info'
+        showIcon
+        style={{ marginBottom: 16 }}
+        message='Web 负责 Cloud 侧设备管理；本机 Agent 操作请在模型设备上使用 CLI。'
+        description='此页面不会远程执行命令、修改本机文件或控制 launchd/systemd。安装完成后可在这里查看在线状态、模型状态并轮换或撤销凭证。'
+      />
       <Modal
         title='添加设备'
         open={deviceModalOpen}

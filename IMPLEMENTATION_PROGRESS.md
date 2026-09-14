@@ -26,6 +26,7 @@
 ## 最近验证
 
 - 2026-09-12：部署入口收敛为“根目录 docker-compose.yml（唯一线上入口）+ `pnpm dev:local`（唯一本地入口）”；环境变量收敛为 `.env.example`/`.env.local.example` 两套，删除 `cloud/.env.example`；`cloud/docker-compose.yml`（Nginx 旧入口）标记废弃，脚本引用清除；新增 `cloud/docs/deployment.md` 与本地 PostgreSQL 验收流程（`dubhe_dev`/`dubhe_acceptance`）。待真实 Docker/TLS/WSS 环境验收。
+- 2026-09-14：确认 Web 与 Agent 保持职责解耦。Web 部署者控制台提供一次性令牌、安装命令、设备/模型状态及凭证轮换/撤销；Agent 本机配置、诊断和 launchd/systemd 操作继续由 CLI 完成。补充 README、部署文档和 Web 边界提示；未新增 Web→Agent 直连或远程执行接口。
 - 2026-09-11：Agent npm 发布钩子、公开包元数据、systemd/launchd 服务命令、平台凭证目录和本地推理清理已实现；待完成干净目录安装和真实 Cloud/WSS/模型服务验收。
 - 2026-09-06：Compose YAML、Cloud/Agent/Web TypeScript、Vitest、ESLint、协议 schema 和 Shell 语法检查通过。
 - 2026-09-05：全仓 `pnpm test`、`pnpm build`、`pnpm lint`、`pnpm contracts:check` 通过；PostgreSQL 隧道测试和连续两次迁移通过。
