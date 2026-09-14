@@ -70,7 +70,7 @@ export const inferRequestMessageSchema = envelopeSchema.extend({
     stop: z.union([z.string(), z.array(z.string().min(1)).max(20)]).optional(),
     presence_penalty: z.number().min(-2).max(2).optional(),
     frequency_penalty: z.number().min(-2).max(2).optional(),
-  }).strict(),
+  }).passthrough(),
 });
 
 export const inferChunkMessageSchema = envelopeSchema.extend({

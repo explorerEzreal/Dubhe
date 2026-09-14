@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { ApiKeyIdentity } from '../../application/ports.js';
 import type { HttpServices } from './types.js';
-import { completionSchema } from './schemas.js';
+import { completionSchema, responsesSchema } from './schemas.js';
 import { bearer, sendError, sendRateLimit } from './http-errors.js';
 import { errors } from '../../domain/common/index.js';
 
@@ -124,6 +124,96 @@ export function registerInferenceRoutes(
       }
       return sendError(reply, error);
     }
+    });
+
+    app.post(`${prefix}/responses`, async (request, reply) => {
+      let requestId: string | undefined;
+      let settled = false;
+      let streamMode = false;
+      let streamStarted = false;
+      const input = responsesSchema.safeParse(request.body ?? {});
+      try {
+        const key = await authenticatedKey(request, services);
+        const limit = services.apiLimiter.consume(`${key.id}:responses`);
+        if (!limit.allowed) return sendRateLimit(reply, limit.retryAfterSeconds);
+        if (!input.success) throw errors.invalidRequest();
+        await services.apiKeys.assertModelPermission(key.id, input.data.model);
+        const messages = (typeof input.data.input === 'string'
+          ? [{ role: 'user' as const, content: input.data.input }]
+          : input.data.input.map((item) => ({
+            role: item.role === 'developer' ? 'system' as const : item.role,
+            content: typeof item.content === 'string'
+              ? item.content
+              : item.content.map((part) => typeof part === 'object' && part !== null && 'text' in part ? String(part.text) : '').join(''),
+          }))).filter((item) => item.content.length > 0);
+        if (input.data.instructions) messages.unshift({ role: 'system', content: input.data.instructions });
+        if (messages.length === 0) throw errors.invalidRequest();
+        const payload: Record<string, unknown> = {
+          model: input.data.model,
+          messages,
+          stream: input.data.stream,
+          ...(input.data.temperature === undefined ? {} : { temperature: input.data.temperature }),
+          ...(input.data.top_p === undefined ? {} : { top_p: input.data.top_p }),
+          ...(input.data.max_output_tokens === undefined ? {} : { max_tokens: input.data.max_output_tokens }),
+          ...(input.data.tools === undefined ? {} : { tools: input.data.tools }),
+          ...(input.data.tool_choice === undefined ? {} : { tool_choice: input.data.tool_choice }),
+          ...(input.data.response_format === undefined ? {} : { response_format: input.data.response_format }),
+          ...(input.data.parallel_tool_calls === undefined ? {} : { parallel_tool_calls: input.data.parallel_tool_calls }),
+          ...(input.data.n === undefined ? {} : { n: input.data.n }),
+          ...(input.data.stream_options === undefined ? {} : { stream_options: input.data.stream_options }),
+        };
+        const result = await services.inference.run({
+          userId: key.userId,
+          apiKeyId: key.id,
+          model: input.data.model,
+          payload,
+          onStart: (id) => {
+            requestId = id;
+            if (input.data.stream) {
+              streamMode = true;
+              reply.hijack();
+              reply.raw.statusCode = 200;
+              reply.raw.setHeader('content-type', 'text/event-stream; charset=utf-8');
+              reply.raw.setHeader('cache-control', 'no-cache');
+            }
+          },
+          onChunk: input.data.stream ? (chunk) => {
+            if (!requestId) return;
+            if (!streamStarted) {
+              reply.raw.write(`data: ${JSON.stringify({ type: 'response.created', response: { id: `resp_${requestId}`, object: 'response', status: 'in_progress', model: input.data.model } })}\n\n`);
+              streamStarted = true;
+            }
+            reply.raw.write(`data: ${JSON.stringify({ type: 'response.output_text.delta', item_id: requestId, delta: chunk.content })}\n\n`);
+          } : undefined,
+        });
+        settled = true;
+        const response = {
+          id: `resp_${result.requestId}`,
+          object: 'response',
+          created_at: result.created,
+          status: 'completed',
+          model: result.model,
+          output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: result.content, annotations: [] }] }],
+          output_text: result.content,
+          usage: { input_tokens: result.usage.prompt_tokens, output_tokens: result.usage.completion_tokens, total_tokens: result.usage.total_tokens },
+        };
+        if (input.data.stream) {
+          if (!streamStarted) reply.raw.write(`data: ${JSON.stringify({ type: 'response.created', response })}\n\n`);
+          reply.raw.write(`data: ${JSON.stringify({ type: 'response.completed', response })}\n\n`);
+          reply.raw.write('data: [DONE]\n\n');
+          reply.raw.end();
+          return reply;
+        }
+        return response;
+      } catch (error) {
+        settled = true;
+        if (streamMode && requestId) {
+          reply.raw.write(`data: ${JSON.stringify({ type: 'error', error: { message: '请求失败，请稍后重试', code: 'UPSTREAM_ERROR' } })}\n\n`);
+          reply.raw.end();
+          return reply;
+        }
+        return sendError(reply, error);
+      }
     });
   }
 }
