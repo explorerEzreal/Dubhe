@@ -44,6 +44,17 @@ export class PgUserRepository implements UserRepository {
       throw error;
     }
   }
+
+  async listAll(): Promise<Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt'>>> {
+    try {
+      const result = await this.pool.query(
+        'select id,email,role,created_at as "createdAt" from users order by created_at desc',
+      );
+      return result.rows as Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt'>>;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export class PgSessionRepository implements SessionRepository {

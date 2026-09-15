@@ -6,6 +6,7 @@ export interface UserRecord {
   email: string;
   role: string;
   passwordHash?: string;
+  createdAt?: Date;
 }
 
 export interface SessionRecord {
@@ -62,6 +63,7 @@ export interface UserRepository {
   create(email: string, passwordHash: string): Promise<UserRecord | null>;
   findByEmail(email: string): Promise<UserRecord | null>;
   findById(id: string): Promise<UserRecord | null>;
+  listAll(): Promise<Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt'>>>;
 }
 
 export interface SessionRepository {

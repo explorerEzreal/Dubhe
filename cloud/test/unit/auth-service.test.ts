@@ -75,6 +75,10 @@ class FakeUsers implements UserRepository {
       throw error;
     }
   }
+
+  async listAll() {
+    return [...this.users.values()].map(({ id, email, role }) => ({ id, email, role }));
+  }
 }
 
 class FakeSessions implements SessionRepository {

@@ -5,14 +5,47 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppTheme } from '../app/providers';
 import { useAuthStore } from '../state';
 
-type IconName = 'device' | 'key' | 'dashboard' | 'logs' | 'plus' | 'menu' | 'appearance' | 'logout' | 'shield' | 'sliders' | 'info' | 'thunderbolt';
+type IconName =
+  | 'device'
+  | 'key'
+  | 'dashboard'
+  | 'logs'
+  | 'plus'
+  | 'menu'
+  | 'appearance'
+  | 'logout'
+  | 'shield'
+  | 'sliders'
+  | 'info'
+  | 'thunderbolt';
 
-const navItems = [
-  { key: 'assistant', label: '助理', icon: 'dashboard' as IconName },
-  { key: 'projects', label: '项目', icon: 'device' as IconName },
-  { key: 'expertise', label: '专家•技能•连接器', icon: 'key' as IconName },
-  { key: 'automation', label: '自动化', icon: 'logs' as IconName },
-  { key: 'more', label: '更多', icon: 'menu' as IconName },
+const menuGroups = [
+  {
+    key: 'device',
+    label: '设备',
+    items: [
+      { key: 'device-management', label: '设备管理', icon: 'device' as IconName, path: '/deployer' },
+      { key: 'device-statistics', label: '统计', icon: 'dashboard' as IconName },
+    ],
+  },
+  {
+    key: 'caller',
+    label: '调用',
+    items: [
+      { key: 'api-keys', label: 'API 密钥', icon: 'key' as IconName, path: '/caller' },
+      { key: 'caller-statistics', label: '统计', icon: 'dashboard' as IconName },
+      { key: 'usage-records', label: '使用记录', icon: 'logs' as IconName },
+    ],
+  },
+  {
+    key: 'admin',
+    label: '管理员',
+    items: [
+      { key: 'system-users', label: '系统用户', icon: 'key' as IconName, path: '/admin/users' },
+      { key: 'admin-devices', label: '设备', icon: 'device' as IconName },
+      { key: 'admin-statistics', label: '统计', icon: 'dashboard' as IconName },
+    ],
+  },
 ];
 
 function Icon({ name }: { name: IconName }) {
@@ -23,51 +56,155 @@ function Icon({ name }: { name: IconName }) {
     logs: 'M6 4h12v16H6z M9 8h6 M9 12h6 M9 16h4',
     plus: 'M12 5v14 M5 12h14',
     menu: 'M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z M8 4v16',
-    appearance: 'M12 3a9 9 0 1 0 0 18h1.2a2.3 2.3 0 0 0 0-4.6H12a2 2 0 0 1 0-4h1.5A7.5 7.5 0 0 0 12 3z M7.5 8.5h.01 M6.5 13h.01 M10 6h.01',
+    appearance:
+      'M12 3a9 9 0 1 0 0 18h1.2a2.3 2.3 0 0 0 0-4.6H12a2 2 0 0 1 0-4h1.5A7.5 7.5 0 0 0 12 3z M7.5 8.5h.01 M6.5 13h.01 M10 6h.01',
     logout: 'M10 5H5v14h5 M14 8l4 4-4 4 M18 12H9',
     shield: 'M12 3 19 6v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z M9 12l2 2 4-4',
     sliders: 'M6 4v16 M12 4v16 M18 4v16 M4 8h4 M10 15h4 M16 10h4',
     info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 10v6 M12 7h.01',
     thunderbolt: 'M13 2 4 14h7l-1 8 10-13h-7z',
   };
-  return <svg className="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
+  return (
+    <svg
+      className='ui-icon'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='1.8'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      aria-hidden='true'
+    >
+      <path d={paths[name]} />
+    </svg>
+  );
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { mode, setTheme } = useAppTheme();
-  const { email, logout } = useAuthStore();
+  const { email, role, logout } = useAuthStore();
   const [profileOpen, setProfileOpen] = useState(false);
   const avatarText = (email?.[0] ?? 'U').toUpperCase();
-  const activeRoute = location.pathname === '/deployer' ? '/deployer' : '/caller';
+  const activeRoute =
+    location.pathname === '/deployer' ? '/deployer' : '/caller';
 
   function handleLogout(): void {
     setProfileOpen(false);
     logout();
   }
 
-  const profileContent = <div className="wb-user-panel">
-    <div className="wb-user-panel-head"><span className="wb-user-panel-avatar">{avatarText}</span><div className="wb-user-panel-meta"><div className="wb-user-panel-name">{email ?? '访客用户'}</div><div className="wb-user-panel-id">点击头像切换账号（占位）</div></div></div>
-    <div className="wb-user-panel-menu">
-      <div className="wb-user-panel-item"><span className="wb-user-panel-item-icon"><Icon name="shield" /></span>账号与安全</div>
-      <div className="wb-user-panel-item"><span className="wb-user-panel-item-icon"><Icon name="sliders" /></span>偏好设置</div>
-      <div className="wb-user-panel-item"><span className="wb-user-panel-item-icon"><Icon name="info" /></span>关于 ShibaWork</div>
-    </div>
-    <div className="wb-user-panel-foot"><button className="wb-user-panel-logout" onClick={handleLogout}><Icon name="logout" />退出登录</button><div className="wb-user-panel-version">ShibaWork v0.1.0</div></div>
-  </div>;
-
-  return <div className="wb-app">
-    <aside className="wb-sidebar">
-      <div className="wb-logo"><span className="wb-logo-mark"><Icon name="thunderbolt" /></span><span className="wb-logo-name">Bubhe 天枢</span><span className="wb-logo-version">v0.1.0</span></div>
-      <Button type="text" className="wb-new-task" icon={<Icon name="plus" />} block onClick={() => navigate(activeRoute)}>新建任务</Button>
-      <div className="wb-sidebar-scroll">
-        <nav className="wb-nav">{navItems.map((item) => <div className="wb-nav-item" key={item.key}><span className="wb-nav-icon"><Icon name={item.icon} /></span><span className="wb-nav-label">{item.label}</span></div>)}</nav>
-        <div className="wb-section"><div className="wb-section-title">任务（0）</div><div className="wb-task-empty">暂无任务，点击「新建任务」开始</div></div>
-        <div className="wb-section"><div className="wb-section-title">空间（1）</div><div className="wb-task-item wb-space-item"><Icon name="dashboard" /><div className="wb-task-body"><div className="wb-task-title">项目新手指引</div></div></div></div>
+  const profileContent = (
+    <div className='wb-user-panel'>
+      <div className='wb-user-panel-head'>
+        <span className='wb-user-panel-avatar'>{avatarText}</span>
+        <div className='wb-user-panel-meta'>
+          <div className='wb-user-panel-name'>{email ?? '访客用户'}</div>
+          <div className='wb-user-panel-id'>点击头像切换账号（占位）</div>
+        </div>
       </div>
-      <div className="wb-user-footer"><div className="wb-user-footer-row"><Popover placement="topLeft" trigger="click" open={profileOpen} onOpenChange={setProfileOpen} content={profileContent} arrow={false} overlayClassName="wb-user-popover"><div className="wb-user-trigger"><span className="wb-user-avatar">{avatarText}</span><span className="wb-user-meta"><span className="wb-user-name">{email ?? '访客用户'}</span></span></div></Popover><Switch className="wb-theme-switch" size="small" checked={mode === 'dark'} checkedChildren="深" unCheckedChildren="浅" onChange={(checked) => setTheme(checked ? 'dark' : 'light')} /></div></div>
-    </aside>
-    <main className="wb-main"><div className="wb-content"><div className="content-scroll">{children}</div></div></main>
-  </div>;
+      <div className='wb-user-panel-menu'>
+        <div className='wb-user-panel-item'>
+          <span className='wb-user-panel-item-icon'>
+            <Icon name='shield' />
+          </span>
+          账号与安全
+        </div>
+        <div className='wb-user-panel-item'>
+          <span className='wb-user-panel-item-icon'>
+            <Icon name='sliders' />
+          </span>
+          偏好设置
+        </div>
+        <div className='wb-user-panel-item'>
+          <span className='wb-user-panel-item-icon'>
+            <Icon name='info' />
+          </span>
+          关于 Bubhe 天枢
+        </div>
+      </div>
+      <div className='wb-user-panel-foot'>
+        <button className='wb-user-panel-logout' onClick={handleLogout}>
+          <Icon name='logout' />
+          退出登录
+        </button>
+        <div className='wb-user-panel-version'>Bubhe v0.1.0</div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className='wb-app'>
+      <aside className='wb-sidebar'>
+        <div className='wb-logo'>
+          <span className='wb-logo-mark'>
+            <Icon name='thunderbolt' />
+          </span>
+          <span className='wb-logo-name'>Bubhe 天枢</span>
+          <span className='wb-logo-version'>v0.1.0</span>
+        </div>
+       
+        <div className='wb-sidebar-scroll'>
+          <nav className='wb-menu-groups' aria-label='业务菜单'>
+            {menuGroups.filter((group) => group.key !== 'admin' || role === 'admin').map((group) => (
+              <section className='wb-menu-group' key={group.key}>
+                <div className='wb-section-title'>{group.label}</div>
+                <div className='wb-nav'>
+                  {group.items.map((item) => {
+                    const active = item.path === location.pathname;
+                    return (
+                      <div
+                        className={`wb-nav-item${active ? ' is-active' : ''}${item.path ? '' : ' is-placeholder'}`}
+                        key={item.key}
+                        onClick={() => item.path && navigate(item.path)}
+                        role={item.path ? 'link' : undefined}
+                        aria-current={active ? 'page' : undefined}
+                      >
+                        <span className='wb-nav-icon'><Icon name={item.icon} /></span>
+                        <span className='wb-nav-label'>{item.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </nav>
+        </div>
+        <div className='wb-user-footer'>
+          <div className='wb-user-footer-row'>
+            <Popover
+              placement='topLeft'
+              trigger='click'
+              open={profileOpen}
+              onOpenChange={setProfileOpen}
+              content={profileContent}
+              arrow={false}
+              overlayClassName='wb-user-popover'
+            >
+              <div className='wb-user-trigger'>
+                <span className='wb-user-avatar'>{avatarText}</span>
+                <span className='wb-user-meta'>
+                  <span className='wb-user-name'>{email ?? '访客用户'}</span>
+                </span>
+              </div>
+            </Popover>
+            <Switch
+              className='wb-theme-switch'
+              size='small'
+              checked={mode === 'dark'}
+              checkedChildren='深'
+              unCheckedChildren='浅'
+              onChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            />
+          </div>
+        </div>
+      </aside>
+      <main className='wb-main'>
+        <div className='wb-content'>
+          <div className='content-scroll'>{children}</div>
+        </div>
+      </main>
+    </div>
+  );
 }

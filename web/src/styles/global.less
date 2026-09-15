@@ -187,6 +187,16 @@ button { font: inherit; }
 }
 
 /* ===== 导航分组 ===== */
+.wb-menu-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wb-menu-group {
+  min-width: 0;
+}
+
 .wb-nav {
   margin-bottom: 10px;
 }
@@ -207,6 +217,16 @@ button { font: inherit; }
 
 .wb-nav-item:hover {
   background: rgba(0, 0, 0, 0.045);
+}
+
+.wb-nav-item.is-active {
+  background: #e0f5ef;
+  color: #1f2329;
+  font-weight: 600;
+}
+
+.wb-nav-item.is-placeholder {
+  cursor: default;
 }
 
 .wb-nav-icon {

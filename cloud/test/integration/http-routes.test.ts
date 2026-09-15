@@ -37,6 +37,7 @@ function createServices(authLimit = 10): HttpServices {
       if (token !== 'jwt-secret') throw errors.unauthorized();
       revoked = true;
     },
+    listUsers: async () => [],
   } as unknown as AuthService;
   const apiKeys = {
     list: async () => [],
@@ -211,5 +212,27 @@ describe('HTTP routes', () => {
     } finally {
       await app.close();
     }
+  });
+
+  it('restricts system user listing to administrators', async () => {
+    const services = createServices();
+    const auth = services.auth as unknown as { authenticate: (token: string) => Promise<unknown>; listUsers: () => Promise<unknown[]> };
+    auth.authenticate = async () => ({ id: 'admin-1', email: 'admin@example.com', role: 'admin' });
+    auth.listUsers = async () => [{ id: 'user-1', email: 'user@example.com', role: 'user', createdAt: new Date().toISOString() }];
+    const app = createApp(services);
+    try {
+      const response = await app.inject({ method: 'GET', url: '/api/admin/users', headers: { authorization: 'Bearer jwt-secret' } });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()[0]).not.toHaveProperty('passwordHash');
+    } finally { await app.close(); }
+
+    const regularServices = createServices();
+    const regularAuth = regularServices.auth as unknown as { listUsers: () => Promise<unknown[]> };
+    regularAuth.listUsers = async () => { throw errors.forbidden(); };
+    const regularApp = createApp(regularServices);
+    try {
+      const response = await regularApp.inject({ method: 'GET', url: '/api/admin/users', headers: { authorization: 'Bearer jwt-secret' } });
+      expect(response.statusCode).toBe(403);
+    } finally { await regularApp.close(); }
   });
 });

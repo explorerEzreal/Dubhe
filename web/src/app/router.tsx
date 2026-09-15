@@ -4,6 +4,7 @@ import { CallerDashboardPage } from '../pages/caller-dashboard/CallerDashboardPa
 import { DeployerDashboardPage } from '../pages/deployer-dashboard/DeployerDashboardPage';
 import { LoginPage } from '../pages/login';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
+import { SystemUsersPage } from '../pages/system-users';
 import { RegisterPage } from '../pages/register';
 import { useAuthStore } from '../state';
 
@@ -20,6 +21,7 @@ export function AppRouter() {
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/deployer" element={<AuthGate><AppShell><DeployerDashboardPage /></AppShell></AuthGate>} />
     <Route path="/caller" element={<AuthGate><AppShell><CallerDashboardPage /></AppShell></AuthGate>} />
+    <Route path="/admin/users" element={<AuthGate><AppShell><SystemUsersPage /></AppShell></AuthGate>} />
     <Route path="*" element={<AuthGate><AppShell><NotFoundPage /></AppShell></AuthGate>} />
   </Routes>;
 }

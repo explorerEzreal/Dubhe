@@ -31,6 +31,15 @@ export function registerManagementRoutes(
     }
   });
 
+  app.get('/api/admin/users', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      return await services.auth.listUsers(user);
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
   app.get('/api/agents', async (request, reply) => {
     try {
       const user = await authenticatedUser(request, services);

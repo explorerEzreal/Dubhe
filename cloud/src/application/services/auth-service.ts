@@ -78,6 +78,11 @@ export class AuthService {
     }
   }
 
+  async listUsers(actor: Pick<UserRecord, 'role'>): Promise<Array<{ id: string; email: string; role: string; createdAt?: Date }>> {
+    if (actor.role !== 'admin') throw errors.forbidden();
+    return this.users.listAll();
+  }
+
   private async createSession(user: UserRecord): Promise<string> {
     const token = this.security.signSession(
       user.id,
