@@ -61,7 +61,7 @@ function systemdUnit(config: ServiceConfig, paths: ServicePaths): string {
   const node = JSON.stringify(process.execPath);
   const entry = JSON.stringify(entryPath());
   return `[Unit]
-Description=Dubhe Agent
+Description=Bubhe 天枢 Agent
 After=network-online.target
 Wants=network-online.target
 

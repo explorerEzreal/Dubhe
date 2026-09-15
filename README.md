@@ -1,4 +1,4 @@
-# 本地模型平台
+# Bubhe 天枢
 
 仓库包含三个独立工程：`agent`、`cloud`、`web`。Cloud 是 PostgreSQL 唯一访问者，Agent 与 Cloud 使用版本化 WSS 契约。
 

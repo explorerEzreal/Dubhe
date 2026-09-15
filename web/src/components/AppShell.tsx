@@ -1,35 +1,18 @@
-import { Tooltip } from 'antd';
+import { Button, Popover, Switch } from 'antd';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppTheme } from '../app/providers';
 import { useAuthStore } from '../state';
 
-type IconName =
-  | 'device'
-  | 'key'
-  | 'dashboard'
-  | 'logs'
-  | 'plus'
-  | 'menu'
-  | 'sun'
-  | 'moon'
-  | 'settings';
+type IconName = 'device' | 'key' | 'dashboard' | 'logs' | 'plus' | 'menu' | 'appearance' | 'logout' | 'shield' | 'sliders' | 'info' | 'thunderbolt';
+
 const navItems = [
-  {
-    key: 'device',
-    label: '设备管理',
-    path: '/deployer',
-    icon: 'device' as IconName,
-  },
-  { key: 'keys', label: 'API 密钥', path: '/caller', icon: 'key' as IconName },
-  {
-    key: 'dashboard',
-    label: '数据看板',
-    path: '/caller',
-    icon: 'dashboard' as IconName,
-  },
-  { key: 'logs', label: '使用日志', path: '/caller', icon: 'logs' as IconName },
+  { key: 'assistant', label: '助理', icon: 'dashboard' as IconName },
+  { key: 'projects', label: '项目', icon: 'device' as IconName },
+  { key: 'expertise', label: '专家•技能•连接器', icon: 'key' as IconName },
+  { key: 'automation', label: '自动化', icon: 'logs' as IconName },
+  { key: 'more', label: '更多', icon: 'menu' as IconName },
 ];
 
 function Icon({ name }: { name: IconName }) {
@@ -39,141 +22,52 @@ function Icon({ name }: { name: IconName }) {
     dashboard: 'M5 19V9 M12 19V5 M19 19v-7',
     logs: 'M6 4h12v16H6z M9 8h6 M9 12h6 M9 16h4',
     plus: 'M12 5v14 M5 12h14',
-    menu: 'M4 7h16 M4 12h16 M4 17h16',
-    sun: 'M12 3v2 M12 19v2 M3 12h2 M19 12h2 M5.64 5.64l1.41 1.41 M16.95 16.95l1.41 1.41 M5.64 18.36l1.41-1.41 M16.95 7.05l1.41-1.41 M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8',
-    moon: 'M20 15.5A8 8 0 0 1 8.5 4 8 8 0 1 0 20 15.5',
-    settings: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8',
+    menu: 'M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z M8 4v16',
+    appearance: 'M12 3a9 9 0 1 0 0 18h1.2a2.3 2.3 0 0 0 0-4.6H12a2 2 0 0 1 0-4h1.5A7.5 7.5 0 0 0 12 3z M7.5 8.5h.01 M6.5 13h.01 M10 6h.01',
+    logout: 'M10 5H5v14h5 M14 8l4 4-4 4 M18 12H9',
+    shield: 'M12 3 19 6v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z M9 12l2 2 4-4',
+    sliders: 'M6 4v16 M12 4v16 M18 4v16 M4 8h4 M10 15h4 M16 10h4',
+    info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 10v6 M12 7h.01',
+    thunderbolt: 'M13 2 4 14h7l-1 8 10-13h-7z',
   };
-  return (
-    <svg
-      className='ui-icon'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='1.8'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      aria-hidden='true'
-    >
-      <path d={paths[name]} />
-    </svg>
-  );
+  return <svg className="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useAppTheme();
+  const { mode, setTheme } = useAppTheme();
   const { email, logout } = useAuthStore();
-  const [collapsed, setCollapsed] = useState(
-    () => localStorage.getItem('shibawork_sidebar') === 'true',
-  );
-  const [activeKey, setActiveKey] = useState(() =>
-    location.pathname === '/deployer' ? 'device' : 'dashboard',
-  );
-  function toggleCollapsed(): void {
-    setCollapsed((value) => {
-      localStorage.setItem('shibawork_sidebar', String(!value));
-      return !value;
-    });
+  const [profileOpen, setProfileOpen] = useState(false);
+  const avatarText = (email?.[0] ?? 'U').toUpperCase();
+  const activeRoute = location.pathname === '/deployer' ? '/deployer' : '/caller';
+
+  function handleLogout(): void {
+    setProfileOpen(false);
+    logout();
   }
-  return (
-    <div className={`app-shell ${collapsed ? 'is-collapsed' : ''}`}>
-      <aside className='sidebar'>
-        <div className='sidebar-header'>
-          <div className='brand-mark'>S</div>
-          <div className='brand-copy'>
-            <strong>ShibaWork</strong>
-            <small>v0.1.0</small>
-          </div>
-          <Tooltip
-            title={collapsed ? '展开侧边栏' : '收起侧边栏'}
-            placement='right'
-          >
-            <button
-              className='collapse-button'
-              onClick={toggleCollapsed}
-              aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
-            >
-              <Icon name='menu' />
-            </button>
-          </Tooltip>
-        </div>
-        <button className='new-task-button'>
-          <Icon name='plus' />
-          <span>新建任务</span>
-        </button>
-        <nav className='sidebar-nav'>
-          {navItems.map((item) => {
-            const content = (
-              <button
-                className={`nav-item ${activeKey === item.key ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveKey(item.key);
-                  navigate(item.path);
-                }}
-              >
-                <Icon name={item.icon} />
-                <span>{item.label}</span>
-              </button>
-            );
-            return collapsed ? (
-              <Tooltip key={item.key} title={item.label} placement='right'>
-                {content}
-              </Tooltip>
-            ) : (
-              <div key={item.key}>{content}</div>
-            );
-          })}
-        </nav>
-        {!collapsed && (
-          <div className='sidebar-lists'>
-            <div className='list-title'>
-              任务 <span>(1)</span>
-            </div>
-            <div className='task-item active'>
-              <strong>你好</strong>
-              <small>10天前</small>
-            </div>
-            <div className='list-title'>
-              空间 <span>(1)</span>
-            </div>
-            <div className='space-item'>项目新手指引</div>
-          </div>
-        )}
-        <div className='sidebar-footer'>
-          <div className='footer-actions'>
-            <Tooltip title='切换主题' placement='right'>
-              <button
-                className='theme-button'
-                onClick={toggleTheme}
-                aria-label='切换主题'
-              >
-                <Icon name={mode === 'light' ? 'moon' : 'sun'} />
-              </button>
-            </Tooltip>
-          </div>
-          <div className='user-profile'>
-            <span className='avatar'>{(email?.[0] ?? 'U').toUpperCase()}</span>
-            <span className='user-email'>{email ?? '已登录用户'}</span>
-            <Tooltip title='退出登录' placement='right'>
-              <button
-                className='settings-button'
-                onClick={logout}
-                aria-label='退出登录'
-              >
-                <Icon name='settings' />
-              </button>
-            </Tooltip>
-          </div>
-        </div>
-      </aside>
-      <main className='main-content'>
-        {/* <header className='content-header'>
-          <Typography.Text type='secondary'>内容</Typography.Text>
-        </header> */}
-        <div className='content-scroll'>{children}</div>
-      </main>
+
+  const profileContent = <div className="wb-user-panel">
+    <div className="wb-user-panel-head"><span className="wb-user-panel-avatar">{avatarText}</span><div className="wb-user-panel-meta"><div className="wb-user-panel-name">{email ?? '访客用户'}</div><div className="wb-user-panel-id">点击头像切换账号（占位）</div></div></div>
+    <div className="wb-user-panel-menu">
+      <div className="wb-user-panel-item"><span className="wb-user-panel-item-icon"><Icon name="shield" /></span>账号与安全</div>
+      <div className="wb-user-panel-item"><span className="wb-user-panel-item-icon"><Icon name="sliders" /></span>偏好设置</div>
+      <div className="wb-user-panel-item"><span className="wb-user-panel-item-icon"><Icon name="info" /></span>关于 ShibaWork</div>
     </div>
-  );
+    <div className="wb-user-panel-foot"><button className="wb-user-panel-logout" onClick={handleLogout}><Icon name="logout" />退出登录</button><div className="wb-user-panel-version">ShibaWork v0.1.0</div></div>
+  </div>;
+
+  return <div className="wb-app">
+    <aside className="wb-sidebar">
+      <div className="wb-logo"><span className="wb-logo-mark"><Icon name="thunderbolt" /></span><span className="wb-logo-name">Bubhe 天枢</span><span className="wb-logo-version">v0.1.0</span></div>
+      <Button type="text" className="wb-new-task" icon={<Icon name="plus" />} block onClick={() => navigate(activeRoute)}>新建任务</Button>
+      <div className="wb-sidebar-scroll">
+        <nav className="wb-nav">{navItems.map((item) => <div className="wb-nav-item" key={item.key}><span className="wb-nav-icon"><Icon name={item.icon} /></span><span className="wb-nav-label">{item.label}</span></div>)}</nav>
+        <div className="wb-section"><div className="wb-section-title">任务（0）</div><div className="wb-task-empty">暂无任务，点击「新建任务」开始</div></div>
+        <div className="wb-section"><div className="wb-section-title">空间（1）</div><div className="wb-task-item wb-space-item"><Icon name="dashboard" /><div className="wb-task-body"><div className="wb-task-title">项目新手指引</div></div></div></div>
+      </div>
+      <div className="wb-user-footer"><div className="wb-user-footer-row"><Popover placement="topLeft" trigger="click" open={profileOpen} onOpenChange={setProfileOpen} content={profileContent} arrow={false} overlayClassName="wb-user-popover"><div className="wb-user-trigger"><span className="wb-user-avatar">{avatarText}</span><span className="wb-user-meta"><span className="wb-user-name">{email ?? '访客用户'}</span></span></div></Popover><Switch className="wb-theme-switch" size="small" checked={mode === 'dark'} checkedChildren="深" unCheckedChildren="浅" onChange={(checked) => setTheme(checked ? 'dark' : 'light')} /></div></div>
+    </aside>
+    <main className="wb-main"><div className="wb-content"><div className="content-scroll">{children}</div></div></main>
+  </div>;
 }

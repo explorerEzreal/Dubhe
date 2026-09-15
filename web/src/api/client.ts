@@ -1,5 +1,6 @@
 import { config } from '../config/config';
 import axios, { AxiosError } from 'axios';
+import { useAuthStore } from '../state';
 
 export type ApiErrorBody = {
   error?: {
@@ -22,12 +23,6 @@ apiClient.interceptors.request.use((request) => {
   return request;
 });
 
-apiClient.interceptors.response.use((response) => {
-  const token = response.headers['x-access-token'];
-  if (typeof token === 'string' && token) localStorage.setItem('access_token', token);
-  return response;
-});
-
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     const headers = init?.headers instanceof Headers
@@ -44,7 +39,20 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     return response.data;
   } catch (caught) {
     const error = caught as AxiosError<ApiErrorBody>;
-    if (error.response?.status === 401) localStorage.removeItem('access_token');
+    const requestUrl = error.config?.url ?? '';
+    const requestHeaders = error.config?.headers;
+    const authorization = typeof requestHeaders?.get === 'function'
+      ? requestHeaders.get('Authorization')
+      : requestHeaders?.Authorization ?? requestHeaders?.authorization;
+    // 仅已携带旧 Token 的受保护请求可使当前会话失效，避免登录前请求的 401 竞态清掉新 Token。
+    if (
+      error.response?.status === 401
+      && typeof authorization === 'string'
+      && authorization.startsWith('Bearer ')
+      && !requestUrl.startsWith('/api/auth/')
+    ) {
+      useAuthStore.getState().logout();
+    }
     const message = error.response?.data?.error?.message;
     throw new Error(typeof message === 'string' && message ? message : '请求失败，请稍后重试');
   }

@@ -1,4 +1,4 @@
-# Dubhe Agent
+# Bubhe 天枢 Agent
 
 ## 安装与接入
 

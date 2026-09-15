@@ -27,7 +27,7 @@ const envSchema = z.object({
   AGENT_CREDENTIAL: z.string().optional(),
   CREDENTIALS_PATH: z.string().trim().min(1).default(defaultCredentialsPath()),
   ENROLLMENT_TOKEN: z.string().min(1).optional(),
-  AGENT_NAME: z.string().trim().min(1).max(200).default('Dubhe Agent'),
+  AGENT_NAME: z.string().trim().min(1).max(200).default('Bubhe 天枢 Agent'),
   DEVICE_ID: z.string().trim().min(1).max(256).optional(),
   MODELS: z.string().trim().min(1),
   HEARTBEAT_INTERVAL_MS: z.coerce.number().int().positive().default(15000),

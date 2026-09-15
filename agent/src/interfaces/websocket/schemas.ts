@@ -31,7 +31,7 @@ export const registerMessageSchema = envelopeSchema.extend({
   payload: z.object({
     token: z.string().min(1).max(512),
     deviceId: z.string().min(1).max(256),
-    name: z.string().min(1).max(200).optional().default('Dubhe Agent'),
+    name: z.string().min(1).max(200).optional().default('Bubhe 天枢 Agent'),
     hardwareInfo: z.record(z.unknown()).nullable().optional().default(null),
   }).strict(),
 });

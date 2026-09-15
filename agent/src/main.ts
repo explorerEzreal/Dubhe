@@ -22,7 +22,7 @@ const program = new Command();
 
 program
   .name('dubhe')
-  .description('Dubhe 本地模型 Agent')
+  .description('Bubhe 天枢本地模型 Agent')
   .version('0.1.0');
 
 function parseLaunchArgs(value: string, model: string, localUrl: string): NodeJS.ProcessEnv {
@@ -145,7 +145,7 @@ service
   .requiredOption('--token <token>', '一次性部署令牌')
   .requiredOption('--model <model>', '本地模型名称')
   .requiredOption('--local-url <url>', '本地 OpenAI 兼容服务地址')
-  .option('--name <name>', 'Agent 名称', 'Dubhe Agent')
+  .option('--name <name>', 'Agent 名称', 'Bubhe 天枢 Agent')
   .option('--device-id <id>', '设备 ID')
   .option('--credentials-path <path>', '凭证文件路径')
   .action(async (options: {

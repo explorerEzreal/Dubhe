@@ -67,7 +67,6 @@ export interface UserRepository {
 export interface SessionRepository {
   create(userId: string, tokenHash: string, expiresAt: Date): Promise<void>;
   findActive(tokenHash: string): Promise<SessionRecord | null>;
-  refresh(id: string, previousTokenHash: string, tokenHash: string, expiresAt: Date): Promise<boolean>;
   touch(id: string): Promise<void>;
   revoke(tokenHash: string): Promise<boolean>;
 }

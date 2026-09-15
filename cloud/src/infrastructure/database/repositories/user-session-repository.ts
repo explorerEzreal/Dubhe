@@ -80,18 +80,6 @@ export class PgSessionRepository implements SessionRepository {
     }
   }
 
-  async refresh(id: string, previousTokenHash: string, tokenHash: string, expiresAt: Date): Promise<boolean> {
-    try {
-      const result = await this.pool.query(
-        'update sessions set token_hash=$1,expires_at=$2,last_used_at=now() where id=$3 and token_hash=$4 and revoked_at is null and expires_at>now()',
-        [tokenHash, expiresAt, id, previousTokenHash],
-      );
-      return Boolean(result.rowCount);
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async revoke(tokenHash: string): Promise<boolean> {
     try {
       const result = await this.pool.query(

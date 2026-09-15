@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Local Model Platform Cloud API
+  title: Bubhe 天枢 Cloud API
   version: 1.0.0
   description: 管理 API 与 OpenAI 兼容推理 API。Web 与调用者均通过此 API 访问。
 servers:
