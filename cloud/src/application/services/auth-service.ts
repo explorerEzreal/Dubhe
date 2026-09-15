@@ -61,11 +61,26 @@ export class AuthService {
       }
       const user = await this.users.findById(String(claims.sub));
       if (!user) throw errors.unauthorized();
-      await this.sessions.touch(session.id);
       return user;
     } catch (error) {
       throw error;
     }
+  }
+
+  async refreshSession(token: string): Promise<{ user: UserRecord; token: string }> {
+    const user = await this.authenticate(token);
+    const tokenHash = this.security.digest(token);
+    const session = await this.sessions.findActive(tokenHash);
+    if (!session) throw errors.unauthorized();
+    const refreshedToken = this.security.signSession(user.id, user.role, this.sessionTtlSeconds);
+    const refreshed = await this.sessions.refresh(
+      session.id,
+      tokenHash,
+      this.security.digest(refreshedToken),
+      new Date(Date.now() + this.sessionTtlSeconds * 1000),
+    );
+    if (!refreshed) throw errors.unauthorized();
+    return { user, token: refreshedToken };
   }
 
   async logout(token: string): Promise<void> {

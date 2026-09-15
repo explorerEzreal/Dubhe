@@ -89,7 +89,7 @@ run('PostgreSQL migrations', () => {
         sessions,
         audits,
         security,
-        3600,
+        259200,
       );
       const enrollment = new EnrollmentService(
         new PgEnrollmentTokenRepository(scoped),

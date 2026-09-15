@@ -128,7 +128,6 @@ export function registerInferenceRoutes(
 
     app.post(`${prefix}/responses`, async (request, reply) => {
       let requestId: string | undefined;
-      let settled = false;
       let streamMode = false;
       let streamStarted = false;
       const input = responsesSchema.safeParse(request.body ?? {});
@@ -186,7 +185,6 @@ export function registerInferenceRoutes(
             reply.raw.write(`data: ${JSON.stringify({ type: 'response.output_text.delta', item_id: requestId, delta: chunk.content })}\n\n`);
           } : undefined,
         });
-        settled = true;
         const response = {
           id: `resp_${result.requestId}`,
           object: 'response',
@@ -206,7 +204,6 @@ export function registerInferenceRoutes(
         }
         return response;
       } catch (error) {
-        settled = true;
         if (streamMode && requestId) {
           reply.raw.write(`data: ${JSON.stringify({ type: 'error', error: { message: '请求失败，请稍后重试', code: 'UPSTREAM_ERROR' } })}\n\n`);
           reply.raw.end();

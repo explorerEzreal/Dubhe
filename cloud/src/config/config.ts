@@ -21,7 +21,7 @@ const envSchema = z.object({
     .default('false')
     .transform((value) => value === 'true'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
-  SESSION_TTL_SECONDS: z.coerce.number().int().positive().max(86_400).default(3600),
+  SESSION_TTL_SECONDS: z.coerce.number().int().positive().max(2_592_000).default(259_200),
   ENROLLMENT_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().max(3600).default(900),
   MAX_REQUEST_BODY_BYTES: z.coerce.number().int().positive().max(10_485_760).default(1_048_576),
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),

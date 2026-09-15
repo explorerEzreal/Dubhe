@@ -99,6 +99,10 @@ class FakeSessions implements SessionRepository {
     }
   }
 
+  async refresh(): Promise<boolean> {
+    return true;
+  }
+
   async touch(): Promise<void> {
     try {
       return;
