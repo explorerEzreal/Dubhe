@@ -12,7 +12,7 @@ export interface LoginInput {
 
 export interface AuthResponse {
   token: string;
-  user: { id: string; email: string; role: string };
+  user: { id: string; email: string; role: string; nickname?: string | null };
 }
 
 export const authApi = {

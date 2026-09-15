@@ -24,7 +24,7 @@ export class PgUserRepository implements UserRepository {
   async findByEmail(email: string): Promise<UserRecord | null> {
     try {
       const result = await this.pool.query(
-        'select id,email,role,password_hash as "passwordHash" from users where email=$1',
+        'select id,email,role,nickname,password_hash as "passwordHash",created_at as "createdAt" from users where email=$1',
         [email],
       );
       return (result.rows[0] as UserRecord | undefined) ?? null;
@@ -36,7 +36,7 @@ export class PgUserRepository implements UserRepository {
   async findById(id: string): Promise<UserRecord | null> {
     try {
       const result = await this.pool.query(
-        'select id,email,role from users where id=$1',
+        'select id,email,role,nickname,created_at as "createdAt" from users where id=$1',
         [id],
       );
       return (result.rows[0] as UserRecord | undefined) ?? null;
@@ -45,15 +45,37 @@ export class PgUserRepository implements UserRepository {
     }
   }
 
-  async listAll(): Promise<Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt'>>> {
+  async findByIdWithPassword(id: string): Promise<UserRecord | null> {
+    try {
+      const result = await this.pool.query('select id,email,role,nickname,password_hash as "passwordHash",created_at as "createdAt" from users where id=$1', [id]);
+      return (result.rows[0] as UserRecord | undefined) ?? null;
+    } catch (error) { throw error; }
+  }
+
+  async listAll(): Promise<Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt' | 'nickname'>>> {
     try {
       const result = await this.pool.query(
-        'select id,email,role,created_at as "createdAt" from users order by created_at desc',
+        'select id,email,role,nickname,created_at as "createdAt" from users order by created_at desc',
       );
-      return result.rows as Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt'>>;
+      return result.rows as Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt' | 'nickname'>>;
     } catch (error) {
       throw error;
     }
+  }
+
+  async updateProfile(id: string, email: string, nickname: string | null): Promise<UserRecord | null> {
+    const result = await this.pool.query('update users set email=$2,nickname=$3,updated_at=now() where id=$1 returning id,email,role,nickname,created_at as "createdAt"', [id, email, nickname]);
+    return (result.rows[0] as UserRecord | undefined) ?? null;
+  }
+
+  async updatePassword(id: string, passwordHash: string): Promise<boolean> {
+    const result = await this.pool.query('update users set password_hash=$2,updated_at=now() where id=$1', [id, passwordHash]);
+    return Boolean(result.rowCount);
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await this.pool.query('delete from users where id=$1', [id]);
+    return Boolean(result.rowCount);
   }
 }
 
@@ -101,5 +123,9 @@ export class PgSessionRepository implements SessionRepository {
     } catch (error) {
       throw error;
     }
+  }
+
+  async revokeAll(userId: string): Promise<void> {
+    await this.pool.query('update sessions set revoked_at=now() where user_id=$1 and revoked_at is null', [userId]);
   }
 }

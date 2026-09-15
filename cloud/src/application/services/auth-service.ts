@@ -12,6 +12,14 @@ export interface AuthResult {
   user: Pick<UserRecord, 'id' | 'email' | 'role'>;
 }
 
+export interface PublicUser {
+  id: string;
+  email: string;
+  role: string;
+  nickname?: string | null;
+  createdAt?: Date;
+}
+
 export class AuthService {
   constructor(
     private readonly users: UserRepository,
@@ -78,9 +86,46 @@ export class AuthService {
     }
   }
 
-  async listUsers(actor: Pick<UserRecord, 'role'>): Promise<Array<{ id: string; email: string; role: string; createdAt?: Date }>> {
+  async listUsers(actor: Pick<UserRecord, 'role'>): Promise<PublicUser[]> {
     if (actor.role !== 'admin' && actor.role !== 'super_admin') throw errors.forbidden();
     return this.users.listAll();
+  }
+
+  async me(actor: UserRecord): Promise<PublicUser> { return this.publicUser(actor); }
+
+  async updateProfile(actor: UserRecord, input: { email: string; nickname: string | null; currentPassword: string }): Promise<PublicUser> {
+    const user = await this.users.findByIdWithPassword(actor.id);
+    if (!user?.passwordHash || !(await this.security.verifyPassword(user.passwordHash, input.currentPassword))) throw errors.invalidCredentials();
+    const updated = await this.users.updateProfile(actor.id, input.email.toLowerCase(), input.nickname);
+    if (!updated) throw errors.notFound();
+    return this.publicUser(updated);
+  }
+
+  async changeOwnPassword(actor: UserRecord, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await this.users.findByIdWithPassword(actor.id);
+    if (!user?.passwordHash || !(await this.security.verifyPassword(user.passwordHash, currentPassword))) throw errors.invalidCredentials();
+    await this.setPassword(actor.id, newPassword);
+  }
+
+  async changeUserPassword(actor: UserRecord, targetId: string, newPassword: string): Promise<void> {
+    const target = await this.users.findById(targetId);
+    if (!target) throw errors.notFound();
+    if (actor.role !== 'super_admin' && (actor.role !== 'admin' || target.role !== 'user')) throw errors.forbidden();
+    await this.setPassword(target.id, newPassword);
+  }
+
+  async deleteUser(actor: UserRecord, targetId: string): Promise<void> {
+    const target = await this.users.findById(targetId);
+    if (!target || target.id === actor.id || target.role === 'super_admin') throw errors.forbidden();
+    if (actor.role !== 'super_admin' && (actor.role !== 'admin' || target.role !== 'user')) throw errors.forbidden();
+    if (!(await this.users.delete(target.id))) throw errors.notFound();
+    await this.audits.record(actor.id, 'user.delete', `user:${target.id}`);
+  }
+
+  private async setPassword(userId: string, newPassword: string): Promise<void> {
+    const hash = await this.security.hashPassword(newPassword);
+    if (!(await this.users.updatePassword(userId, hash))) throw errors.notFound();
+    await this.sessions.revokeAll(userId);
   }
 
   private async createSession(user: UserRecord): Promise<string> {
@@ -97,7 +142,7 @@ export class AuthService {
     return token;
   }
 
-  private publicUser(user: UserRecord): Pick<UserRecord, 'id' | 'email' | 'role'> {
-    return { id: user.id, email: user.email, role: user.role };
+  private publicUser(user: UserRecord): PublicUser {
+    return { id: user.id, email: user.email, role: user.role, nickname: user.nickname, createdAt: user.createdAt };
   }
 }

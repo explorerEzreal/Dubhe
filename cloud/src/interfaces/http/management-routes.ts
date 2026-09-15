@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { UserRecord } from '../../application/ports.js';
 import type { HttpServices } from './types.js';
-import { agentParamsSchema, apiKeySchema } from './schemas.js';
+import { agentParamsSchema, apiKeySchema, adminPasswordSchema, passwordChangeSchema, profileSchema, userParamsSchema } from './schemas.js';
 import { bearer, sendError } from './http-errors.js';
 import { errors } from '../../domain/common/index.js';
 
@@ -38,6 +38,48 @@ export function registerManagementRoutes(
     } catch (error) {
       return sendError(reply, error);
     }
+  });
+
+  app.get('/api/me', async (request, reply) => {
+    try { return await services.auth.me(await authenticatedUser(request, services)); } catch (error) { return sendError(reply, error); }
+  });
+
+  app.patch('/api/me/profile', async (request, reply) => {
+    try {
+      const input = profileSchema.safeParse(request.body ?? {});
+      if (!input.success) throw errors.invalidRequest();
+      return await services.auth.updateProfile(await authenticatedUser(request, services), input.data);
+    } catch (error) { return sendError(reply, error); }
+  });
+
+  app.patch('/api/me/password', async (request, reply) => {
+    try {
+      const input = passwordChangeSchema.safeParse(request.body ?? {});
+      if (!input.success) throw errors.invalidRequest();
+      await services.auth.changeOwnPassword(await authenticatedUser(request, services), input.data.currentPassword, input.data.newPassword);
+      return { status: 'ok' };
+    } catch (error) { return sendError(reply, error); }
+  });
+
+  app.patch('/api/admin/users/:id/password', async (request, reply) => {
+    try {
+      const actor = await authenticatedUser(request, services);
+      const params = userParamsSchema.safeParse(request.params);
+      const input = adminPasswordSchema.safeParse(request.body ?? {});
+      if (!params.success || !input.success) throw errors.invalidRequest();
+      await services.auth.changeUserPassword(actor, params.data.id, input.data.newPassword);
+      return { status: 'ok' };
+    } catch (error) { return sendError(reply, error); }
+  });
+
+  app.delete('/api/admin/users/:id', async (request, reply) => {
+    try {
+      const actor = await authenticatedUser(request, services);
+      const params = userParamsSchema.safeParse(request.params);
+      if (!params.success) throw errors.invalidRequest();
+      await services.auth.deleteUser(actor, params.data.id);
+      return reply.code(204).send();
+    } catch (error) { return sendError(reply, error); }
   });
 
   app.get('/api/agents', async (request, reply) => {

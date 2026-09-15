@@ -20,6 +20,15 @@ export const agentParamsSchema = z.object({
   id: z.string().uuid(),
 }).strict();
 
+export const userParamsSchema = z.object({ id: z.string().uuid() }).strict();
+export const profileSchema = z.object({
+  email: z.string().email().max(320),
+  nickname: z.string().max(50).nullable(),
+  currentPassword: z.string().min(8).max(256),
+}).strict();
+export const passwordChangeSchema = z.object({ currentPassword: z.string().min(8).max(256), newPassword: z.string().min(8).max(256) }).strict();
+export const adminPasswordSchema = z.object({ newPassword: z.string().min(8).max(256) }).strict();
+
 export const completionSchema = z.object({
   model: modelNameSchema,
   messages: z

@@ -7,6 +7,7 @@ export interface UserRecord {
   role: string;
   passwordHash?: string;
   createdAt?: Date;
+  nickname?: string | null;
 }
 
 export interface SessionRecord {
@@ -63,7 +64,11 @@ export interface UserRepository {
   create(email: string, passwordHash: string): Promise<UserRecord | null>;
   findByEmail(email: string): Promise<UserRecord | null>;
   findById(id: string): Promise<UserRecord | null>;
-  listAll(): Promise<Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt'>>>;
+  findByIdWithPassword(id: string): Promise<UserRecord | null>;
+  listAll(): Promise<Array<Pick<UserRecord, 'id' | 'email' | 'role' | 'createdAt' | 'nickname'>>>;
+  updateProfile(id: string, email: string, nickname: string | null): Promise<UserRecord | null>;
+  updatePassword(id: string, passwordHash: string): Promise<boolean>;
+  delete(id: string): Promise<boolean>;
 }
 
 export interface SessionRepository {
@@ -71,6 +76,7 @@ export interface SessionRepository {
   findActive(tokenHash: string): Promise<SessionRecord | null>;
   touch(id: string): Promise<void>;
   revoke(tokenHash: string): Promise<boolean>;
+  revokeAll(userId: string): Promise<void>;
 }
 
 export interface EnrollmentTokenRepository {

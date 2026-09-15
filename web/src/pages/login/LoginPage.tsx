@@ -27,7 +27,7 @@ export function LoginPage() {
     try {
       const email = values.email.trim().toLowerCase();
       const result = await authApi.login({ email, password: values.password });
-      setSession(result.token, email, result.user.role);
+      setSession(result.token, email, result.user.role, result.user.nickname, result.user.id);
       navigate(returnPath, { replace: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : '请求失败，请稍后重试');

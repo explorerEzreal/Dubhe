@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppTheme } from '../app/providers';
 import { useAuthStore } from '../state';
+import { AccountSecurityModal } from './AccountSecurityModal';
 
 type IconName =
   | 'device'
@@ -84,9 +85,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { mode, setTheme } = useAppTheme();
-  const { email, role, logout } = useAuthStore();
+  const { email, nickname, role, logout } = useAuthStore();
   const [profileOpen, setProfileOpen] = useState(false);
-  const avatarText = (email?.[0] ?? 'U').toUpperCase();
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const avatarText = (nickname?.[0] ?? email?.[0] ?? 'U').toUpperCase();
   function handleLogout(): void {
     setProfileOpen(false);
     logout();
@@ -97,7 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className='wb-user-panel-head'>
         <span className='wb-user-panel-avatar'>{avatarText}</span>
         <div className='wb-user-panel-meta'>
-          <div className='wb-user-panel-name'>{email ?? '访客用户'}</div>
+          <div className='wb-user-panel-name'>{nickname || email || '访客用户'}</div>
           <div className='wb-user-panel-id'>点击头像切换账号（占位）</div>
         </div>
       </div>
@@ -106,7 +108,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className='wb-user-panel-item-icon'>
             <Icon name='shield' />
           </span>
-          账号与安全
+          <button className='wb-user-panel-item' onClick={() => { setProfileOpen(false); setSecurityOpen(true); }}>账号与安全</button>
         </div>
         <div className='wb-user-panel-item'>
           <span className='wb-user-panel-item-icon'>
@@ -182,7 +184,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className='wb-user-trigger'>
                 <span className='wb-user-avatar'>{avatarText}</span>
                 <span className='wb-user-meta'>
-                  <span className='wb-user-name'>{email ?? '访客用户'}</span>
+                  <span className='wb-user-name'>{nickname || email || '访客用户'}</span>
                 </span>
               </div>
             </Popover>
@@ -202,6 +204,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className='content-scroll'>{children}</div>
         </div>
       </main>
+      <AccountSecurityModal open={securityOpen} onClose={() => setSecurityOpen(false)} />
     </div>
   );
 }
