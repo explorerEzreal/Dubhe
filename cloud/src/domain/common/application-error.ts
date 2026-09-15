@@ -16,11 +16,14 @@ export const errors = {
     new ApplicationError(400, code, 'invalid_request'),
   unauthorized: () =>
     new ApplicationError(401, 'UNAUTHORIZED', 'auth_error', '未授权'),
+  invalidCredentials: () =>
+    new ApplicationError(401, 'UNAUTHORIZED', 'auth_error', '邮箱或密码错误'),
   forbidden: (code = 'FORBIDDEN', message = '无权执行此操作') =>
     new ApplicationError(403, code, 'permission_error', message),
   notFound: () =>
     new ApplicationError(404, 'NOT_FOUND', 'not_found', '未找到'),
-  conflict: () => new ApplicationError(409, 'CONFLICT', 'conflict'),
+  conflict: (message = '请求失败，请稍后重试') =>
+    new ApplicationError(409, 'CONFLICT', 'conflict', message),
   modelNotFound: () =>
     new ApplicationError(400, 'MODEL_NOT_FOUND', 'invalid_request'),
   modelOffline: () =>

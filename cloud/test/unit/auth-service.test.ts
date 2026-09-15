@@ -174,9 +174,15 @@ describe('AuthService', () => {
     await service.register('user@example.com', 'password');
     await expect(service.register('user@example.com', 'password')).rejects.toMatchObject({
       statusCode: 409,
+      message: '邮箱已存在',
     });
     await expect(service.login('user@example.com', 'wrong-pass')).rejects.toMatchObject({
       statusCode: 401,
+      message: '邮箱或密码错误',
+    });
+    await expect(service.login('missing@example.com', 'password')).rejects.toMatchObject({
+      statusCode: 401,
+      message: '邮箱或密码错误',
     });
   });
 });

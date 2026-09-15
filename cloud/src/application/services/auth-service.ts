@@ -25,7 +25,7 @@ export class AuthService {
     try {
       const passwordHash = await this.security.hashPassword(password);
       const user = await this.users.create(email.toLowerCase(), passwordHash);
-      if (!user) throw errors.conflict();
+      if (!user) throw errors.conflict('邮箱已存在');
       const token = await this.createSession(user);
       await this.audits.record(user.id, 'user.register', `user:${user.id}`);
       return { token, user: this.publicUser(user) };
@@ -41,7 +41,7 @@ export class AuthService {
         !user?.passwordHash ||
         !(await this.security.verifyPassword(user.passwordHash, password))
       ) {
-        throw errors.unauthorized();
+        throw errors.invalidCredentials();
       }
       const token = await this.createSession(user);
       await this.audits.record(user.id, 'user.login', `user:${user.id}`);
