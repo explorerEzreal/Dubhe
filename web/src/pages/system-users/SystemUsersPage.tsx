@@ -11,7 +11,7 @@ export function SystemUsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  if (role !== 'admin') return <Navigate to='/caller' replace />;
+  if (role !== 'admin' && role !== 'super_admin') return <Navigate to='/caller' replace />;
 
   useEffect(() => {
     let active = true;
@@ -24,7 +24,7 @@ export function SystemUsersPage() {
     {error && <Alert type='error' message={error} showIcon />}
     <Table rowKey='id' dataSource={users} pagination={false} columns={[
       { title: '邮箱', dataIndex: 'email' },
-      { title: '角色', dataIndex: 'role', render: (role: string) => <Tag color={role === 'admin' ? 'gold' : 'default'}>{role === 'admin' ? '管理员' : '普通用户'}</Tag> },
+      { title: '角色', dataIndex: 'role', render: (role: string) => <Tag color={role === 'super_admin' ? 'red' : role === 'admin' ? 'gold' : 'default'}>{role === 'super_admin' ? '超级管理员' : role === 'admin' ? '管理员' : '普通用户'}</Tag> },
       { title: '用户 ID', dataIndex: 'id' },
       { title: '注册时间', dataIndex: 'createdAt', render: (value?: string) => value ? new Date(value).toLocaleString() : '—' },
     ]} />

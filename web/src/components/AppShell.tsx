@@ -1,4 +1,4 @@
-import { Button, Popover, Switch } from 'antd';
+import { Popover, Switch } from 'antd';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -87,9 +87,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { email, role, logout } = useAuthStore();
   const [profileOpen, setProfileOpen] = useState(false);
   const avatarText = (email?.[0] ?? 'U').toUpperCase();
-  const activeRoute =
-    location.pathname === '/deployer' ? '/deployer' : '/caller';
-
   function handleLogout(): void {
     setProfileOpen(false);
     logout();
@@ -147,7 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
        
         <div className='wb-sidebar-scroll'>
           <nav className='wb-menu-groups' aria-label='业务菜单'>
-            {menuGroups.filter((group) => group.key !== 'admin' || role === 'admin').map((group) => (
+            {menuGroups.filter((group) => group.key !== 'admin' || role === 'admin' || role === 'super_admin').map((group) => (
               <section className='wb-menu-group' key={group.key}>
                 <div className='wb-section-title'>{group.label}</div>
                 <div className='wb-nav'>

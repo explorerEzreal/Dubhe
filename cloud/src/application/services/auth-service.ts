@@ -79,7 +79,7 @@ export class AuthService {
   }
 
   async listUsers(actor: Pick<UserRecord, 'role'>): Promise<Array<{ id: string; email: string; role: string; createdAt?: Date }>> {
-    if (actor.role !== 'admin') throw errors.forbidden();
+    if (actor.role !== 'admin' && actor.role !== 'super_admin') throw errors.forbidden();
     return this.users.listAll();
   }
 

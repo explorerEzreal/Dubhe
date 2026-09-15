@@ -185,4 +185,13 @@ describe('AuthService', () => {
       message: '邮箱或密码错误',
     });
   });
+
+  it('allows administrators and super administrators to list users', async () => {
+    const users = new FakeUsers();
+    await users.create('user@example.com', 'hash');
+    const service = new AuthService(users, new FakeSessions(), new FakeAudits(), new FakeSecurity(), 3600);
+    await expect(service.listUsers({ role: 'admin' })).resolves.toHaveLength(1);
+    await expect(service.listUsers({ role: 'super_admin' })).resolves.toHaveLength(1);
+    await expect(service.listUsers({ role: 'user' })).rejects.toMatchObject({ statusCode: 403 });
+  });
 });

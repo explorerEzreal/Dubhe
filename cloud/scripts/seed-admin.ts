@@ -5,18 +5,26 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const url = process.env.DATABASE_URL;
-const email = process.env.ADMIN_EMAIL;
-const password = process.env.ADMIN_PASSWORD;
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
+const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD;
 if (!url) throw new Error('DATABASE_URL is required');
-if (!email || !password) {
-  console.log('[seed-admin] skipped (ADMIN_EMAIL/ADMIN_PASSWORD 未配置)');
+if ((!adminEmail || !adminPassword) && (!superAdminEmail || !superAdminPassword)) {
+  console.log('[seed-admin] skipped (管理员配置未设置)');
   process.exit(0);
 }
 const pool = new Pool({ connectionString: url });
 try {
-  const count = await pool.query('select count(*)::int as count from users');
-  if (count.rows[0].count === 0) {
-    await pool.query('insert into users(email,password_hash,role) values($1,$2,\'admin\')', [email, await argon2.hash(password)]);
-    console.log('[seed-admin] created');
-  } else console.log('[seed-admin] skipped');
+  const seeds = [
+    superAdminEmail && superAdminPassword ? { email: superAdminEmail, password: superAdminPassword, role: 'super_admin' } : null,
+    adminEmail && adminPassword ? { email: adminEmail, password: adminPassword, role: 'admin' } : null,
+  ].filter((seed): seed is { email: string; password: string; role: string } => Boolean(seed));
+  for (const seed of seeds) {
+    const result = await pool.query(
+      'insert into users(email,password_hash,role) values($1,$2,$3) on conflict(email) do nothing returning id',
+      [seed.email.toLowerCase(), await argon2.hash(seed.password), seed.role],
+    );
+    console.log(`[seed-admin] ${result.rowCount ? 'created' : 'exists'} (${seed.role})`);
+  }
 } finally { await pool.end(); }
