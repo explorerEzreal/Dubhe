@@ -11,7 +11,7 @@ import type {
 export class PgInferenceRepository implements InferenceRepository {
   constructor(private readonly pool: Pool) {}
 
-  async getSnapshot(modelName: string): Promise<InferenceSnapshot> {
+  async getSnapshot(groupId: string | null, modelName: string): Promise<InferenceSnapshot> {
     try {
       const result = await this.pool.query(
         `select m.id as "modelId", m.name as "modelName",
@@ -19,13 +19,14 @@ export class PgInferenceRepository implements InferenceRepository {
                 mi.state, mi.max_concurrency as "maxConcurrency",
                 coalesce(mi.last_ready_at, mi.updated_at) as "lastUsedAt"
            from models m
-           left join model_instances mi on mi.model_id=m.id
-           left join agents a on a.id=mi.agent_id
+           join model_instances mi on mi.model_id=m.id
+           join agents a on a.id=mi.agent_id
+           ${groupId ? 'join group_agents ga on ga.agent_id=mi.agent_id and ga.group_id=$2' : ''}
           where m.name=$1
           order by mi.updated_at asc nulls first`,
-        [modelName],
+        groupId ? [modelName, groupId] : [modelName],
       );
-      if (!result.rowCount) return { modelExists: false, instances: [] };
+      if (!result.rowCount) return { modelExists: true, instances: [] };
       const instances = result.rows
         .filter((row) => row.agentId !== null)
         .map((row) => ({

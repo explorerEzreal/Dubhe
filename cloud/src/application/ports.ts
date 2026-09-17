@@ -20,6 +20,7 @@ export interface ApiKeyIdentity {
   userId: string;
   status: string;
   expiresAt: Date | null;
+  groupId: string | null;
 }
 
 export interface AgentIdentity {
@@ -52,7 +53,7 @@ export interface ApiKeyCreateInput {
   prefix: string;
   keyHash: string;
   expiresAt: Date | null;
-  modelNames: string[];
+  groupId: string;
 }
 
 export interface RateLimitResult {
@@ -100,8 +101,25 @@ export interface ApiKeyRepository {
   disable(userId: string, keyId: string): Promise<boolean>;
   delete(userId: string, keyId: string): Promise<boolean>;
   authenticate(keyHash: string): Promise<ApiKeyIdentity | null>;
-  listPermittedModels(keyId: string): Promise<Array<Record<string, unknown>>>;
-  hasModelPermission(keyId: string, modelName: string): Promise<boolean>;
+  listModelsByGroup(groupId: string): Promise<Array<Record<string, unknown>>>;
+}
+
+export interface GroupRepository {
+  create(userId: string, name: string, description: string | null): Promise<Record<string, unknown>>;
+  listByOwner(userId: string): Promise<Array<Record<string, unknown>>>;
+  getById(groupId: string): Promise<Record<string, unknown> | null>;
+  update(groupId: string, name: string, description: string | null): Promise<boolean>;
+  delete(groupId: string): Promise<boolean>;
+  addAgent(groupId: string, agentId: string): Promise<void>;
+  removeAgent(groupId: string, agentId: string): Promise<void>;
+  listAgentsByGroup(groupId: string): Promise<Array<Record<string, unknown>>>;
+  countApiKeys(groupId: string): Promise<number>;
+  // 渠道（user_group_access）
+  addAccess(userId: string, groupId: string, source: string): Promise<void>;
+  removeAccess(userId: string, accessId: string): Promise<boolean>;
+  listAccessByUser(userId: string): Promise<Array<Record<string, unknown>>>;
+  hasAccess(userId: string, groupId: string): Promise<boolean>;
+  getAccessById(accessId: string): Promise<Record<string, unknown> | null>;
 }
 
 export interface CatalogRepository {
@@ -146,7 +164,7 @@ export interface InferenceFinishInput {
 }
 
 export interface InferenceRepository {
-  getSnapshot(modelName: string): Promise<InferenceSnapshot>;
+  getSnapshot(groupId: string | null, modelName: string): Promise<InferenceSnapshot>;
   createAccepted(input: InferenceCreateInput): Promise<void>;
   markRouted(input: InferenceRouteInput): Promise<void>;
   finish(requestId: string, input: InferenceFinishInput): Promise<void>;
@@ -187,5 +205,7 @@ export interface SecurityService {
   digest(value: string): string;
   signSession(userId: string, role: string, ttlSeconds: number): string;
   verifySession(token: string): Record<string, unknown> | null;
+  signPayload(payload: Record<string, unknown>, ttlSeconds: number): string;
+  verifyPayload(token: string): Record<string, unknown> | null;
   randomToken(prefix: string): string;
 }

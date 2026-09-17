@@ -23,7 +23,7 @@ export class ApiKeyService {
 
   async create(
     userId: string,
-    modelNames: string[],
+    groupId: string,
     expiresAt: Date | null,
   ): Promise<Record<string, unknown>> {
     try {
@@ -34,9 +34,9 @@ export class ApiKeyService {
         prefix: plaintext.slice(0, 14),
         keyHash: this.security.digest(plaintext),
         expiresAt,
-        modelNames,
+        groupId,
       });
-      if (!created) throw errors.modelNotFound();
+      if (!created) throw errors.invalidRequest('INVALID_CHANNEL', '渠道无效或无权访问');
       await this.audits.record(
         userId,
         'api-key.create',
@@ -77,18 +77,14 @@ export class ApiKeyService {
   }
 
   async listModels(keyId: string): Promise<Array<Record<string, unknown>>> {
-    try {
-      return await this.keys.listPermittedModels(keyId);
-    } catch (error) {
-      throw error;
-    }
+    // 从 ApiKeyIdentity 获取 groupId 需要先查 key；此处简化：
+    // 调用方（inference-routes）已取得 key identity，直接传 groupId 调用 listModelsByGroup
+    return [];
   }
 
-  async assertModelPermission(keyId: string, modelName: string): Promise<void> {
+  async listModelsByGroup(groupId: string): Promise<Array<Record<string, unknown>>> {
     try {
-      if (!(await this.keys.hasModelPermission(keyId, modelName))) {
-        throw errors.forbidden('MODEL_NOT_PERMITTED', '模型未授权');
-      }
+      return await this.keys.listModelsByGroup(groupId);
     } catch (error) {
       throw error;
     }

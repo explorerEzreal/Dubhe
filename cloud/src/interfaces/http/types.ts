@@ -4,6 +4,7 @@ import type {
   AuthService,
   CatalogService,
   EnrollmentService,
+  GroupService,
   InferenceService,
 } from '../../application/services/index.js';
 import type { RateLimiter } from '../../application/ports.js';
@@ -14,6 +15,7 @@ export interface HttpServices {
   agents: AgentService;
   apiKeys: ApiKeyService;
   catalog: CatalogService;
+  groups: GroupService;
   authLimiter: RateLimiter;
   apiLimiter: RateLimiter;
   inference: InferenceService;

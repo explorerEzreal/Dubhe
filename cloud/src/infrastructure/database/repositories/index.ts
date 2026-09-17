@@ -5,3 +5,4 @@ export * from './catalog-repository.js';
 export * from './enrollment-token-repository.js';
 export * from './user-session-repository.js';
 export * from './inference-repository.js';
+export * from './group-repository.js';

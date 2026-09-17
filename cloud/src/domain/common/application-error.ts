@@ -12,8 +12,8 @@ export class ApplicationError extends Error {
 }
 
 export const errors = {
-  invalidRequest: (code = 'INVALID_REQUEST') =>
-    new ApplicationError(400, code, 'invalid_request'),
+  invalidRequest: (code = 'INVALID_REQUEST', message = '请求失败，请稍后重试') =>
+    new ApplicationError(400, code, 'invalid_request', message),
   unauthorized: () =>
     new ApplicationError(401, 'UNAUTHORIZED', 'auth_error', '未授权'),
   invalidCredentials: () =>

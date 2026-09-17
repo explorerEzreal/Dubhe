@@ -42,6 +42,14 @@ export class HmacSecurityService implements SecurityService {
     return verifyJwt(token, this.jwtSecret);
   }
 
+  signPayload(payload: Record<string, unknown>, ttlSeconds: number): string {
+    return signJwt(payload, this.jwtSecret, ttlSeconds);
+  }
+
+  verifyPayload(token: string): Record<string, unknown> | null {
+    return verifyJwt(token, this.jwtSecret);
+  }
+
   randomToken(prefix: string): string {
     return randomToken(prefix);
   }

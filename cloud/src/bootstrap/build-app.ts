@@ -7,6 +7,7 @@ import {
   AuthService,
   CatalogService,
   EnrollmentService,
+  GroupService,
   InferenceService,
   SlidingWindowRateLimiter,
 } from '../application/index.js';
@@ -18,6 +19,7 @@ import {
   PgCatalogRepository,
   PgDatabaseHealth,
   PgEnrollmentTokenRepository,
+  PgGroupRepository,
   PgSessionRepository,
   PgUserRepository,
   PgInferenceRepository,
@@ -89,6 +91,7 @@ export function buildApp(app: FastifyInstance, config: CloudConfig): Pool {
     agents,
     apiKeys: new ApiKeyService(new PgApiKeyRepository(pool), audits, security),
     catalog: new CatalogService(new PgCatalogRepository(pool)),
+    groups: new GroupService(new PgGroupRepository(pool), audits, security),
     authLimiter: new SlidingWindowRateLimiter(
       config.AUTH_RATE_LIMIT_MAX_REQUESTS,
       config.RATE_LIMIT_WINDOW_SECONDS * 1000,

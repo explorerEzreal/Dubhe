@@ -41,4 +41,11 @@ pnpm test:postgres
 pnpm --dir cloud db:migrate
 ```
 
-根目录文档入口只有 `README.md`（使用说明）和 `IMPLEMENTATION_PROGRESS.md`（实施状态）。
+## 文档索引
+
+每次项目更新（新增路由、表、服务、页面）必须同步更新以下文档：
+
+- `README.md` — 使用说明
+- `IMPLEMENTATION_PROGRESS.md` — 实施状态
+- `docs/architecture.md` — 项目架构速查（路由表、目录骨架、DB 表、数据流简图）
+- `docs/*.md` — 功能模块技术设计

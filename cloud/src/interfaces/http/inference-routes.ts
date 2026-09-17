@@ -28,7 +28,8 @@ export function registerInferenceRoutes(
       const key = await authenticatedKey(request, services);
       const limit = services.apiLimiter.consume(`${key.id}:models`);
       if (!limit.allowed) return sendRateLimit(reply, limit.retryAfterSeconds);
-      const models = await services.apiKeys.listModels(key.id);
+      if (!key.groupId) return { object: 'list', data: [] };
+      const models = await services.apiKeys.listModelsByGroup(key.groupId);
       return {
         object: 'list',
         data: models.map((model) => ({
@@ -59,10 +60,10 @@ export function registerInferenceRoutes(
       if (!limit.allowed) return sendRateLimit(reply, limit.retryAfterSeconds);
       const input = completionSchema.safeParse(request.body ?? {});
       if (!input.success) throw errors.invalidRequest();
-      await services.apiKeys.assertModelPermission(key.id, input.data.model);
       const result = await services.inference.run({
         userId: key.userId,
         apiKeyId: key.id,
+        groupId: key.groupId,
         model: input.data.model,
         payload: input.data,
         onStart: (id, created) => {
@@ -136,7 +137,6 @@ export function registerInferenceRoutes(
         const limit = services.apiLimiter.consume(`${key.id}:responses`);
         if (!limit.allowed) return sendRateLimit(reply, limit.retryAfterSeconds);
         if (!input.success) throw errors.invalidRequest();
-        await services.apiKeys.assertModelPermission(key.id, input.data.model);
         const messages = (typeof input.data.input === 'string'
           ? [{ role: 'user' as const, content: input.data.input }]
           : input.data.input.map((item) => ({
@@ -164,6 +164,7 @@ export function registerInferenceRoutes(
         const result = await services.inference.run({
           userId: key.userId,
           apiKeyId: key.id,
+          groupId: key.groupId,
           model: input.data.model,
           payload,
           onStart: (id) => {

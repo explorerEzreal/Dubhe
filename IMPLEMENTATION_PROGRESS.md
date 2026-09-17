@@ -6,7 +6,7 @@
 
 | 工程 | 状态 | 已具备能力 | 主要缺口 |
 | --- | --- | --- | --- |
-| Cloud | 部分实现 | 认证、会话、部署令牌、设备凭证、API Key、限流、审计、迁移、WSS 控制面、模型路由、流式/非流式推理和请求清理 | 真实本地模型服务、长连接和生产环境验收 |
+| Cloud | 部分实现 | 认证、会话、部署令牌、设备凭证、API Key（绑定渠道）、分组管理、渠道管理、邀请码、限流、审计、迁移、WSS 控制面、模型路由（按分组过滤）、流式/非流式推理和请求清理 | 真实本地模型服务、长连接和生产环境验收 |
 | Agent | 部分实现 | `dubhe-agent` CLI、OpenAI 兼容本地服务、凭证持久化、自动注册、WSS、心跳、重连、模型同步、资源指标、推理转发和取消 | 真实 Cloud/模型服务和断网恢复验收 |
 | Web | 已完成（M7） | 注册登录、部署者引导、一次性命令、设备/模型状态、API Key 生命周期、调用示例和用量摘要 | 生产安装包及 Docker/TLS 端到端验收 |
 
@@ -31,6 +31,7 @@
 - 2026-09-06：Compose YAML、Cloud/Agent/Web TypeScript、Vitest、ESLint、协议 schema 和 Shell 语法检查通过。
 - 2026-09-05：全仓 `pnpm test`、`pnpm build`、`pnpm lint`、`pnpm contracts:check` 通过；PostgreSQL 隧道测试和连续两次迁移通过。
 - 当前环境无 Docker，且 pnpm 可能触发网络依赖检查；未据此声称 Docker、TLS、真实模型服务或长连接稳定性已验收。
+- 2026-09-16：分组与渠道概念实施完成。新增 `groups`、`group_agents`、`user_group_access` 数据库表；`api_keys` 绑定 `group_id` 替代模型级权限（`api_key_model_permissions` 保留但不再使用）；新增 `GroupService` + `PgGroupRepository`，JWT 零存储邀请码；新增分组管理（CRUD、设备关联、邀请码）和渠道管理（邀请码添加、移除、模型广场）HTTP 路由（16 个路由）及 Web 前端组件；推理链路按 groupId 过滤 Agent 实例。Agent 代码零改动。
 
 ## 下一步
 

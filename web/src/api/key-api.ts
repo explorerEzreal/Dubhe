@@ -6,6 +6,8 @@ export interface ApiKeySummary {
   status: string;
   createdAt: string;
   expiresAt?: string | null;
+  groupId?: string | null;
+  channelName?: string | null;
 }
 
 export interface ApiKeyCreateResult extends ApiKeySummary {
@@ -16,7 +18,7 @@ export const keyApi = {
   list(): Promise<ApiKeySummary[]> {
     return apiFetch<ApiKeySummary[]>('/api/keys');
   },
-  create(input: { models: string[]; expiresAt?: string | null }): Promise<ApiKeyCreateResult> {
+  create(input: { channelId: string; expiresAt?: string | null }): Promise<ApiKeyCreateResult> {
     return apiFetch<ApiKeyCreateResult>('/api/keys', {
       method: 'POST',
       body: JSON.stringify(input),

@@ -20,6 +20,7 @@ export interface InferenceChunk {
 export interface InferenceRunInput {
   userId: string;
   apiKeyId: string;
+  groupId: string | null;
   model: string;
   payload: Record<string, unknown>;
   onStart?: (requestId: string, created: number) => void;
@@ -73,7 +74,7 @@ export class InferenceService {
 
   async run(input: InferenceRunInput): Promise<InferenceRunResult> {
     const requestId = `req_${crypto.randomUUID()}`;
-    const snapshot = await this.repository.getSnapshot(input.model);
+    const snapshot = await this.repository.getSnapshot(input.groupId, input.model);
     const candidate = this.selectCandidate(snapshot.instances);
     if (!candidate) {
       const reachable = snapshot.instances.some((item) => item.agentStatus === 'online' || item.agentStatus === 'degraded');

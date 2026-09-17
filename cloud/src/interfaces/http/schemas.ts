@@ -12,7 +12,7 @@ export const credentialsSchema = z.object({
 }).strict();
 
 export const apiKeySchema = z.object({
-  models: z.array(modelNameSchema).max(100).optional().default([]),
+  channelId: z.string().min(1, '请选择渠道'),
   expiresAt: z.string().datetime({ offset: true }).nullable().optional(),
 }).strict();
 
@@ -78,4 +78,22 @@ export const responsesSchema = z.object({
   metadata: z.record(z.string()).optional(),
   n: z.number().int().positive().max(16).optional(),
   stream_options: z.record(z.unknown()).optional(),
+}).strict();
+
+export const groupCreateSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).nullable().optional(),
+}).strict();
+
+export const groupUpdateSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).nullable().optional(),
+}).strict();
+
+export const groupAgentSchema = z.object({
+  agentId: z.string().uuid(),
+}).strict();
+
+export const channelAddSchema = z.object({
+  token: z.string().min(1),
 }).strict();

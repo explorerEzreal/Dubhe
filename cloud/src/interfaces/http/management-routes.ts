@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { UserRecord } from '../../application/ports.js';
 import type { HttpServices } from './types.js';
-import { agentParamsSchema, apiKeySchema, adminPasswordSchema, passwordChangeSchema, profileSchema, userParamsSchema } from './schemas.js';
+import { agentParamsSchema, apiKeySchema, adminPasswordSchema, channelAddSchema, groupAgentSchema, groupCreateSchema, groupUpdateSchema, passwordChangeSchema, profileSchema, userParamsSchema } from './schemas.js';
 import { bearer, sendError } from './http-errors.js';
 import { errors } from '../../domain/common/index.js';
 
@@ -143,6 +143,8 @@ export function registerManagementRoutes(
     }
   });
 
+  // ─── API Key ───────────────────────────────────────────────────
+
   app.get('/api/keys', async (request, reply) => {
     try {
       const user = await authenticatedUser(request, services);
@@ -162,7 +164,7 @@ export function registerManagementRoutes(
         : null;
       const key = await services.apiKeys.create(
         user.id,
-        input.data.models,
+        input.data.channelId,
         expiresAt,
       );
       return reply.code(201).send(key);
@@ -189,6 +191,146 @@ export function registerManagementRoutes(
       const params = agentParamsSchema.safeParse(request.params);
       if (!params.success) throw errors.invalidRequest();
       await services.apiKeys.delete(user.id, params.data.id);
+      return reply.code(204).send();
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  // ─── 分组管理 ─────────────────────────────────────────────────
+
+  app.post('/api/groups', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const input = groupCreateSchema.safeParse(request.body ?? {});
+      if (!input.success) throw errors.invalidRequest();
+      const group = await services.groups.create(user.id, input.data.name, input.data.description ?? null);
+      return reply.code(201).send(group);
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.get('/api/groups', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      return await services.groups.list(user.id);
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.get('/api/groups/:id', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const params = agentParamsSchema.safeParse(request.params);
+      if (!params.success) throw errors.invalidRequest();
+      return await services.groups.get(user.id, params.data.id);
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.patch('/api/groups/:id', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const params = agentParamsSchema.safeParse(request.params);
+      const input = groupUpdateSchema.safeParse(request.body ?? {});
+      if (!params.success || !input.success) throw errors.invalidRequest();
+      await services.groups.update(user.id, params.data.id, input.data.name, input.data.description ?? null);
+      return { status: 'ok' };
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.delete('/api/groups/:id', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const params = agentParamsSchema.safeParse(request.params);
+      if (!params.success) throw errors.invalidRequest();
+      await services.groups.delete(user.id, params.data.id);
+      return reply.code(204).send();
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.post('/api/groups/:id/agents', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const params = agentParamsSchema.safeParse(request.params);
+      const input = groupAgentSchema.safeParse(request.body ?? {});
+      if (!params.success || !input.success) throw errors.invalidRequest();
+      await services.groups.addAgent(user.id, params.data.id, input.data.agentId);
+      return { status: 'ok' };
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.delete('/api/groups/:id/agents/:agentId', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const params = agentParamsSchema.safeParse(request.params);
+      const agentParams = agentParamsSchema.safeParse({ id: (request.params as { agentId: string }).agentId });
+      if (!params.success || !agentParams.success) throw errors.invalidRequest();
+      await services.groups.removeAgent(user.id, params.data.id, agentParams.data.id);
+      return reply.code(204).send();
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.post('/api/groups/:id/invite-tokens', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const params = agentParamsSchema.safeParse(request.params);
+      if (!params.success) throw errors.invalidRequest();
+      const token = await services.groups.createInviteToken(user.id, params.data.id);
+      return { token };
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  // ─── 渠道管理 ─────────────────────────────────────────────────
+
+  app.get('/api/channels', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      return await services.groups.listChannels(user.id);
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.post('/api/channels', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const input = channelAddSchema.safeParse(request.body ?? {});
+      if (!input.success) throw errors.invalidRequest();
+      return await services.groups.acceptInvite(user.id, input.data.token);
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.get('/api/channels/models', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      return await services.groups.listChannelModels(user.id);
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.delete('/api/channels/:id', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const params = agentParamsSchema.safeParse(request.params);
+      if (!params.success) throw errors.invalidRequest();
+      await services.groups.removeChannel(user.id, params.data.id);
       return reply.code(204).send();
     } catch (error) {
       return sendError(reply, error);
