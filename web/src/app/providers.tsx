@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { App as AntApp, ConfigProvider, theme as antTheme } from 'antd';
+import { THEME_STORAGE_KEY } from '../constants';
 
 type ThemeMode = 'light' | 'dark';
 type ThemeContextValue = { mode: ThemeMode; setTheme: (mode: ThemeMode) => void };
@@ -12,8 +13,8 @@ export function useAppTheme(): ThemeContextValue {
 }
 
 export function AppProviders({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>(() => localStorage.getItem('shibawork_theme') === 'dark' ? 'dark' : 'light');
-  useEffect(() => { document.documentElement.dataset.theme = mode; localStorage.setItem('shibawork_theme', mode); }, [mode]);
+  const [mode, setMode] = useState<ThemeMode>(() => localStorage.getItem(THEME_STORAGE_KEY) === 'dark' ? 'dark' : 'light');
+  useEffect(() => { document.documentElement.dataset.theme = mode; localStorage.setItem(THEME_STORAGE_KEY, mode); }, [mode]);
   const value = useMemo(() => ({ mode, setTheme: setMode }), [mode]);
   return <ThemeContext.Provider value={value}><ConfigProvider theme={{ algorithm: mode === 'dark' ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm, token: { colorPrimary: mode === 'dark' ? '#34d399' : '#10b981', borderRadius: 10 } }}><AntApp>{children}</AntApp></ConfigProvider></ThemeContext.Provider>;
 }
