@@ -57,16 +57,23 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className='wb-user-panel-head'>
         <span className='wb-user-panel-avatar'>{avatarText}</span>
         <div className='wb-user-panel-meta'>
-          <div className='wb-user-panel-name'>{nickname || email || '访客用户'}</div>
-          <div className='wb-user-panel-id'>点击头像切换账号（占位）</div>
+          <div className='wb-user-panel-name'>
+            {nickname || email || '访客用户'}
+          </div>
         </div>
       </div>
       <div className='wb-user-panel-menu'>
-        <div className='wb-user-panel-item'>
+        <div
+          className='wb-user-panel-item'
+          onClick={() => {
+            setProfileOpen(false);
+            setSecurityOpen(true);
+          }}
+        >
           <span className='wb-user-panel-item-icon'>
             <Icon name='shield' />
           </span>
-          <button className='wb-user-panel-item' onClick={() => { setProfileOpen(false); setSecurityOpen(true); }}>账号与安全</button>
+          账号与安全
         </div>
         <div className='wb-user-panel-item'>
           <span className='wb-user-panel-item-icon'>
@@ -101,31 +108,40 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className='wb-logo-name'>Bubhe 天枢</span>
           <span className='wb-logo-version'>v0.1.0</span>
         </div>
-       
+
         <div className='wb-sidebar-scroll'>
           <nav className='wb-menu-groups' aria-label='业务菜单'>
-            {menuGroups.filter((group) => group.key !== 'admin' || role === 'admin' || role === 'super_admin').map((group) => (
-              <section className='wb-menu-group' key={group.key}>
-                <div className='wb-section-title'>{group.label}</div>
-                <div className='wb-nav'>
-                  {group.items.map((item) => {
-                    const active = item.path === location.pathname;
-                    return (
-                      <div
-                        className={`wb-nav-item${active ? ' is-active' : ''}${item.path ? '' : ' is-placeholder'}`}
-                        key={item.key}
-                        onClick={() => item.path && navigate(item.path)}
-                        role={item.path ? 'link' : undefined}
-                        aria-current={active ? 'page' : undefined}
-                      >
-                        <span className='wb-nav-icon'><Icon name={item.icon} /></span>
-                        <span className='wb-nav-label'>{item.label}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
+            {menuGroups
+              .filter(
+                (group) =>
+                  group.key !== 'admin' ||
+                  role === 'admin' ||
+                  role === 'super_admin',
+              )
+              .map((group) => (
+                <section className='wb-menu-group' key={group.key}>
+                  <div className='wb-section-title'>{group.label}</div>
+                  <div className='wb-nav'>
+                    {group.items.map((item) => {
+                      const active = item.path === location.pathname;
+                      return (
+                        <div
+                          className={`wb-nav-item${active ? ' is-active' : ''}${item.path ? '' : ' is-placeholder'}`}
+                          key={item.key}
+                          onClick={() => item.path && navigate(item.path)}
+                          role={item.path ? 'link' : undefined}
+                          aria-current={active ? 'page' : undefined}
+                        >
+                          <span className='wb-nav-icon'>
+                            <Icon name={item.icon} />
+                          </span>
+                          <span className='wb-nav-label'>{item.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
           </nav>
         </div>
         <div className='wb-user-footer'>
@@ -142,7 +158,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className='wb-user-trigger'>
                 <span className='wb-user-avatar'>{avatarText}</span>
                 <span className='wb-user-meta'>
-                  <span className='wb-user-name'>{nickname || email || '访客用户'}</span>
+                  <span className='wb-user-name'>
+                    {nickname || email || '访客用户'}
+                  </span>
                 </span>
               </div>
             </Popover>
@@ -162,7 +180,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className='content-scroll'>{children}</div>
         </div>
       </main>
-      <AccountSecurityModal open={securityOpen} onClose={() => setSecurityOpen(false)} />
+      <AccountSecurityModal
+        open={securityOpen}
+        onClose={() => setSecurityOpen(false)}
+      />
     </div>
   );
 }

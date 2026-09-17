@@ -1,33 +1,38 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
+import { useRequest } from 'ahooks';
 import { DASHBOARD_POLL_INTERVAL } from '../constants';
 
 export function useAsyncList<T>(loader: () => Promise<T>, options: { poll?: boolean } = {}) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const mounted = useRef(true);
+  const loaderRef = useRef(loader);
+  loaderRef.current = loader;
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(false);
-    try {
-      const result = await loader();
-      if (mounted.current) setData(result);
-    } catch {
-      if (mounted.current) setError(true);
-    } finally {
-      if (mounted.current) setLoading(false);
-    }
-  }, [loader]);
+  const {
+    data,
+    loading,
+    error,
+    run,
+  } = useRequest(
+    useCallback(async () => {
+      const result = await loaderRef.current();
+      return result;
+    }, []),
+    {
+      pollingInterval: options.poll ? DASHBOARD_POLL_INTERVAL : undefined,
+      pollingWhenHidden: false,
+      refreshDeps: [],
+      refreshOnWindowFocus: false,
+    },
+  );
 
-  useEffect(() => {
-    mounted.current = true;
-    void reload();
-    if (!options.poll) return () => { mounted.current = false; };
-    const timer = window.setInterval(() => void reload(), DASHBOARD_POLL_INTERVAL);
-    return () => { mounted.current = false; window.clearInterval(timer); };
-  }, [options.poll, reload]);
+  const reload = useCallback(() => {
+    run();
+  }, [run]);
 
-  return { data, loading, error, reload };
+  return {
+    data: data ?? null,
+    loading,
+    error: !!error,
+    reload,
+  };
 }
 
