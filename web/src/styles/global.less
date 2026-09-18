@@ -2,76 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-@sidebar-light: #f7f7f8;
-@content-light: #ffffff;
-@sidebar-dark: #1e1e1e;
-@content-dark: #252526;
-
-:root { font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; color: #333; background: @content-light; }
+:root {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* 消息区与输入区统一内容宽度 */
+  --wb-content-max: 900px;
+}
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; background: @content-light; }
+body { margin: 0; min-width: 320px; }
 button { font: inherit; }
-.app-shell { display: flex; width: 100%; height: 100dvh; min-height: 420px; overflow: hidden; background: var(--content-bg); color: var(--text-color); }
-.sidebar { width: 300px; flex: 0 0 300px; min-width: 0; display: flex; flex-direction: column; gap: 0; padding: 20px 12px 12px; background: var(--sidebar-bg); transition: width .25s ease, flex-basis .25s ease, padding .25s ease; overflow: hidden; }
-.is-collapsed .sidebar { width: 68px; flex-basis: 68px; padding-inline: 12px; align-items: center; }
-.sidebar-tools, .sidebar-header, .user-profile { display: flex; align-items: center; }
-.sidebar-tools { width: 100%; height: 32px; }
-.sidebar-header { min-height: 40px; width: 100%; margin-top: 10px; padding: 0 10px; }
-.brand-mark, .brand-logo { display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; background: #10b981; color: #fff; font-weight: 800; }
-.brand-copy { display: flex; align-items: baseline; min-width: 0; gap: 6px; color: var(--text-color); white-space: nowrap; }
-.brand-copy strong { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
-.brand-copy small { color: var(--brand-muted-color); font-size: 11px; }
-.collapse-button { width: 32px; height: 32px; border: 0; background: transparent; color: var(--icon-color); cursor: pointer; display: grid; place-items: center; padding: 6px; border-radius: 8px; }
-.collapse-button:hover { background: var(--hover-bg); color: var(--text-color); }
+
+/* ===== 仍被使用的旧系统样式（无硬编码颜色，引用 CSS 变量） ===== */
 .ui-icon { width: 20px; height: 20px; }
-.new-task-button { display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; padding: 11px 13px; border: 0; border-radius: 11px; background: var(--button-bg); color: var(--text-color); cursor: pointer; font-weight: 600; }
-.new-task-button:hover { background: var(--hover-bg); }
-.sidebar-nav { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
-.sidebar-nav > div { display: flex; width: 100%; }
-.nav-item { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; height: 40px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: var(--menu-color); cursor: pointer; text-align: left; font-size: 14px; line-height: 1; transition: background .18s ease, color .18s ease; }
-.nav-item:hover { background: var(--hover-bg); color: var(--text-color); }
-.nav-item.active { background: var(--selected-bg); color: var(--text-color); font-weight: 600; }
-.is-collapsed .nav-item { justify-content: center; width: 40px; padding: 0; }
-.is-collapsed .sidebar-header { justify-content: center; }
-.is-collapsed .sidebar-tools { justify-content: center; }
-.is-collapsed .brand-copy, .is-collapsed .nav-item span, .is-collapsed .new-task-button span, .is-collapsed .user-email { display: none; }
-.is-collapsed .new-task-button { width: 42px; height: 42px; padding: 0; }
-.sidebar-lists { border-top: 1px solid var(--border-color); padding-top: 15px; overflow: auto; }
-.list-title { display: flex; align-items: center; justify-content: space-between; margin: 0 9px 8px; color: var(--muted-color); font-size: 12px; }
-.list-title b { font-size: 20px; line-height: 1; font-weight: 400; }
-.task-item, .space-item { display: flex; flex-direction: column; padding: 9px 10px; border-radius: 8px; color: var(--text-color); font-size: 13px; }
-.task-item.active { border-left: 3px solid var(--accent-color); background: var(--active-bg); }
-.task-item small { margin-top: 4px; color: var(--muted-color); }
-.space-item { margin-bottom: 8px; }
-.sidebar-footer { margin-top: auto; width: 100%; padding-top: 12px; border-top: 1px solid var(--border-color); }
-.user-profile { gap: 10px; width: 100%; height: 48px; min-width: 0; padding: 6px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--text-color); cursor: pointer; text-align: left; transition: background .2s ease; }
-.user-profile:hover, .user-profile.active { background: var(--selected-bg); }
-.avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 auto; border-radius: 50%; background: linear-gradient(135deg, #62c8ad, #42b998); color: #fff; font-size: 12px; font-weight: 700; }
-.user-email { overflow: hidden; flex: 1; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
-.is-collapsed .sidebar-footer { width: 100%; }
-.is-collapsed .user-profile { justify-content: center; width: 40px; height: 44px; padding: 4px 2px; }
-.collapse-button:focus-visible, .nav-item:focus-visible, .user-profile:focus-visible, .profile-logout-button:focus-visible { outline: 2px solid var(--focus-color); outline-offset: 2px; }
-.user-profile-popover { max-width: calc(100vw - 24px); }
-.user-profile-popover .ant-popover-inner { width: min(360px, calc(100vw - 24px)); padding: 0; overflow: hidden; border: 1px solid var(--border-color); border-radius: 20px; background: var(--panel-bg); box-shadow: 0 20px 60px rgba(15,23,42,.18); }
-.profile-panel { padding: 18px 16px; color: var(--text-color); }
-.profile-panel-account { display: flex; align-items: center; gap: 12px; padding: 4px 4px 8px; }
-.profile-panel-account div { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
-.profile-panel-account span:last-child { overflow: hidden; color: var(--muted-color); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.profile-panel-avatar { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 auto; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 700; }
-.profile-panel-divider { height: 1px; margin: 12px 0; background: var(--border-color); }
-.profile-panel-title { display: flex; align-items: center; gap: 10px; padding: 6px 4px; font-weight: 600; }
-.profile-setting-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 4px; }
-.profile-logout-button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 4px; border: 0; border-radius: 9px; background: transparent; color: #ef4444; cursor: pointer; text-align: left; }
-.profile-logout-button:hover { background: rgba(239,68,68,.08); }
-.main-content { display: flex; flex: 1; min-width: 0; flex-direction: column; background: var(--content-bg); }
-.content-header { padding: 22px 32px 0; }
 .content-scroll { flex: 1; overflow: auto; padding: 14px 32px 36px; }
 .dashboard-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 .dashboard-header h1 { margin: 0; }
-.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
 .state-view { min-height: 180px; display: grid; place-items: center; }
-.link-button { color: var(--accent-color); border: 0; background: transparent; cursor: pointer; padding: 0; }
-.code-block { display: block; background: #111827; color: #d1fae5; padding: 12px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+
+.brand-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--accent-color); color: #fff; font-weight: 800; }
 .auth-overlay { position: relative; display: grid; place-items: center; min-height: 100vh; overflow: hidden; padding: 24px; background: radial-gradient(circle at 20% 20%, rgba(16,185,129,.13), transparent 35%), var(--content-bg); }
 .auth-panel { position: relative; z-index: 1; width: min(440px, 100%); padding: 36px; border: 1px solid var(--border-color); border-radius: 20px; background: var(--sidebar-bg); box-shadow: 0 24px 80px rgba(15,23,42,.12); }
 .auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 36px; }
@@ -85,32 +32,39 @@ button { font: inherit; }
 .auth-decoration-one { top: -120px; right: -80px; }
 .auth-decoration-two { bottom: -160px; left: -100px; }
 
-:root, [data-theme='light'] { --sidebar-bg: #f1f1f1; --content-bg: #fff; --panel-bg: #fff; --text-color: #222; --menu-color: #484848; --icon-color: #666; --brand-muted-color: #989898; --muted-color: #999; --button-bg: #e8e8ea; --selected-bg: #e4e4e6; --active-bg: #e6f7f0; --hover-bg: #e9e9eb; --border-color: #dedede; --accent-color: #57bfa2; --focus-color: #737373; }
-[data-theme='dark'] { --sidebar-bg: #202020; --content-bg: #252526; --panel-bg: #272727; --text-color: #f0f0f0; --menu-color: #d4d4d4; --icon-color: #b7b7b7; --brand-muted-color: #9f9f9f; --muted-color: #a1a1aa; --button-bg: #383838; --selected-bg: #383838; --active-bg: rgba(16,185,129,.15); --hover-bg: #303030; --border-color: #3a3a3a; --accent-color: #34d399; --focus-color: #a3a3a3; }
-@media (max-width: 760px) { .sidebar { width: 68px; flex-basis: 68px; padding: 20px 14px 14px; align-items: center; } .brand-copy, .nav-item span, .new-task-button span, .sidebar-lists, .user-email { display: none; } .sidebar-header, .sidebar-tools { justify-content: center; } .nav-item { justify-content: center; width: 40px; padding: 0; } .content-header { padding-inline: 16px; } .content-scroll { padding: 14px 16px 28px; } .dashboard-header { align-items: flex-start; flex-direction: column; } .auth-panel { padding: 26px 22px; } }
 /* ===== 工作台整体骨架 ===== */
-:root {
-  /* 消息区与输入区统一内容宽度 */
-  --wb-content-max: 900px;
-}
-
 .wb-app {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #fafafa;
+  background: var(--content-bg);
 }
 
-/* ===== 侧边栏 ===== */
-.wb-sidebar {
+/* ===== 侧边栏（antd Layout.Sider） ===== */
+.wb-sider.ant-layout-sider {
+  flex-shrink: 0;
+  height: 100vh;
+  background: var(--sidebar-bg);
+  padding: 16px 12px 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.wb-sider-inner {
   display: flex;
   flex-direction: column;
-  width: 320px;
-  flex-shrink: 0;
   height: 100%;
-  background: #f0f0f0;
-  padding: 16px 12px 12px;
-  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 折叠时项居中 */
+.wb-sider.ant-layout-sider-collapsed .wb-logo {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-sider-toolbar {
+  justify-content: center;
 }
 
 .wb-logo {
@@ -118,6 +72,7 @@ button { font: inherit; }
   align-items: center;
   gap: 10px;
   padding: 4px 8px 14px;
+  min-height: 44px;
 }
 
 .wb-logo-mark {
@@ -127,7 +82,7 @@ button { font: inherit; }
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: #00c29a;
+  background: var(--accent-color);
   color: #fff;
   font-size: 16px;
 }
@@ -135,29 +90,29 @@ button { font: inherit; }
 .wb-logo-name {
   font-size: 18px;
   font-weight: 700;
-  color: #1f2329;
+  color: var(--text-color);
   letter-spacing: 0.2px;
 }
 
 .wb-logo-version {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.35);
+  color: var(--muted-color);
   margin-top: 2px;
 }
 
 .wb-new-task {
   height: 38px;
   border-radius: 10px;
-  background: #e5e7eb;
-  color: #1f2329;
+  background: var(--button-bg);
+  color: var(--text-color);
   font-weight: 500;
   box-shadow: none;
   margin-bottom: 12px;
 }
 
 .wb-new-task:hover {
-  background: #dcdedf !important;
-  color: #1f2329 !important;
+  background: var(--hover-bg) !important;
+  color: var(--text-color) !important;
 }
 
 .wb-sidebar-scroll {
@@ -177,7 +132,7 @@ button { font: inherit; }
 
 .wb-sidebar-scroll::-webkit-scrollbar-thumb,
 .wb-message-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--border-color);
   border-radius: 3px;
 }
 
@@ -208,7 +163,7 @@ button { font: inherit; }
   height: 36px;
   padding: 0 10px;
   border-radius: 8px;
-  color: #3a3f45;
+  color: var(--menu-color);
   font-size: 14px;
   cursor: pointer;
   user-select: none;
@@ -216,12 +171,12 @@ button { font: inherit; }
 }
 
 .wb-nav-item:hover {
-  background: rgba(0, 0, 0, 0.045);
+  background: var(--hover-bg);
 }
 
 .wb-nav-item.is-active {
-  background: #e0f5ef;
-  color: #1f2329;
+  background: var(--active-bg);
+  color: var(--text-color);
   font-weight: 600;
 }
 
@@ -231,7 +186,7 @@ button { font: inherit; }
 
 .wb-nav-icon {
   display: inline-flex;
-  color: #00c29a;
+  color: var(--accent-color);
   font-size: 15px;
 }
 
@@ -262,7 +217,7 @@ button { font: inherit; }
   padding: 6px 10px 6px;
   font-size: 12px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.45);
+  color: var(--muted-color);
   letter-spacing: 0.4px;
 }
 
@@ -275,7 +230,7 @@ button { font: inherit; }
 .wb-task-empty {
   padding: 6px 10px;
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.35);
+  color: var(--muted-color);
 }
 
 .wb-task-item {
@@ -290,11 +245,11 @@ button { font: inherit; }
 }
 
 .wb-task-item:hover {
-  background: rgba(0, 0, 0, 0.045);
+  background: var(--hover-bg);
 }
 
 .wb-task-item.is-active {
-  background: #e0f5ef;
+  background: var(--active-bg);
 }
 
 .wb-task-item.is-active::before {
@@ -305,12 +260,12 @@ button { font: inherit; }
   bottom: 8px;
   width: 3px;
   border-radius: 2px;
-  background: #00c29a;
+  background: var(--accent-color);
 }
 
 .wb-task-icon {
   flex-shrink: 0;
-  color: #00c29a;
+  color: var(--accent-color);
   font-size: 15px;
 }
 
@@ -321,7 +276,7 @@ button { font: inherit; }
 
 .wb-task-title {
   font-size: 13.5px;
-  color: #1f2329;
+  color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -330,12 +285,12 @@ button { font: inherit; }
 .wb-task-time {
   margin-top: 1px;
   font-size: 11.5px;
-  color: rgba(0, 0, 0, 0.35);
+  color: var(--muted-color);
 }
 
 .wb-task-del {
   flex-shrink: 0;
-  color: rgba(0, 0, 0, 0.3);
+  color: var(--muted-color);
   font-size: 14px;
   padding: 4px;
   border-radius: 6px;
@@ -349,8 +304,8 @@ button { font: inherit; }
 }
 
 .wb-task-del:hover {
-  color: #ff4d4f;
-  background: rgba(0, 0, 0, 0.05);
+  color: var(--ant-color-error);
+  background: var(--hover-bg);
 }
 
 .wb-space-item {
@@ -358,27 +313,45 @@ button { font: inherit; }
 }
 
 .wb-space-item > .ui-icon {
-  color: #00c29a;
+  color: var(--accent-color);
 }
 
 .wb-space-item:hover {
-  background: rgba(0, 0, 0, 0.045);
+  background: var(--hover-bg);
 }
 
-/* ===== 底部用户区 ===== */
-.wb-user-footer {
+/* ===== 底部工具栏 ===== */
+.wb-sider-footer {
   margin-top: auto;
   padding-top: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid var(--border-color);
 }
 
-.wb-user-footer-row {
+.wb-sider-toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   padding: 0 4px;
 }
 
+/* 工具栏图标按钮（主题切换、折叠） */
+.wb-toolbar-btn.ant-btn.ant-btn-text {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--icon-color);
+  border-radius: 8px;
+}
+
+.wb-toolbar-btn.ant-btn.ant-btn-text:hover {
+  color: var(--text-color) !important;
+  background: var(--hover-bg) !important;
+}
+
+/* 用户头像 / 触发区 */
 .wb-user-trigger {
   display: flex;
   align-items: center;
@@ -392,7 +365,7 @@ button { font: inherit; }
 }
 
 .wb-user-trigger:hover {
-  background: rgba(0, 0, 0, 0.045);
+  background: var(--hover-bg);
 }
 
 .wb-user-avatar {
@@ -403,14 +376,10 @@ button { font: inherit; }
   height: 36px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: #00c29a;
+  background: var(--accent-color);
   color: #fff;
   font-size: 14px;
   font-weight: 600;
-}
-
-.wb-theme-switch {
-  flex: 0 0 auto;
 }
 
 .wb-user-meta {
@@ -421,16 +390,10 @@ button { font: inherit; }
 .wb-user-name {
   font-size: 14px;
   font-weight: 600;
-  color: #1f2329;
+  color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.wb-user-more {
-  flex-shrink: 0;
-  color: rgba(0, 0, 0, 0.35);
-  font-size: 14px;
 }
 
 /* 用户设置面板 */
@@ -447,7 +410,7 @@ button { font: inherit; }
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .wb-user-panel-avatar {
@@ -458,7 +421,7 @@ button { font: inherit; }
   height: 44px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: #00c29a;
+  background: var(--accent-color);
   color: #fff;
   font-size: 16px;
   font-weight: 600;
@@ -471,13 +434,13 @@ button { font: inherit; }
 .wb-user-panel-name {
   font-size: 15px;
   font-weight: 600;
-  color: #1f2329;
+  color: var(--text-color);
 }
 
 .wb-user-panel-id {
   margin-top: 2px;
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--muted-color);
 }
 
 .wb-user-panel-menu {
@@ -492,24 +455,24 @@ button { font: inherit; }
   padding: 0 10px;
   border-radius: 8px;
   font-size: 13.5px;
-  color: #3a3f45;
+  color: var(--menu-color);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .wb-user-panel-item:hover {
-  background: rgba(0, 0, 0, 0.045);
+  background: var(--hover-bg);
 }
 
 .wb-user-panel-item-icon {
   display: inline-flex;
-  color: #00c29a;
+  color: var(--accent-color);
   font-size: 15px;
 }
 
 .wb-user-panel-foot {
   padding: 10px 16px 14px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid var(--border-color);
 }
 
 .wb-user-panel-logout {
@@ -520,20 +483,20 @@ button { font: inherit; }
   padding: 0 10px;
   border-radius: 8px;
   font-size: 13.5px;
-  color: #ff4d4f;
+  color: var(--ant-color-error);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .wb-user-panel-logout:hover {
-  background: rgba(255, 77, 79, 0.08);
+  background: var(--ant-color-error-bg, rgba(255, 77, 79, 0.08));
 }
 
 .wb-user-panel-version {
   margin-top: 10px;
   text-align: center;
   font-size: 11.5px;
-  color: rgba(0, 0, 0, 0.3);
+  color: var(--muted-color);
 }
 
 /* ===== 主区 ===== */
@@ -542,7 +505,7 @@ button { font: inherit; }
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: #fafafa;
+  background: var(--content-bg);
   position: relative;
 }
 
@@ -557,7 +520,7 @@ button { font: inherit; }
   text-align: center;
   padding: 14px 24px 6px;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.45);
+  color: var(--muted-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -584,7 +547,7 @@ button { font: inherit; }
   margin: 0;
   font-size: 42px;
   font-weight: 700;
-  color: #1f2329;
+  color: var(--text-color);
   letter-spacing: 0.5px;
 }
 
@@ -608,10 +571,10 @@ button { font: inherit; }
   gap: 8px;
   height: 42px;
   padding: 0 18px;
-  border: 1px solid #e6e6e6;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  background: #ffffff;
-  color: #3a3f45;
+  background: var(--panel-bg);
+  color: var(--menu-color);
   font-size: 14px;
   font-family: inherit;
   cursor: pointer;
@@ -622,8 +585,8 @@ button { font: inherit; }
 }
 
 .wb-chip:hover {
-  border-color: #00c29a;
-  color: #00a183;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
   box-shadow: 0 2px 8px rgba(0, 194, 154, 0.12);
 }
 
@@ -633,7 +596,7 @@ button { font: inherit; }
 
 .wb-chip-icon {
   display: inline-flex;
-  color: #00c29a;
+  color: var(--accent-color);
   font-size: 16px;
 }
 
@@ -641,7 +604,7 @@ button { font: inherit; }
 .wb-input-area {
   flex-shrink: 0;
   padding: 4px 24px 20px;
-  background: linear-gradient(180deg, rgba(250, 250, 250, 0) 0%, #fafafa 40%);
+  background: linear-gradient(180deg, transparent 0%, var(--content-bg) 40%);
 }
 
 .wb-input-card {
@@ -654,7 +617,7 @@ button { font: inherit; }
   display: flex;
   flex-direction: column;
   min-height: 190px;
-  background: #f0f0f0;
+  background: var(--sidebar-bg);
   border-color: transparent;
   box-shadow: none;
   border-radius: 16px;
@@ -670,7 +633,7 @@ button { font: inherit; }
   align-self: flex-start;
   font-size: 15px;
   line-height: 1.6;
-  color: #1f2329;
+  color: var(--text-color);
 }
 
 .wb-input-card .ant-sender-footer {
@@ -684,7 +647,7 @@ button { font: inherit; }
   justify-content: space-between;
   gap: 12px;
   padding: 10px 4px 4px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid var(--border-color);
 }
 
 .wb-input-toolbar-left {
@@ -706,11 +669,11 @@ button { font: inherit; }
 .wb-input-select .ant-select-selector {
   background: transparent !important;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--muted-color);
 }
 
 .wb-input-select .ant-select-selection-item {
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--muted-color);
 }
 
 .wb-model-badge {
@@ -718,8 +681,8 @@ button { font: inherit; }
 }
 
 .wb-model-badge .ant-select-selector {
-  background: #ffffff !important;
-  border: 1px solid #e6e6e6 !important;
+  background: var(--panel-bg) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 999px !important;
   padding-inline: 12px !important;
   height: 32px !important;
@@ -730,28 +693,95 @@ button { font: inherit; }
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #3a3f45;
+  color: var(--menu-color);
 }
 
 .wb-model-badge-icon {
-  color: #00c29a;
+  color: var(--accent-color);
 }
 
 /* 圆形发送/停止按钮 */
 .wb-send-btn.ant-btn-circle {
   width: 38px;
   height: 38px;
-  background: #00c29a;
+  background: var(--accent-color);
   box-shadow: none;
 }
 
 .wb-send-btn.ant-btn-circle:hover {
-  background: #00a885 !important;
+  background: var(--ant-color-primary-hover) !important;
 }
 
-/* ===== 响应式：窄屏隐藏侧边栏 ===== */
+/* ===== 响应式：窄屏自动折叠侧栏 ===== */
 @media (max-width: 900px) {
-  .wb-sidebar {
-    display: none;
-  }
+  .content-scroll { padding: 14px 16px 28px; }
+  .dashboard-header { align-items: flex-start; flex-direction: column; }
 }
+
+/* 窄屏时 auth-panel 缩小内边距 */
+@media (max-width: 760px) {
+  .content-scroll { padding: 14px 16px 28px; }
+  .dashboard-header { align-items: flex-start; flex-direction: column; }
+  .auth-panel { padding: 26px 22px; }
+}
+
+/* ===== 设备监控中心 ===== */
+.device-monitor-page { max-width: 1680px; margin: 0 auto; }
+.device-monitor-page .dashboard-header { margin-bottom: 12px; }
+.monitoring-state { display: inline-flex; align-items: center; gap: 7px; color: var(--muted-color); font-size: 13px; }
+.monitoring-state .status-dot { background: #35d399; box-shadow: 0 0 0 4px rgba(53,211,153,.12); }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.device-boundary-alert { margin-bottom: 18px; }
+.device-monitor-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 24px; align-items: start; }
+.device-group-rail { min-width: 0; }
+.device-group-title { padding: 5px 10px 10px; color: var(--muted-color); font-size: 13px; }
+.device-group-item { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; width: 100%; min-height: 68px; padding: 13px 12px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--text-color); text-align: left; cursor: pointer; }
+.device-group-item:hover { background: var(--hover-bg); }
+.device-group-item.is-selected { border-color: var(--accent-color); background: var(--active-bg); }
+.device-group-icon { color: var(--accent-color); font-size: 16px; }
+.device-group-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
+.device-group-count { color: var(--muted-color); font-size: 12px; }
+.device-group-bar { grid-column: 1 / -1; height: 4px; margin-top: 3px; border-radius: 4px; background: var(--device-track, #e2e8f0); overflow: hidden; }
+.device-group-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent-color); }
+.device-group-empty { padding: 12px 10px; color: var(--muted-color); font-size: 12px; }
+.device-section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.device-section-heading h3 { margin: 0 0 4px; }
+.device-overview-grid { display: grid; grid-template-columns: minmax(160px, .8fr) repeat(3, minmax(220px, 1fr)); gap: 16px; margin-bottom: 18px; }
+.device-overview-grid .ant-card { height: 100%; border-color: var(--border-color); background: var(--panel-bg); }
+.device-summary-card { display: flex; flex-direction: column; justify-content: center; min-height: 190px; }
+.summary-number { font-size: 42px; line-height: 1; font-weight: 700; color: var(--text-color); }
+.summary-label { margin-top: 8px; color: var(--muted-color); }
+.summary-status-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 30px; color: var(--muted-color); font-size: 12px; }
+.summary-status-row span, .chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.device-chart-card .ant-card-head { min-height: 44px; padding-inline: 16px; }
+.device-chart-card .ant-card-body { padding: 4px 14px 14px; }
+.chart-legend { display: flex; justify-content: center; gap: 12px; color: var(--muted-color); font-size: 12px; }
+.resource-labels { display: flex; justify-content: space-around; color: var(--muted-color); font-size: 12px; }
+.network-empty { position: absolute; z-index: 1; width: 100%; padding-top: 54px; text-align: center; color: var(--muted-color); font-size: 12px; pointer-events: none; }
+.network-card .ant-card-body { position: relative; }
+.device-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 6px 0 16px; }
+.device-filter-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.device-filter-group .ant-btn { border-color: var(--border-color); color: var(--muted-color); background: var(--panel-bg); }
+.device-filter-group .ant-btn.is-active { border-color: var(--accent-color); color: var(--accent-color); background: var(--active-bg); }
+.device-filter-group .status-dot { margin-right: 5px; }
+.device-toolbar > .ant-input-affix-wrapper { width: min(300px, 100%); border-color: var(--border-color); background: var(--panel-bg); }
+.device-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.device-monitor-card { border-left: 3px solid var(--accent-color); background: var(--panel-bg); }
+.device-monitor-card.status-busy { border-left-color: #fbbf24; }
+.device-monitor-card.status-offline { border-left-color: #64748b; }
+.device-monitor-card .ant-card-body { padding: 18px; }
+.device-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.device-name { display: flex; align-items: center; gap: 8px; color: var(--text-color); font-size: 16px; font-weight: 650; }
+.device-id { margin: 7px 0 15px 16px; color: var(--muted-color); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.device-model { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; padding: 9px 12px; border-radius: 7px; background: var(--device-track, #f1f5f9); color: var(--menu-color); font-size: 13px; }
+.device-resource-list { display: grid; gap: 10px; }
+.resource-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) 68px; align-items: center; gap: 8px; color: var(--muted-color); font-size: 12px; }
+.resource-row .ant-progress { margin: 0; }
+.resource-row b { color: var(--menu-color); font-size: 12px; font-weight: 500; text-align: right; }
+.device-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color); color: var(--muted-color); font-size: 11px; }
+.device-card-actions { display: inline-flex; gap: 2px; }
+.device-card-actions .ant-btn { padding-inline: 4px; font-size: 12px; }
+
+@media (max-width: 1250px) { .device-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .device-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .device-monitor-layout { grid-template-columns: 1fr; } .device-group-rail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .device-group-title { grid-column: 1 / -1; } .device-toolbar { align-items: stretch; flex-direction: column; } .device-toolbar > .ant-input-affix-wrapper { width: 100%; } }
+@media (max-width: 620px) { .device-overview-grid, .device-card-grid { grid-template-columns: 1fr; } .device-group-rail { grid-template-columns: 1fr; } .device-group-title { grid-column: auto; } .device-card-foot { align-items: flex-start; flex-direction: column; } }

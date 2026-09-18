@@ -32,6 +32,7 @@
 - 2026-09-05：全仓 `pnpm test`、`pnpm build`、`pnpm lint`、`pnpm contracts:check` 通过；PostgreSQL 隧道测试和连续两次迁移通过。
 - 当前环境无 Docker，且 pnpm 可能触发网络依赖检查；未据此声称 Docker、TLS、真实模型服务或长连接稳定性已验收。
 - 2026-09-16：分组与渠道概念实施完成。新增 `groups`、`group_agents`、`user_group_access` 数据库表；`api_keys` 绑定 `group_id` 替代模型级权限（`api_key_model_permissions` 保留但不再使用）；新增 `GroupService` + `PgGroupRepository`，JWT 零存储邀请码；新增分组管理（CRUD、设备关联、邀请码）和渠道管理（邀请码添加、移除、模型广场）HTTP 路由（16 个路由）及 Web 前端组件；推理链路按 groupId 过滤 Agent 实例。Agent 代码零改动。
+- 2026-09-18：Web `/device/agents` 更新为设备监控中心 UI，复用现有设备、模型和分组接口，新增分组导航、状态筛选、搜索、状态/资源/网络监控图表及响应式设备卡片；未新增路由或修改接口。资源缺失时展示“暂无数据”，待浏览器端验收浅色/深色主题和窄屏布局。
 
 ## 下一步
 

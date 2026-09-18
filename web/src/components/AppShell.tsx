@@ -1,4 +1,4 @@
-import { Popover, Switch } from 'antd';
+import { Button, Layout, Popover, Tooltip } from 'antd';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -6,6 +6,8 @@ import { useAppTheme } from '../app/providers';
 import { useAuthStore } from '../state';
 import { AccountSecurityModal } from './AccountSecurityModal';
 import { menuGroups, type IconName } from './app-shell-config';
+
+const { Sider, Content } = Layout;
 
 function Icon({ name }: { name: IconName }) {
   const paths: Record<IconName, string> = {
@@ -45,6 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { mode, setTheme } = useAppTheme();
   const { email, nickname, role, logout } = useAuthStore();
+  const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
   const avatarText = (nickname?.[0] ?? email?.[0] ?? 'U').toUpperCase();
@@ -100,91 +103,119 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className='wb-app'>
-      <aside className='wb-sidebar'>
-        <div className='wb-logo'>
-          <span className='wb-logo-mark'>
-            <Icon name='thunderbolt' />
-          </span>
-          <span className='wb-logo-name'>Bubhe 天枢</span>
-          <span className='wb-logo-version'>v0.1.0</span>
-        </div>
+    <Layout className='wb-app'>
+      <Sider
+        width={320}
+        collapsedWidth={68}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={setCollapsed}
+        trigger={null}
+        className='wb-sider'
+      >
+        <div className='wb-sider-inner'>
+          {/* Logo */}
+          <div className='wb-logo'>
+            <span className='wb-logo-mark'>
+              <Icon name='thunderbolt' />
+            </span>
+            {!collapsed && (
+              <>
+                <span className='wb-logo-name'>Bubhe 天枢</span>
+                <span className='wb-logo-version'>v0.1.0</span>
+              </>
+            )}
+          </div>
 
-        <div className='wb-sidebar-scroll'>
-          <nav className='wb-menu-groups' aria-label='业务菜单'>
-            {menuGroups
-              .filter(
-                (group) =>
-                  group.key !== 'admin' ||
-                  role === 'admin' ||
-                  role === 'super_admin',
-              )
-              .map((group) => (
-                <section className='wb-menu-group' key={group.key}>
-                  <div className='wb-section-title'>{group.label}</div>
-                  <div className='wb-nav'>
-                    {group.items.map((item) => {
-                      const active = item.path === location.pathname;
-                      return (
-                        <div
-                          className={`wb-nav-item${active ? ' is-active' : ''}${item.path ? '' : ' is-placeholder'}`}
-                          key={item.key}
-                          onClick={() => item.path && navigate(item.path)}
-                          role={item.path ? 'link' : undefined}
-                          aria-current={active ? 'page' : undefined}
-                        >
-                          <span className='wb-nav-icon'>
-                            <Icon name={item.icon} />
-                          </span>
-                          <span className='wb-nav-label'>{item.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
-          </nav>
-        </div>
-        <div className='wb-user-footer'>
-          <div className='wb-user-footer-row'>
-            <Popover
-              placement='topLeft'
-              trigger='click'
-              open={profileOpen}
-              onOpenChange={setProfileOpen}
-              content={profileContent}
-              arrow={false}
-              overlayClassName='wb-user-popover'
-            >
-              <div className='wb-user-trigger'>
-                <span className='wb-user-avatar'>{avatarText}</span>
-                <span className='wb-user-meta'>
-                  <span className='wb-user-name'>
-                    {nickname || email || '访客用户'}
-                  </span>
-                </span>
-              </div>
-            </Popover>
-            <Switch
-              className='wb-theme-switch'
-              size='small'
-              checked={mode === 'dark'}
-              checkedChildren='深'
-              unCheckedChildren='浅'
-              onChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-            />
+          {/* 导航 */}
+          <div className='wb-sidebar-scroll'>
+            <nav className='wb-menu-groups' aria-label='业务菜单'>
+              {menuGroups
+                .filter(
+                  (group) =>
+                    group.key !== 'admin' ||
+                    role === 'admin' ||
+                    role === 'super_admin',
+                )
+                .map((group) => (
+                  <section className='wb-menu-group' key={group.key}>
+                    <div className='wb-section-title'>{!collapsed && group.label}</div>
+                    <div className='wb-nav'>
+                      {group.items.map((item) => {
+                        const active = item.path === location.pathname;
+                        return (
+                          <div
+                            className={`wb-nav-item${active ? ' is-active' : ''}${item.path ? '' : ' is-placeholder'}`}
+                            key={item.key}
+                            onClick={() => item.path && navigate(item.path)}
+                            role={item.path ? 'link' : undefined}
+                            aria-current={active ? 'page' : undefined}
+                          >
+                            <span className='wb-nav-icon'>
+                              <Icon name={item.icon} />
+                            </span>
+                            {!collapsed && <span className='wb-nav-label'>{item.label}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ))}
+            </nav>
+          </div>
+
+          {/* 底部工具栏 */}
+          <div className='wb-sider-footer'>
+            <div className='wb-sider-toolbar'>
+              <Popover
+                placement='topLeft'
+                trigger='click'
+                open={profileOpen}
+                onOpenChange={setProfileOpen}
+                content={profileContent}
+                arrow={false}
+                overlayClassName='wb-user-popover'
+              >
+                <div className='wb-user-trigger'>
+                  <span className='wb-user-avatar'>{avatarText}</span>
+                  {!collapsed && (
+                    <span className='wb-user-meta'>
+                      <span className='wb-user-name'>
+                        {nickname || email || '访客用户'}
+                      </span>
+                    </span>
+                  )}
+                </div>
+              </Popover>
+
+              <Tooltip title={mode === 'dark' ? '浅色模式' : '深色模式'}>
+                <Button
+                  className='wb-toolbar-btn'
+                  type='text'
+                  icon={<Icon name='appearance' />}
+                  onClick={() => setTheme(mode === 'dark' ? 'light' : 'dark')}
+                />
+              </Tooltip>
+
+              <Tooltip title={collapsed ? '展开侧栏' : '收起侧栏'}>
+                <Button
+                  className='wb-toolbar-btn'
+                  type='text'
+                  icon={<Icon name='menu' />}
+                  onClick={() => setCollapsed(!collapsed)}
+                />
+              </Tooltip>
+            </div>
           </div>
         </div>
-      </aside>
-      <main className='wb-main'>
-        <div className='wb-content'>
-          <div className='content-scroll'>{children}</div>
-        </div>
-      </main>
+      </Sider>
+      <Content className='wb-main'>
+        <div className='content-scroll'>{children}</div>
+      </Content>
       <AccountSecurityModal
         open={securityOpen}
         onClose={() => setSecurityOpen(false)}
       />
-    </div>
+    </Layout>
   );
 }
