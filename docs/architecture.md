@@ -239,7 +239,10 @@ src/
 
 | 路径 | 页面组件 | 菜单分组 |
 |------|---------|---------|
-| `/deployer` | DeployerDashboardPage | 设备 > 设备管理 |
+| `/deployer` | DeployerDashboardPage | （旧入口，保留兼容） |
+| `/device/groups` | DeviceGroupsPage | 设备 > 模型分组 |
+| `/device/agents` | DeviceAgentsPage | 设备 > 设备管理 |
+| `/device/traffic` | DeviceTrafficPage | 设备 > 流量监控 |
 | `/caller` | CallerDashboardPage | 调用 > API 密钥 |
 | `/admin/users` | SystemUsersPage | 管理员 > 系统用户 |
 | `/login` | LoginPage | — |

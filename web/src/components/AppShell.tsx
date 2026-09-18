@@ -22,6 +22,7 @@ function Icon({ name }: { name: IconName }) {
     sliders: 'M6 4v16 M12 4v16 M18 4v16 M4 8h4 M10 15h4 M16 10h4',
     info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 10v6 M12 7h.01',
     thunderbolt: 'M13 2 4 14h7l-1 8 10-13h-7z',
+    group: 'M17 20v-1a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v1 M6 10a3 3 0 1 0 6 0 3 3 0 0 0-6 0 M15 6.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0 M19 12v3 M17.5 13.5h3',
   };
   return (
     <svg

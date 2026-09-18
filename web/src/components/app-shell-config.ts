@@ -1,8 +1,19 @@
-export type IconName = 'device' | 'key' | 'dashboard' | 'logs' | 'plus' | 'menu' | 'appearance' | 'logout' | 'shield' | 'sliders' | 'info' | 'thunderbolt';
+export type IconName = 'device' | 'key' | 'dashboard' | 'logs' | 'plus' | 'menu' | 'appearance' | 'logout' | 'shield' | 'sliders' | 'info' | 'thunderbolt' | 'group';
 
 export const menuGroups = [
-  { key: 'device', label: '设备', items: [{ key: 'device-management', label: '设备管理', icon: 'device' as IconName, path: '/deployer' }, { key: 'device-statistics', label: '统计', icon: 'dashboard' as IconName }] },
-  { key: 'caller', label: '调用', items: [{ key: 'api-keys', label: 'API 密钥', icon: 'key' as IconName, path: '/caller' }, { key: 'caller-statistics', label: '统计', icon: 'dashboard' as IconName }, { key: 'usage-records', label: '使用记录', icon: 'logs' as IconName }] },
-  { key: 'admin', label: '管理员', items: [{ key: 'system-users', label: '系统用户', icon: 'key' as IconName, path: '/admin/users' }, { key: 'admin-devices', label: '设备', icon: 'device' as IconName }, { key: 'admin-statistics', label: '统计', icon: 'dashboard' as IconName }] },
+  { key: 'device', label: '设备', items: [
+    { key: 'device-groups', label: '模型分组', icon: 'group' as IconName, path: '/device/groups' },
+    { key: 'device-agents', label: '设备管理', icon: 'device' as IconName, path: '/device/agents' },
+    { key: 'device-traffic', label: '流量监控', icon: 'dashboard' as IconName, path: '/device/traffic' },
+  ]},
+  { key: 'caller', label: '调用', items: [
+    { key: 'api-keys', label: 'API 密钥', icon: 'key' as IconName, path: '/caller' },
+    { key: 'caller-statistics', label: '统计', icon: 'dashboard' as IconName },
+    { key: 'usage-records', label: '使用记录', icon: 'logs' as IconName },
+  ]},
+  { key: 'admin', label: '管理员', items: [
+    { key: 'system-users', label: '系统用户', icon: 'key' as IconName, path: '/admin/users' },
+    { key: 'admin-devices', label: '设备', icon: 'device' as IconName },
+    { key: 'admin-statistics', label: '统计', icon: 'dashboard' as IconName },
+  ]},
 ];
-

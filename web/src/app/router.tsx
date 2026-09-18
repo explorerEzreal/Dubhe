@@ -2,6 +2,9 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell, AuthGate } from '../components';
 import { CallerDashboardPage } from '../pages/caller-dashboard/CallerDashboardPage';
 import { DeployerDashboardPage } from '../pages/deployer-dashboard/DeployerDashboardPage';
+import { DeviceAgentsPage } from '../pages/device-agents/DeviceAgentsPage';
+import { DeviceGroupsPage } from '../pages/device-groups/DeviceGroupsPage';
+import { DeviceTrafficPage } from '../pages/device-traffic/DeviceTrafficPage';
 import { LoginPage } from '../pages/login';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
 import { SystemUsersPage } from '../pages/system-users';
@@ -11,7 +14,7 @@ import { useAuthStore } from '../state';
 // 根路径根据本地登录态进入业务首页或登录页。
 function HomeRedirect() {
   const token = useAuthStore((state) => state.token);
-  return <Navigate to={token ? '/caller' : '/login'} replace />;
+  return <Navigate to={token ? '/device/agents' : '/login'} replace />;
 }
 
 export function AppRouter() {
@@ -21,6 +24,9 @@ export function AppRouter() {
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/deployer" element={<AuthGate><AppShell><DeployerDashboardPage /></AppShell></AuthGate>} />
     <Route path="/caller" element={<AuthGate><AppShell><CallerDashboardPage /></AppShell></AuthGate>} />
+    <Route path="/device/groups" element={<AuthGate><AppShell><DeviceGroupsPage /></AppShell></AuthGate>} />
+    <Route path="/device/agents" element={<AuthGate><AppShell><DeviceAgentsPage /></AppShell></AuthGate>} />
+    <Route path="/device/traffic" element={<AuthGate><AppShell><DeviceTrafficPage /></AppShell></AuthGate>} />
     <Route path="/admin/users" element={<AuthGate><AppShell><SystemUsersPage /></AppShell></AuthGate>} />
     <Route path="*" element={<AuthGate><AppShell><NotFoundPage /></AppShell></AuthGate>} />
   </Routes>;
