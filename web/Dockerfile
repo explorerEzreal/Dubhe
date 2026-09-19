@@ -10,4 +10,7 @@ RUN pnpm --ignore-workspace build
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# 跳过上游入口脚本，避免其在 Alpine 包清单校验阶段阻塞服务启动。
+ENTRYPOINT ["nginx"]
+CMD ["-g", "daemon off;"]
 EXPOSE 80
