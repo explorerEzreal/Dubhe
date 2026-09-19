@@ -1,12 +1,17 @@
-import { Alert, AutoComplete, Button, Card, Col, Descriptions, Form, Input, List, Modal, Row, Select, Space, Statistic, Tag, Typography, message } from 'antd';
+import { Alert, AutoComplete, Button, Card, Col, Descriptions, Form, Input, Modal, Row, Select, Space, Statistic, Tag, Typography } from 'antd';
 import { useState } from 'react';
 import type { AgentSummary, ModelInstanceSummary } from '../../api/agent-api';
 import type { EnrollmentTokenResult } from '../../api/enrollment-api';
 import type { ModelSummary } from '../../api/model-api';
 import type { GroupSummary } from '../../api/group-api';
-import { groupApi } from '../../api/group-api';
 import { AGENT_STATUS_TEXT, MODEL_STATE_TEXT, statusColor } from '../../constants';
 import { displayValue } from '../../utils/format';
+
+export interface AddDeviceFormValues {
+  deviceName: string;
+  localHost: string;
+  localPort: string;
+}
 
 export function ModelInstanceCard({ model }: { model: ModelInstanceSummary }) {
   return <Card size='small' title={model.name} extra={<Tag color={statusColor(model.state)}>{MODEL_STATE_TEXT[model.state] ?? model.state}</Tag>}>
@@ -26,8 +31,24 @@ export function ModelStatistics({ models }: { models: ModelSummary[] }) {
   return <div className='metric-grid' style={{ marginTop: 24 }}>{models.map((model) => <Card key={model.id}><Statistic title={model.name} value={model.readyInstances} suffix={`/ ${model.instanceCount} 个实例`} /><Tag color={model.status === 'ready' ? 'green' : 'default'}>{model.status === 'ready' ? '可路由' : '暂无可用实例'}</Tag></Card>)}</div>;
 }
 
-export function AddDeviceModal({ open, models, selectedModel, localUrl, creating, onClose, onModelChange, onUrlChange, onSubmit }: { open: boolean; models: ModelSummary[]; selectedModel: string; localUrl: string; creating: boolean; onClose: () => void; onModelChange: (value: string) => void; onUrlChange: (value: string) => void; onSubmit: () => void }) {
-  return <Modal title='添加设备' open={open} onCancel={onClose} footer={null} destroyOnClose><Form layout='vertical' onFinish={onSubmit}><Form.Item label='共享模型' extra='每个 Agent 进程绑定一个模型和一个本地 OpenAI 兼容服务地址。'><AutoComplete placeholder='选择或输入模型名' value={selectedModel || undefined} onChange={onModelChange} options={models.map((model) => ({ label: model.name, value: model.name }))} /></Form.Item><Form.Item label='本地模型服务地址' required extra='需要提供 OpenAI 兼容的 /v1/models 和 /v1/chat/completions 接口。'><Input value={localUrl} onChange={(event) => onUrlChange(event.target.value)} placeholder='http://127.0.0.1:11434' /></Form.Item><Button type='primary' htmlType='submit' loading={creating} block>生成一次性部署令牌</Button></Form></Modal>;
+export function AddDeviceModal({ open, models, selectedModel, creating, onClose, onModelChange, onSubmit }: { open: boolean; models: ModelSummary[]; selectedModel: string; creating: boolean; onClose: () => void; onModelChange: (value: string) => void; onSubmit: (values: AddDeviceFormValues) => void }) {
+  return <Modal title='添加设备' open={open} onCancel={onClose} footer={null} destroyOnClose>
+    <Form layout='vertical' initialValues={{ deviceName: 'Bubhe Agent-001', localHost: '127.0.0.1', localPort: '8080' }} onFinish={onSubmit}>
+      <Form.Item label='设备名称' name='deviceName' rules={[{ required: true, whitespace: true, message: '请输入设备名称' }]}>
+        <Input maxLength={200} placeholder='请输入设备名称' />
+      </Form.Item>
+      <Form.Item label='共享模型' extra='每个 Agent 进程绑定一个模型和一个本地 OpenAI 兼容服务地址。'>
+        <AutoComplete placeholder='选择或输入模型名' value={selectedModel || undefined} onChange={onModelChange} options={models.map((model) => ({ label: model.name, value: model.name }))} />
+      </Form.Item>
+      <Form.Item label='本地模型服务域名' name='localHost' rules={[{ required: true, whitespace: true, message: '请输入本地模型服务域名' }]}>
+        <Input placeholder='127.0.0.1' />
+      </Form.Item>
+      <Form.Item label='本地模型服务端口' name='localPort' rules={[{ required: true, whitespace: true, message: '请输入本地模型服务端口' }, { pattern: /^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/, message: '端口必须是 1-65535 的整数' }]}>
+        <Input inputMode='numeric' placeholder='8080' />
+      </Form.Item>
+      <Button type='primary' htmlType='submit' loading={creating} block>生成一次性部署令牌</Button>
+    </Form>
+  </Modal>;
 }
 
 export function DeploymentCommandModal({ tokenResult, command, onClose, onCopy }: { tokenResult: EnrollmentTokenResult | null; command: string; onClose: () => void; onCopy: () => void }) {
@@ -92,4 +113,3 @@ export function AddAgentToGroupModal({ open, groups, agents, loading, onClose, o
     </Form>
   </Modal>;
 }
-

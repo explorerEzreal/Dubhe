@@ -1,6 +1,6 @@
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
-import { Button, Card, Input, Progress, Tag, Typography } from 'antd';
+import { Button, Card, Input, Progress, Tag } from 'antd';
 import {
   SearchOutlined,
   AppstoreOutlined,
@@ -70,7 +70,7 @@ export function GroupRail({
   ];
   return (
     <section className='device-group-section'>
-      <Typography.Title level={4}>分组</Typography.Title>
+      <div className='device-group-title'>设备分组</div>
       <div className='device-group-rail'>
         {items.map((group, index) => (
           <button

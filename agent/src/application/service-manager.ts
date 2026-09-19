@@ -1,14 +1,15 @@
-import { chmod, mkdir, rm, writeFile } from 'node:fs/promises';
+import { access, chmod, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
 export interface ServiceConfig {
   cloudUrl: string;
-  localModelUrl: string;
+  host: string;
+  port: number;
   model: string;
   agentName: string;
   deviceId?: string;
@@ -19,6 +20,29 @@ export interface ServiceConfig {
 export interface ServicePaths {
   envPath: string;
   servicePath: string;
+}
+
+export interface ServiceBackup {
+  envPath: string;
+  servicePath: string;
+}
+
+export interface ServiceStatus {
+  status: 'running' | 'stopped' | 'degraded' | 'not-installed' | 'unknown';
+  platform: 'darwin' | 'linux';
+  service: string;
+  pid: number | null;
+  model: string | null;
+  host: string | null;
+  port: number | null;
+  localUrl: string | null;
+  agentVersion: string;
+}
+
+const AGENT_VERSION = '0.1.0';
+
+function localModelUrl(host: string, port: number): string {
+  return `http://${host.includes(':') && !host.startsWith('[') ? `[${host}]` : host}:${port}`;
 }
 
 function homePath(...parts: string[]): string {
@@ -71,7 +95,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 EnvironmentFile=${paths.envPath}
-ExecStart=${node} ${entry} start
+ExecStart=${node} ${entry} run
 WorkingDirectory=${dirname(config.credentialsPath)}
 Restart=always
 RestartSec=5
@@ -91,7 +115,9 @@ WantedBy=default.target
 function plist(config: ServiceConfig): string {
   const env = [
     ['CLOUD_URL', config.cloudUrl],
-    ['LOCAL_MODEL_URL', config.localModelUrl],
+    ['LOCAL_MODEL_HOST', config.host],
+    ['LOCAL_MODEL_PORT', String(config.port)],
+    ['LOCAL_MODEL_URL', localModelUrl(config.host, config.port)],
     ['MODELS', config.model],
     ['AGENT_NAME', config.agentName],
     ['CREDENTIALS_PATH', config.credentialsPath],
@@ -105,7 +131,7 @@ function plist(config: ServiceConfig): string {
 <dict>
   <key>Label</key><string>com.dubhe.agent</string>
   <key>ProgramArguments</key>
-  <array><string>${xml(process.execPath)}</string><string>${xml(entryPath())}</string><string>start</string></array>
+  <array><string>${xml(process.execPath)}</string><string>${xml(entryPath())}</string><string>run</string></array>
   <key>EnvironmentVariables</key>
   <dict>
 ${environment}
@@ -130,7 +156,9 @@ export async function writeServiceConfig(config: ServiceConfig): Promise<Service
   await mkdir(dirname(config.credentialsPath), { recursive: true, mode: 0o700 });
   const env = [
     `CLOUD_URL=${envValue(config.cloudUrl)}`,
-    `LOCAL_MODEL_URL=${envValue(config.localModelUrl)}`,
+    `LOCAL_MODEL_HOST=${envValue(config.host)}`,
+    `LOCAL_MODEL_PORT=${envValue(String(config.port))}`,
+    `LOCAL_MODEL_URL=${envValue(localModelUrl(config.host, config.port))}`,
     `MODELS=${envValue(config.model)}`,
     `AGENT_NAME=${envValue(config.agentName)}`,
     `CREDENTIALS_PATH=${envValue(config.credentialsPath)}`,
@@ -146,30 +174,114 @@ export async function writeServiceConfig(config: ServiceConfig): Promise<Service
 
 export async function startService(paths: ServicePaths): Promise<void> {
   if (process.platform === 'darwin') {
-    // launchctl 对已加载任务不会刷新环境变量，先卸载再加载确保使用最新配置。
-    try { await execFileAsync('launchctl', ['unload', '-w', paths.servicePath]); } catch { /* 任务可能尚未加载 */ }
-    await execFileAsync('launchctl', ['load', '-w', paths.servicePath]);
+    await assertServiceInstalled(paths);
+    if ((await serviceStatusObject(paths)).status === 'running') return;
+    if (await isDarwinLoaded()) {
+      await execFileAsync('launchctl', ['kickstart', `gui/${process.getuid?.() ?? 0}/com.dubhe.agent`]);
+    } else {
+      await execFileAsync('launchctl', ['load', '-w', paths.servicePath]);
+    }
     return;
   }
+  await assertServiceInstalled(paths);
   await execFileAsync('systemctl', ['--user', 'daemon-reload']);
   await execFileAsync('systemctl', ['--user', 'enable', '--now', 'dubhe-agent.service']);
 }
 
-export async function serviceStatus(): Promise<string> {
+async function assertServiceInstalled(paths: ServicePaths): Promise<void> {
+  try { await access(paths.servicePath); } catch { throw new Error('服务未安装'); }
+}
+
+async function isDarwinLoaded(): Promise<boolean> {
+  try {
+    await execFileAsync('launchctl', ['print', `gui/${process.getuid?.() ?? 0}/com.dubhe.agent`]);
+    return true;
+  } catch { return false; }
+}
+
+export async function stopService(paths: ServicePaths): Promise<void> {
+  try { await access(paths.servicePath); } catch { return; }
+  if (process.platform === 'darwin') {
+    if (!(await isDarwinLoaded())) return;
+    try { await execFileAsync('launchctl', ['bootout', `gui/${process.getuid?.() ?? 0}/com.dubhe.agent`]); } catch { /* 已停止 */ }
+    return;
+  }
+  try { await execFileAsync('systemctl', ['--user', 'stop', 'dubhe-agent.service']); } catch { /* 已停止或未安装 */ }
+}
+
+export async function restartService(paths: ServicePaths): Promise<void> {
+  await assertServiceInstalled(paths);
+  if (process.platform === 'darwin') {
+    if (await isDarwinLoaded()) {
+      await execFileAsync('launchctl', ['kickstart', '-k', `gui/${process.getuid?.() ?? 0}/com.dubhe.agent`]);
+    } else {
+      await execFileAsync('launchctl', ['load', '-w', paths.servicePath]);
+    }
+    return;
+  }
+  await execFileAsync('systemctl', ['--user', 'restart', 'dubhe-agent.service']);
+}
+
+export async function serviceStatusObject(paths: ServicePaths = servicePaths()): Promise<ServiceStatus> {
+  const platform = process.platform === 'darwin' ? 'darwin' : 'linux';
+  const configured: Record<string, string> = await readServiceConfig(paths).catch(() => ({}));
+  const model = configured.MODELS ?? null;
+  const legacyUrl = configured.LOCAL_MODEL_URL ? new URL(configured.LOCAL_MODEL_URL) : null;
+  const host = configured.LOCAL_MODEL_HOST ?? legacyUrl?.hostname ?? null;
+  const port = configured.LOCAL_MODEL_PORT ? Number(configured.LOCAL_MODEL_PORT) : legacyUrl ? Number(legacyUrl.port || 80) : null;
+  const localUrl = host && port ? localModelUrl(host, port) : null;
+  const base = { model, host, port, localUrl, agentVersion: AGENT_VERSION };
+  try { await access(paths.servicePath); } catch {
+    return { ...base, status: 'not-installed', platform, service: platform === 'darwin' ? 'com.dubhe.agent' : 'dubhe-agent.service', pid: null };
+  }
   if (process.platform === 'darwin') {
     try {
       const result = await execFileAsync('launchctl', ['print', `gui/${process.getuid?.() ?? 0}/com.dubhe.agent`]);
-      return result.stdout.trim() || 'active';
+      const pid = result.stdout.match(/\bpid\s*=\s*(\d+)/)?.[1];
+      const state = result.stdout.match(/\bstate\s*=\s*([^\n]+)/)?.[1]?.trim();
+      const failed = /last exit code\s*=\s*[1-9]\d*/.test(result.stdout);
+      return {
+        ...base,
+        status: state === 'running' ? 'running' : failed ? 'degraded' : 'stopped',
+        platform,
+        service: 'com.dubhe.agent',
+        pid: pid ? Number(pid) : null,
+      };
     } catch {
-      return 'inactive';
+      return { ...base, status: 'stopped', platform, service: 'com.dubhe.agent', pid: null };
     }
   }
   try {
-    const result = await execFileAsync('systemctl', ['--user', 'is-active', 'dubhe-agent.service']);
-    return result.stdout.trim() || 'unknown';
+    const result = await execFileAsync('systemctl', ['--user', 'show', 'dubhe-agent.service', '--property=ActiveState,MainPID', '--value']);
+    const [state, pid] = result.stdout.trim().split('\n');
+    return { ...base, status: state === 'active' ? 'running' : state === 'failed' ? 'degraded' : 'stopped', platform, service: 'dubhe-agent.service', pid: pid && pid !== '0' ? Number(pid) : null };
   } catch {
-    return 'inactive';
+    return { ...base, status: 'unknown', platform, service: 'dubhe-agent.service', pid: null };
   }
+}
+
+export async function serviceStatus(): Promise<string> {
+  return (await serviceStatusObject()).status;
+}
+
+export async function readServiceConfig(paths: ServicePaths = servicePaths()): Promise<Record<string, string>> {
+  const content = await readFile(paths.envPath, 'utf8');
+  return Object.fromEntries(content.split('\n').filter(Boolean).map((line) => {
+    const index = line.indexOf('=');
+    return [line.slice(0, index), line.slice(index + 1).replace(/^'/, '').replace(/'$/, '').replaceAll("'\\''", "'")];
+  }));
+}
+
+export async function serviceLogs(lines = 50, follow = false): Promise<void> {
+  const args = process.platform === 'darwin'
+    ? ['-n', String(lines), ...(follow ? ['-f'] : []), `${os.homedir()}/Library/Logs/dubhe-agent.log`]
+    : ['--user', '-u', 'dubhe-agent.service', '-n', String(lines), ...(follow ? ['-f'] : []), '--no-pager'];
+  const command = process.platform === 'darwin' ? 'tail' : 'journalctl';
+  await new Promise<void>((resolvePromise, reject) => {
+    const child = spawn(command, args, { stdio: 'inherit' });
+    child.on('error', reject);
+    child.on('exit', (code) => code === 0 ? resolvePromise() : reject(new Error('日志读取失败')));
+  });
 }
 
 export async function stopAndRemoveService(paths: ServicePaths): Promise<void> {
@@ -181,4 +293,30 @@ export async function stopAndRemoveService(paths: ServicePaths): Promise<void> {
   }
   await rm(paths.servicePath, { force: true });
   await rm(paths.envPath, { force: true });
+}
+
+export async function backupServiceConfig(paths: ServicePaths): Promise<ServiceBackup> {
+  const suffix = `.backup-${Date.now()}`;
+  const backup = { servicePath: `${paths.servicePath}${suffix}`, envPath: `${paths.envPath}${suffix}` };
+  await cp(paths.servicePath, backup.servicePath);
+  await cp(paths.envPath, backup.envPath);
+  return backup;
+}
+
+export async function restoreServiceConfig(paths: ServicePaths, backup: ServiceBackup): Promise<void> {
+  await cp(backup.servicePath, paths.servicePath);
+  await cp(backup.envPath, paths.envPath);
+}
+
+export async function removeServiceBackups(paths: ServicePaths): Promise<void> {
+  const directories = [dirname(paths.servicePath), dirname(paths.envPath)];
+  const { readdir } = await import('node:fs/promises');
+  for (const directory of new Set(directories)) {
+    const names = await readdir(directory).catch(() => []);
+    for (const name of names) {
+      if (name.startsWith(`${paths.servicePath.split('/').pop()}.backup-`) || name.startsWith(`${paths.envPath.split('/').pop()}.backup-`)) {
+        await rm(join(directory, name), { force: true });
+      }
+    }
+  }
 }

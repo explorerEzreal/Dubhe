@@ -2,7 +2,7 @@ import { z } from 'zod';
 import os from 'node:os';
 import { join } from 'node:path';
 
-function defaultCredentialsPath(): string {
+export function defaultCredentialsPath(): string {
   if (process.platform === 'darwin') {
     return join(os.homedir(), 'Library', 'Application Support', 'Dubhe Agent', 'credentials.json');
   }
@@ -27,7 +27,9 @@ const cloudUrlSchema = z
 
 const envSchema = z.object({
   CLOUD_URL: cloudUrlSchema,
-  LOCAL_MODEL_URL: z.string().url().default('http://127.0.0.1:8000'),
+  LOCAL_MODEL_HOST: z.string().trim().min(1).default('127.0.0.1'),
+  LOCAL_MODEL_PORT: z.coerce.number().int().min(1).max(65535).default(8000),
+  LOCAL_MODEL_URL: z.string().url(),
   LOCAL_API_KEY: z.string().optional(),
   AGENT_ID: z.string().optional(),
   AGENT_CREDENTIAL: z.string().optional(),
@@ -56,7 +58,11 @@ const envSchema = z.object({
 export type AgentConfig = z.infer<typeof envSchema>;
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AgentConfig {
-  const parsed = envSchema.safeParse(env);
+  const input = {
+    ...env,
+    LOCAL_MODEL_URL: env.LOCAL_MODEL_URL ?? `http://${env.LOCAL_MODEL_HOST ?? '127.0.0.1'}:${env.LOCAL_MODEL_PORT ?? '8000'}`,
+  };
+  const parsed = envSchema.safeParse(input);
   if (!parsed.success) {
     throw new Error(`Invalid agent config: ${parsed.error.message}`);
   }

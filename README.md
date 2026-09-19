@@ -68,16 +68,7 @@ GRANT CREATE ON SCHEMA public TO <数据库用户>;
 
 ## 接入模型设备
 
-模型设备需要 Node.js 22+、npm，以及提供 `GET /v1/models` 和 `POST /v1/chat/completions` 的本地 HTTP 服务。服务只需监听本机端口，不需要开放公网端口。Agent 支持 Linux systemd 和 macOS launchd 常驻运行。
-
-```bash
-npm install -g dubhe-agent@0.1.0
-dubhe service install --cloud-url 'https://你的域名' --token '<一次性令牌>' --model '<模型名>' --local-url 'http://127.0.0.1:8000'
-```
-
-令牌由 Web 部署者页面生成且只能使用一次；命令会注册设备、保存 0600 凭证并安装常驻服务，自动连接 `wss://你的域名/agent`。检查服务使用 `dubhe service status`，卸载使用 `dubhe service uninstall`，不会删除凭证。
-
-设备接入后回到 Web 设备监控中心查看分组、在线状态、模型状态和资源占用。需要修改本地模型服务地址、模型或日志级别时，在模型设备上调整 Agent 配置并重启本地服务；需要撤销设备或轮换凭证时，在 Web 中操作。
+普通用户完整安装和命令说明请阅读 [Agent 普通用户操作手册](./agent/AGENT_OPERATIONS.md)。
 
 ## 调用 API
 

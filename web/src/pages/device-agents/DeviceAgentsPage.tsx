@@ -9,7 +9,9 @@ import { groupApi } from '../../api/group-api';
 import { modelApi } from '../../api/model-api';
 import { config } from '../../config/config';
 import {
-  DEFAULT_LOCAL_MODEL_URL,
+  DEFAULT_DEVICE_NAME,
+  DEFAULT_LOCAL_MODEL_HOST,
+  DEFAULT_LOCAL_MODEL_PORT,
   REQUEST_ERROR_MESSAGE,
 } from '../../constants';
 import { useAsyncList } from '../../hooks';
@@ -18,6 +20,7 @@ import { EmptyState, ErrorState } from '../../components';
 import { useAppTheme } from '../../app/providers';
 import {
   AddDeviceModal,
+  type AddDeviceFormValues,
   DeploymentCommandModal,
 } from '../deployer-dashboard/components';
 import { shellQuote } from '../../utils/format';
@@ -57,7 +60,9 @@ export function DeviceAgentsPage() {
     null,
   );
   const [selectedModel, setSelectedModel] = useState('');
-  const [localUrl, setLocalUrl] = useState(DEFAULT_LOCAL_MODEL_URL);
+  const [deviceName, setDeviceName] = useState(DEFAULT_DEVICE_NAME);
+  const [localHost, setLocalHost] = useState(DEFAULT_LOCAL_MODEL_HOST);
+  const [localPort, setLocalPort] = useState(DEFAULT_LOCAL_MODEL_PORT);
   const [creating, setCreating] = useState(false);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
 
@@ -115,8 +120,11 @@ export function DeviceAgentsPage() {
     [agents, search, selectedGroup, selectedGroupAgentIds, statusFilter],
   );
 
-  async function createToken(): Promise<void> {
-    if (!selectedModel.trim() || !localUrl.trim()) {
+  async function createToken(values: AddDeviceFormValues): Promise<void> {
+    setDeviceName(values.deviceName.trim());
+    setLocalHost(values.localHost.trim());
+    setLocalPort(values.localPort.trim());
+    if (!selectedModel.trim()) {
       message.error('请填写模型和本地服务地址');
       return;
     }
@@ -141,7 +149,7 @@ export function DeviceAgentsPage() {
   }
 
   const command = tokenResult
-    ? `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --model ${shellQuote(selectedModel || '<模型名>')} --local-url ${shellQuote(localUrl)}`
+    ? `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --name ${shellQuote(deviceName || DEFAULT_DEVICE_NAME)} --model ${shellQuote(selectedModel || '<模型名>')} --local-url ${shellQuote(`http://${localHost || DEFAULT_LOCAL_MODEL_HOST}:${localPort || DEFAULT_LOCAL_MODEL_PORT}`)}`
     : '';
 
   const updatedLabel = lastUpdatedAt
@@ -249,12 +257,10 @@ export function DeviceAgentsPage() {
         open={deviceModalOpen}
         models={models}
         selectedModel={selectedModel}
-        localUrl={localUrl}
         creating={creating}
         onClose={() => setDeviceModalOpen(false)}
         onModelChange={setSelectedModel}
-        onUrlChange={setLocalUrl}
-        onSubmit={() => void createToken()}
+        onSubmit={(values) => void createToken(values)}
       />
       <DeploymentCommandModal
         tokenResult={tokenResult}

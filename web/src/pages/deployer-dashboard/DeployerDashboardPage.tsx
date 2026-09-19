@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   App,
@@ -19,11 +19,11 @@ import {
 import { groupApi, type GroupSummary } from '../../api/group-api';
 import { modelApi } from '../../api/model-api';
 import { config } from '../../config/config';
-import { DEFAULT_LOCAL_MODEL_URL, REQUEST_ERROR_MESSAGE } from '../../constants';
+import { DEFAULT_DEVICE_NAME, DEFAULT_LOCAL_MODEL_HOST, DEFAULT_LOCAL_MODEL_PORT, REQUEST_ERROR_MESSAGE } from '../../constants';
 import { useAsyncList } from '../../hooks';
 import { copyText } from '../../utils/clipboard';
 import { EmptyState, ErrorState } from '../../components';
-import { AddDeviceModal, AddAgentToGroupModal, AgentCard, CreateEditGroupModal, DeploymentCommandModal, GroupCard, InviteTokenModal, ModelStatistics } from './components';
+import { AddDeviceModal, AddAgentToGroupModal, AgentCard, CreateEditGroupModal, DeploymentCommandModal, GroupCard, InviteTokenModal, ModelStatistics, type AddDeviceFormValues } from './components';
 
 import { shellQuote } from '../../utils/format';
 
@@ -39,7 +39,9 @@ export function DeployerDashboardPage() {
   const [deviceModalOpen, setDeviceModalOpen] = useState(false);
   const [tokenResult, setTokenResult] = useState<EnrollmentTokenResult | null>(null);
   const [selectedModel, setSelectedModel] = useState('');
-  const [localUrl, setLocalUrl] = useState(DEFAULT_LOCAL_MODEL_URL);
+  const [deviceName, setDeviceName] = useState(DEFAULT_DEVICE_NAME);
+  const [localHost, setLocalHost] = useState(DEFAULT_LOCAL_MODEL_HOST);
+  const [localPort, setLocalPort] = useState(DEFAULT_LOCAL_MODEL_PORT);
   const [creating, setCreating] = useState(false);
 
   // 分组状态
@@ -49,8 +51,11 @@ export function DeployerDashboardPage() {
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const [addAgentModalOpen, setAddAgentModalOpen] = useState(false);
 
-  async function createToken(): Promise<void> {
-    if (!selectedModel.trim() || !localUrl.trim()) {
+  async function createToken(values: AddDeviceFormValues): Promise<void> {
+    setDeviceName(values.deviceName.trim());
+    setLocalHost(values.localHost.trim());
+    setLocalPort(values.localPort.trim());
+    if (!selectedModel.trim()) {
       message.error('请填写模型和本地服务地址');
       return;
     }
@@ -135,7 +140,7 @@ export function DeployerDashboardPage() {
   const command = tokenResult
     ? (() => {
         const modelName = selectedModel || '<模型名>';
-        return `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --model ${shellQuote(modelName)} --local-url ${shellQuote(localUrl)}`;
+        return `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --name ${shellQuote(deviceName || DEFAULT_DEVICE_NAME)} --model ${shellQuote(modelName)} --local-url ${shellQuote(`http://${localHost || DEFAULT_LOCAL_MODEL_HOST}:${localPort || DEFAULT_LOCAL_MODEL_PORT}`)}`;
       })()
     : '';
 
@@ -205,7 +210,7 @@ export function DeployerDashboardPage() {
       )}
       <ModelStatistics models={models} />
 
-      <AddDeviceModal open={deviceModalOpen} models={models} selectedModel={selectedModel} localUrl={localUrl} creating={creating} onClose={() => setDeviceModalOpen(false)} onModelChange={setSelectedModel} onUrlChange={setLocalUrl} onSubmit={() => void createToken()} />
+      <AddDeviceModal open={deviceModalOpen} models={models} selectedModel={selectedModel} creating={creating} onClose={() => setDeviceModalOpen(false)} onModelChange={setSelectedModel} onSubmit={(values) => void createToken(values)} />
       <DeploymentCommandModal tokenResult={tokenResult} command={command} onClose={() => setTokenResult(null)} onCopy={() => void copy(command, '启动命令已复制')} />
       <CreateEditGroupModal open={groupModalOpen} editing={editingGroup} loading={groupSaving} onClose={() => { setGroupModalOpen(false); setEditingGroup(null); }} onSubmit={(values) => void handleCreateGroup(values)} />
       <InviteTokenModal open={Boolean(inviteToken)} token={inviteToken ?? ''} onClose={() => setInviteToken(null)} onCopy={() => void copy(inviteToken ?? '', '邀请码已复制')} />

@@ -78,6 +78,8 @@ migrations/                     # SQL 迁移文件
 
 ## 3. Agent 目录骨架
 
+普通用户安装、命令和故障排查见 [`agent/AGENT_OPERATIONS.md`](../agent/AGENT_OPERATIONS.md)。
+
 ```
 src/
   main.ts
@@ -94,7 +96,7 @@ src/
     model-service.ts            # 模型状态管理
     metrics-service.ts          # 资源指标收集
     registration-service.ts     # 自动注册逻辑
-    service-manager.ts          # 服务生命周期编排
+    service-manager.ts          # 安装、配置、迁移、重置、状态和日志编排
   infrastructure/
     backends/                   # 模型后端适配器
     cloud/                      # Cloud WSS 协议实现

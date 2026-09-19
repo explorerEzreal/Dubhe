@@ -210,6 +210,11 @@ export function createAgentRuntime(options: AgentRuntimeOptions): AgentRuntime {
       options.logger.warn({ code, reason }, 'cloud credential rejected');
       return;
     }
+    if (code === 1003 || code === 4002) {
+      setState('degraded');
+      options.logger.warn({ code, reason }, 'Agent 与 Cloud 协议版本不兼容，请升级 Agent 或 Cloud');
+      return;
+    }
     setState('offline');
     options.logger.warn({ code, reason }, 'cloud connection closed');
     scheduleReconnect();
