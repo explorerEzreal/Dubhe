@@ -10,21 +10,31 @@ import {
 } from '@ant-design/icons';
 import type { AgentSummary } from '../../api/agent-api';
 import type { GroupSummary } from '../../api/group-api';
-import { AGENT_STATUS_TEXT, statusColor } from '../../constants';
+import { AGENT_STATUS_REASON_TEXT, AGENT_STATUS_TEXT, statusColor } from '../../constants';
 
-export type DeviceStatusFilter = 'all' | 'online' | 'busy' | 'offline';
+export type DeviceStatusFilter =
+  | 'all'
+  | 'created'
+  | 'connecting'
+  | 'online'
+  | 'degraded'
+  | 'offline'
+  | 'revoked';
 
 const statusTone: Record<DeviceStatusFilter, string> = {
   all: '#94a3b8',
+  created: '#94a3b8',
+  connecting: '#fbbf24',
   online: '#35d399',
-  busy: '#fbbf24',
+  degraded: '#f97316',
   offline: '#64748b',
+  revoked: '#ef4444',
 };
 
 function statusOf(agent: AgentSummary): DeviceStatusFilter {
-  if (agent.status === 'online') return 'online';
-  if (['connecting', 'degraded'].includes(agent.status)) return 'busy';
-  return 'offline';
+  return Object.prototype.hasOwnProperty.call(statusTone, agent.status)
+    ? (agent.status as DeviceStatusFilter)
+    : 'offline';
 }
 
 function metricNumber(value: unknown): number | null {
@@ -33,8 +43,10 @@ function metricNumber(value: unknown): number | null {
 
 function memoryUsage(agent: AgentSummary): number | null {
   const memory = agent.hardwareInfo?.memory as
-    | { totalBytes?: unknown; freeBytes?: unknown }
+    | { totalBytes?: unknown; freeBytes?: unknown; usagePercent?: unknown }
     | undefined;
+  const reported = metricNumber(memory?.usagePercent);
+  if (reported !== null && reported >= 0 && reported <= 100) return Math.round(reported);
   const total = metricNumber(memory?.totalBytes);
   const free = metricNumber(memory?.freeBytes);
   if (!total || free === null || free > total) return null;
@@ -43,14 +55,35 @@ function memoryUsage(agent: AgentSummary): number | null {
 
 function loadUsage(agent: AgentSummary): number | null {
   const cpu = agent.hardwareInfo?.cpu as
-    | { loadAverage?: unknown; cores?: unknown }
+    | { loadAverage?: unknown; cores?: unknown; usagePercent?: unknown }
     | undefined;
+  const reported = metricNumber(cpu?.usagePercent);
+  if (reported !== null && reported >= 0 && reported <= 100) return Math.round(reported);
   const load = Array.isArray(cpu?.loadAverage)
     ? metricNumber(cpu.loadAverage[0])
     : null;
   const cores = metricNumber(cpu?.cores);
   if (load === null || !cores) return null;
   return Math.min(100, Math.round((load / cores) * 100));
+}
+
+function nestedUsage(agent: AgentSummary, key: 'gpu' | 'disk'): number | null {
+  const resource = agent.hardwareInfo?.[key] as
+    | { usagePercent?: unknown }
+    | undefined;
+  const value = metricNumber(resource?.usagePercent);
+  return value !== null && value >= 0 && value <= 100 ? Math.round(value) : null;
+}
+
+function networkLabel(agent: AgentSummary): string {
+  const network = agent.hardwareInfo?.network as
+    | { rxBytesPerSecond?: unknown; txBytesPerSecond?: unknown }
+    | undefined;
+  const rx = metricNumber(network?.rxBytesPerSecond);
+  const tx = metricNumber(network?.txBytesPerSecond);
+  if (rx === null && tx === null) return '暂无数据';
+  const format = (value: number | null) => value === null ? '—' : `${Math.round(value / 1024)} KB/s`;
+  return `收 ${format(rx)} · 发 ${format(tx)}`;
 }
 
 export function GroupRail({
@@ -113,9 +146,12 @@ export function StatusFilters({
 }) {
   const filters: Array<[DeviceStatusFilter, string]> = [
     ['all', '全部状态'],
+    ['created', '未安装'],
+    ['connecting', '连接中'],
     ['online', '在线'],
-    ['busy', '繁忙'],
+    ['degraded', '降级'],
     ['offline', '离线'],
+    ['revoked', '已撤销'],
   ];
   return (
     <div className='device-toolbar'>
@@ -157,7 +193,7 @@ export function OverviewCards({
       result[statusOf(agent)] += 1;
       return result;
     },
-    { all: agents.length, online: 0, busy: 0, offline: 0 } as Record<
+    { all: agents.length, created: 0, connecting: 0, online: 0, degraded: 0, offline: 0, revoked: 0 } as Record<
       DeviceStatusFilter,
       number
     >,
@@ -182,12 +218,15 @@ export function OverviewCards({
             name: '在线',
             itemStyle: { color: '#35d399' },
           },
-          { value: counts.busy, name: '繁忙', itemStyle: { color: '#fbbf24' } },
+          { value: counts.connecting, name: '连接中', itemStyle: { color: '#fbbf24' } },
+          { value: counts.degraded, name: '降级', itemStyle: { color: '#f97316' } },
           {
             value: counts.offline,
             name: '离线',
             itemStyle: { color: '#64748b' },
           },
+          { value: counts.created, name: '未安装', itemStyle: { color: '#94a3b8' } },
+          { value: counts.revoked, name: '已撤销', itemStyle: { color: '#ef4444' } },
         ],
       },
     ],
@@ -289,8 +328,8 @@ export function OverviewCards({
             在线 {counts.online}
           </span>
           <span>
-            <i className='status-dot' style={{ background: statusTone.busy }} />
-            繁忙 {counts.busy}
+            <i className='status-dot' style={{ background: statusTone.degraded }} />
+            降级 {counts.degraded}
           </span>
           <span>
             <i
@@ -308,14 +347,14 @@ export function OverviewCards({
           opts={{ renderer: 'svg' }}
         />
         <div className='chart-legend'>
-          {(['online', 'busy', 'offline'] as DeviceStatusFilter[]).map(
+          {(['online', 'degraded', 'offline'] as DeviceStatusFilter[]).map(
             (key) => (
               <span key={key}>
                 <i
                   className='status-dot'
                   style={{ background: statusTone[key] }}
                 />
-                {key === 'online' ? '在线' : key === 'busy' ? '繁忙' : '离线'}{' '}
+                {AGENT_STATUS_TEXT[key]}{' '}
                 {counts[key]}
               </span>
             ),
@@ -363,6 +402,8 @@ export function DeviceMonitorCard({
 }) {
   const cpu = loadUsage(agent);
   const memory = memoryUsage(agent);
+  const gpu = nestedUsage(agent, 'gpu');
+  const disk = nestedUsage(agent, 'disk');
   const model = agent.modelInstances?.[0];
   return (
     <Card className={`device-monitor-card status-${statusOf(agent)}`}>
@@ -381,20 +422,24 @@ export function DeviceMonitorCard({
           {AGENT_STATUS_TEXT[agent.status] ?? agent.status}
         </Tag>
       </div>
+      <div className='device-status-reason'>状态说明：{AGENT_STATUS_REASON_TEXT[agent.statusReason ?? 'heartbeat'] ?? '暂无'}</div>
       <div className='device-model'>
         <HddOutlined /> {model?.name ?? '暂无模型状态'}
+        {model?.state && <Tag color={statusColor(model.state)}>{model.state}</Tag>}
       </div>
       <div className='device-resource-list'>
         <ResourceBar label='CPU' value={cpu} />
         <ResourceBar label='内存' value={memory} />
-        <ResourceBar label='GPU' value={null} />
-        <ResourceBar label='磁盘' value={null} />
+        <ResourceBar label='GPU' value={gpu} />
+        <ResourceBar label='磁盘' value={disk} />
       </div>
+      <div className='device-network-summary'>网络：{networkLabel(agent)}</div>
       <div className='device-card-foot'>
         <span>
           {agent.lastSeenAt
             ? `最近心跳 ${new Date(agent.lastSeenAt).toLocaleString()}`
             : '暂无心跳记录'}
+          {agent.resourceSnapshotAt && ` · 资源 ${new Date(agent.resourceSnapshotAt).toLocaleString()}`}
         </span>
         <span className='device-card-actions'>
           <Button type='link' onClick={onRotate}>

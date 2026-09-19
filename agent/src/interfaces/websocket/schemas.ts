@@ -8,6 +8,28 @@ const modelNameSchema = z
   .max(200)
   .regex(/^[A-Za-z0-9][A-Za-z0-9._:/-]*$/);
 
+const hardwareInfoSchema = z.object({
+  cpu: z.object({
+    cores: z.number().int().positive().optional(),
+    loadAverage: z.array(z.number().nonnegative()).optional(),
+    usagePercent: z.number().min(0).max(100).nullable().optional(),
+  }).passthrough().optional(),
+  memory: z.object({
+    totalBytes: z.number().nonnegative().optional(),
+    freeBytes: z.number().nonnegative().optional(),
+    usedBytes: z.number().nonnegative().optional(),
+    usagePercent: z.number().min(0).max(100).nullable().optional(),
+  }).passthrough().optional(),
+  gpu: z.object({ usagePercent: z.number().min(0).max(100).nullable().optional() }).passthrough().nullable().optional(),
+  disk: z.object({ usagePercent: z.number().min(0).max(100).nullable().optional() }).passthrough().nullable().optional(),
+  network: z.object({
+    rxBytes: z.number().nonnegative().optional(),
+    txBytes: z.number().nonnegative().optional(),
+    rxBytesPerSecond: z.number().nonnegative().nullable().optional(),
+    txBytesPerSecond: z.number().nonnegative().nullable().optional(),
+  }).passthrough().nullable().optional(),
+}).passthrough();
+
 const envelopeSchema = z.object({
   protocol_version: z.literal(1),
   type: z.enum([
@@ -32,7 +54,7 @@ export const registerMessageSchema = envelopeSchema.extend({
     token: z.string().min(1).max(512),
     deviceId: z.string().min(1).max(256),
     name: z.string().min(1).max(200).optional().default('Bubhe 天枢 Agent'),
-    hardwareInfo: z.record(z.unknown()).nullable().optional().default(null),
+    hardwareInfo: hardwareInfoSchema.nullable().optional().default(null),
   }).strict(),
 });
 
@@ -40,7 +62,7 @@ export const heartbeatMessageSchema = envelopeSchema.extend({
   type: z.literal('heartbeat'),
   payload: z.object({
     status: z.enum(['online', 'degraded']),
-    hardwareInfo: z.record(z.unknown()).nullable().optional(),
+    hardwareInfo: hardwareInfoSchema.nullable().optional(),
     models: z.array(
       z.object({
         name: modelNameSchema,

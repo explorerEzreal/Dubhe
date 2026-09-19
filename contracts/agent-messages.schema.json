@@ -17,6 +17,13 @@
     "request_id": { "type": "string" },
     "payload": { "type": "object" }
   },
+  "definitions": {
+    "cpuMetrics": { "type": "object", "properties": { "cores": { "type": "integer", "minimum": 1 }, "loadAverage": { "type": "array", "items": { "type": "number", "minimum": 0 } }, "usagePercent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 } }, "additionalProperties": true },
+    "memoryMetrics": { "type": "object", "properties": { "totalBytes": { "type": "number", "minimum": 0 }, "freeBytes": { "type": "number", "minimum": 0 }, "usedBytes": { "type": "number", "minimum": 0 }, "usagePercent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 } }, "additionalProperties": true },
+    "gpuMetrics": { "type": "object", "properties": { "vendor": { "type": "string" }, "model": { "type": "string" }, "usagePercent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 }, "memoryTotalBytes": { "type": "number", "minimum": 0 }, "memoryUsedBytes": { "type": "number", "minimum": 0 } }, "additionalProperties": true },
+    "diskMetrics": { "type": "object", "properties": { "mount": { "type": "string" }, "totalBytes": { "type": "number", "minimum": 0 }, "freeBytes": { "type": "number", "minimum": 0 }, "usedBytes": { "type": "number", "minimum": 0 }, "usagePercent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 } }, "additionalProperties": true },
+    "networkMetrics": { "type": "object", "properties": { "rxBytes": { "type": "number", "minimum": 0 }, "txBytes": { "type": "number", "minimum": 0 }, "rxBytesPerSecond": { "type": ["number", "null"], "minimum": 0 }, "txBytesPerSecond": { "type": ["number", "null"], "minimum": 0 } }, "additionalProperties": true }
+  },
   "allOf": [
     {
       "if": {
@@ -32,7 +39,15 @@
             "properties": {
               "status": { "enum": ["online", "degraded"] },
               "hardwareInfo": {
-                "type": ["object", "null"]
+                "type": ["object", "null"],
+                "properties": {
+                  "cpu": { "$ref": "#/definitions/cpuMetrics" },
+                  "memory": { "$ref": "#/definitions/memoryMetrics" },
+                  "gpu": { "oneOf": [{ "$ref": "#/definitions/gpuMetrics" }, { "type": "null" }] },
+                  "disk": { "oneOf": [{ "$ref": "#/definitions/diskMetrics" }, { "type": "null" }] },
+                  "network": { "oneOf": [{ "$ref": "#/definitions/networkMetrics" }, { "type": "null" }] }
+                },
+                "additionalProperties": true
               },
               "models": {
                 "type": "array",

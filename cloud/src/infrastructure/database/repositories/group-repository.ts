@@ -112,7 +112,9 @@ export class PgGroupRepository implements GroupRepository {
   async listAgentsByGroup(groupId: string): Promise<Array<Record<string, unknown>>> {
     try {
       const result = await this.pool.query(
-        `select a.id,a.name,a.status,a.last_seen_at as "lastSeenAt",
+        `select a.id,coalesce(nullif(a.name, ''), a.device_id) as name,a.status,
+                case a.status when 'offline' then 'heartbeat_timeout' when 'revoked' then 'credential_revoked' when 'created' then 'not_registered' when 'degraded' then 'model_unavailable' else 'heartbeat' end as "statusReason",
+                a.last_seen_at as "lastSeenAt", a.last_seen_at as "resourceSnapshotAt",
                 a.hardware_info as "hardwareInfo",
                 coalesce((
                   select json_agg(json_build_object(

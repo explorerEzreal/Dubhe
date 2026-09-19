@@ -771,13 +771,18 @@ button { font: inherit; }
 .device-toolbar > .ant-input-affix-wrapper { width: min(300px, 100%); border-color: var(--border-color); background: var(--panel-bg); }
 .device-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .device-monitor-card { border-left: 3px solid var(--accent-color); background: var(--panel-bg); }
-.device-monitor-card.status-busy { border-left-color: #fbbf24; }
+.device-monitor-card.status-created, .device-monitor-card.status-connecting { border-left-color: #fbbf24; }
+.device-monitor-card.status-degraded { border-left-color: #f97316; }
 .device-monitor-card.status-offline { border-left-color: #64748b; }
+.device-monitor-card.status-revoked { border-left-color: #ef4444; }
 .device-monitor-card .ant-card-body { padding: 18px; }
 .device-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .device-name { display: flex; align-items: center; gap: 8px; color: var(--text-color); font-size: 16px; font-weight: 650; }
 .device-id { margin: 7px 0 15px 16px; color: var(--muted-color); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
 .device-model { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; padding: 9px 12px; border-radius: 7px; background: var(--device-track, #f1f5f9); color: var(--menu-color); font-size: 13px; }
+.device-model .ant-tag { margin-inline-start: auto; }
+.device-status-reason, .device-network-summary { margin: -10px 0 12px; color: var(--muted-color); font-size: 11px; }
+.device-network-summary { margin: 12px 0 0; }
 .device-resource-list { display: grid; gap: 10px; }
 .resource-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) 68px; align-items: center; gap: 8px; color: var(--muted-color); font-size: 12px; }
 .resource-row .ant-progress { margin: 0; }

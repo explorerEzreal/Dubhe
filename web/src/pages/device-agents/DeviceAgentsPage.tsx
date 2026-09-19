@@ -102,12 +102,7 @@ export function DeviceAgentsPage() {
           (selectedGroupAgentIds
             ? selectedGroupAgentIds.includes(agent.id)
             : false);
-        const status =
-          agent.status === 'online'
-            ? 'online'
-            : ['connecting', 'degraded'].includes(agent.status)
-              ? 'busy'
-              : 'offline';
+        const status = agent.status as DeviceStatusFilter;
         const matchesStatus = statusFilter === 'all' || status === statusFilter;
         const query = search.trim().toLowerCase();
         return (

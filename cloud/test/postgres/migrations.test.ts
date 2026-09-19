@@ -58,6 +58,9 @@ run('PostgreSQL migrations', () => {
         '0001_initial.sql',
         '0002_security.sql',
         '0003_token_hardening.sql',
+        '0003_user_nickname.sql',
+        '0004_groups.sql',
+        '0005_agent_state_consistency.sql',
       ]);
       expect(await runMigrations(scoped, directory)).toEqual([]);
 

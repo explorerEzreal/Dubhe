@@ -4,7 +4,7 @@ import type { AgentSummary, ModelInstanceSummary } from '../../api/agent-api';
 import type { EnrollmentTokenResult } from '../../api/enrollment-api';
 import type { ModelSummary } from '../../api/model-api';
 import type { GroupSummary } from '../../api/group-api';
-import { AGENT_STATUS_TEXT, MODEL_STATE_TEXT, statusColor } from '../../constants';
+import { AGENT_STATUS_REASON_TEXT, AGENT_STATUS_TEXT, MODEL_STATE_TEXT, statusColor } from '../../constants';
 import { displayValue } from '../../utils/format';
 
 export interface AddDeviceFormValues {
@@ -21,7 +21,7 @@ export function ModelInstanceCard({ model }: { model: ModelInstanceSummary }) {
 
 export function AgentCard({ agent, onRotate, onRevoke }: { agent: AgentSummary; onRotate: () => void; onRevoke: () => void }) {
   return <Col xs={24} lg={12}><Card title={agent.name || agent.id} extra={<Tag color={statusColor(agent.status)}>{AGENT_STATUS_TEXT[agent.status] ?? agent.status}</Tag>}>
-    <Descriptions column={1} size='small'><Descriptions.Item label='设备 ID'>{agent.id}</Descriptions.Item><Descriptions.Item label='最近心跳'>{agent.lastSeenAt ? new Date(agent.lastSeenAt).toLocaleString() : '—'}</Descriptions.Item><Descriptions.Item label='资源快照'>{agent.hardwareInfo ? Object.entries(agent.hardwareInfo).map(([key, value]) => `${key}: ${displayValue(value)}`).join('，') : '暂无'}</Descriptions.Item></Descriptions>
+    <Descriptions column={1} size='small'><Descriptions.Item label='设备 ID'>{agent.id}</Descriptions.Item><Descriptions.Item label='状态说明'>{AGENT_STATUS_REASON_TEXT[agent.statusReason ?? 'heartbeat'] ?? '暂无'}</Descriptions.Item><Descriptions.Item label='最近心跳'>{agent.lastSeenAt ? new Date(agent.lastSeenAt).toLocaleString() : '—'}</Descriptions.Item><Descriptions.Item label='资源快照'>{agent.hardwareInfo ? Object.entries(agent.hardwareInfo).map(([key, value]) => `${key}: ${displayValue(value)}`).join('，') : '暂无'}</Descriptions.Item></Descriptions>
     <Typography.Title level={5}>模型状态</Typography.Title>{agent.modelInstances?.length ? <Row gutter={[8, 8]}>{agent.modelInstances.map((model) => <Col span={24} key={model.name}><ModelInstanceCard model={model} /></Col>)}</Row> : <Typography.Text type='secondary'>暂无模型状态</Typography.Text>}
     <Space style={{ marginTop: 16 }}><Button onClick={onRotate}>轮换凭证</Button><Button danger onClick={onRevoke}>撤销设备</Button></Space>
   </Card></Col>;

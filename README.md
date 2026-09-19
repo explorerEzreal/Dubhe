@@ -15,7 +15,7 @@
 - `cloud`：认证、部署令牌、API Key、模型路由、推理中转和用量元数据。
 - `web`：React 控制台，只访问 Cloud API。
 
-Web 与 Agent 保持职责解耦：Web 只管理 Cloud 侧设备元数据、部署令牌、在线/模型状态和凭证生命周期；Agent 的本机配置、模型检测、诊断及 launchd/systemd 服务操作只在模型设备上通过 CLI 完成。Web 不直接连接 Agent，也不远程执行本机命令。
+Web 与 Agent 保持职责解耦：Web 只管理 Cloud 侧设备元数据、部署令牌、标准设备状态、最新资源快照和凭证生命周期；Agent 的本机配置、模型检测、诊断及 launchd/systemd 服务操作只在模型设备上通过 CLI 完成。Web 不直接连接 Agent，也不远程执行本机命令。
 
 ## 快速开始
 

@@ -211,7 +211,7 @@ src/
 |------|-----------|------|
 | Agent → Cloud | `register` | 注册（携带 enrollment token） |
 | Cloud → Agent | `registered` | 注册成功，返回 credential |
-| Agent → Cloud | `heartbeat` | 心跳 + 模型状态同步 |
+| Agent → Cloud | `heartbeat` | 心跳 + 模型状态 + 最新 CPU、内存、GPU、磁盘、网络快照同步 |
 | Cloud → Agent | `heartbeat_ack` | 心跳确认 |
 | Cloud → Agent | `infer_request` | 推理请求 |
 | Agent → Cloud | `infer_chunk` | 流式 chunk |
@@ -226,7 +226,7 @@ src/
 | `users` | 用户 | — |
 | `sessions` | Web 会话 | user_id |
 | `enrollment_tokens` | 部署注册令牌 | user_id |
-| `agents` | Agent 设备 | user_id |
+| `agents` | Agent 设备、标准状态、最近心跳和最新资源快照（`hardware_info`） | user_id |
 | `agent_credentials` | Agent 凭证 | agent_id, replaced_by |
 | `models` | 全局模型注册表 | — |
 | `model_instances` | Agent 上模型运行时 | agent_id, model_id |

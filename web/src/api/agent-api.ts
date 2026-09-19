@@ -4,7 +4,9 @@ export interface AgentSummary {
   id: string;
   name?: string;
   status: string;
+  statusReason?: string;
   lastSeenAt?: string;
+  resourceSnapshotAt?: string;
   hardwareInfo?: Record<string, unknown> | null;
   modelInstances: ModelInstanceSummary[];
 }

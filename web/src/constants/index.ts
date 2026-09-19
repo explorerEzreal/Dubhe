@@ -6,11 +6,19 @@ export const DEFAULT_LOCAL_MODEL_HOST = '127.0.0.1';
 export const DEFAULT_LOCAL_MODEL_PORT = '8080';
 
 export const AGENT_STATUS_TEXT: Record<string, string> = {
-  created: '未安装', connecting: '连接中', online: '在线', degraded: '降级', offline: '未连接', revoked: '已撤销',
+  created: '未安装', connecting: '连接中', online: '在线', degraded: '降级', offline: '离线', revoked: '已撤销',
 };
 
 export const MODEL_STATE_TEXT: Record<string, string> = {
   unknown: '未知', checking: '检查中', pulling: '拉取中', ready: '就绪', busy: '忙碌', error: '错误', stopped: '已停止', offline: '离线',
+};
+
+export const AGENT_STATUS_REASON_TEXT: Record<string, string> = {
+  heartbeat: '心跳正常',
+  heartbeat_timeout: '心跳超时',
+  model_unavailable: '模型不可用',
+  credential_revoked: '凭证已撤销',
+  not_registered: '尚未注册',
 };
 
 export function statusColor(status: string): string {
