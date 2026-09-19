@@ -76,12 +76,6 @@ export class ApiKeyService {
     }
   }
 
-  async listModels(keyId: string): Promise<Array<Record<string, unknown>>> {
-    // 从 ApiKeyIdentity 获取 groupId 需要先查 key；此处简化：
-    // 调用方（inference-routes）已取得 key identity，直接传 groupId 调用 listModelsByGroup
-    return [];
-  }
-
   async listModelsByGroup(groupId: string): Promise<Array<Record<string, unknown>>> {
     try {
       return await this.keys.listModelsByGroup(groupId);

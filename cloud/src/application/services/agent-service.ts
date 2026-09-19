@@ -105,6 +105,16 @@ export class AgentService {
     }
   }
 
+  async rename(userId: string, agentId: string, name: string): Promise<Record<string, unknown>> {
+    try {
+      if (!(await this.agents.updateName(userId, agentId, name))) throw errors.notFound();
+      await this.audits.record(userId, 'agent.rename', `agent:${agentId}`);
+      return await this.get(userId, agentId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async revokeCredentials(userId: string, agentId: string): Promise<void> {
     try {
       if (!(await this.agents.revokeCredentials(userId, agentId))) {

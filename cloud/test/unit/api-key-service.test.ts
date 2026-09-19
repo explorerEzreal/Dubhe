@@ -98,7 +98,7 @@ describe('ApiKeyService', () => {
     const keys = new FakeKeys();
     const audits = new FakeAudits();
     const service = new ApiKeyService(keys, audits, security);
-    const result = await service.create('user-1', ['llama3:8b'], null);
+    const result = await service.create('user-1', 'channel-1', null);
 
     expect(result.plaintext).toBe('dsh_live_plaintext-secret');
     expect(keys.created?.keyHash).toBe('digest:dsh_live_plaintext-secret');
@@ -106,15 +106,15 @@ describe('ApiKeyService', () => {
     expect(JSON.stringify(audits.entries)).not.toContain('plaintext-secret');
   });
 
-  it('rejects unknown models, past expiration and missing keys', async () => {
+  it('rejects invalid channels, past expiration and missing keys', async () => {
     const keys = new FakeKeys();
     const service = new ApiKeyService(keys, new FakeAudits(), security);
     keys.existing = false;
-    await expect(service.create('user-1', ['unknown'], null)).rejects.toMatchObject({
-      code: 'MODEL_NOT_FOUND',
+    await expect(service.create('user-1', 'unknown-channel', null)).rejects.toMatchObject({
+      code: 'INVALID_CHANNEL',
     });
     await expect(
-      service.create('user-1', [], new Date('2000-01-01T00:00:00Z')),
+      service.create('user-1', 'channel-1', new Date('2000-01-01T00:00:00Z')),
     ).rejects.toMatchObject({ statusCode: 400 });
     await expect(service.disable('user-1', 'key-1')).rejects.toMatchObject({
       statusCode: 404,

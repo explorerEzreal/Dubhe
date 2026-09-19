@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { App, Button, Modal, Space, Typography } from 'antd';
 import { keyApi, type ApiKeyCreateResult } from '../../api/key-api';
-import { groupApi, type ChannelSummary, type ChannelModels } from '../../api/group-api';
+import { groupApi } from '../../api/group-api';
 import { usageApi } from '../../api/usage-api';
 import { config } from '../../config/config';
 import { REQUEST_ERROR_MESSAGE } from '../../constants';

@@ -62,7 +62,7 @@ function createServices(authLimit = 10): HttpServices {
   return {
     auth,
     enrollment: {
-      create: async () => ({ token: 'dsh_enroll_secret', expiresIn: 900 }),
+      create: async () => ({ token: 'dsh_enroll_secret', expiresIn: 900, agentId: '00000000-0000-4000-8000-000000000001' }),
     } as unknown as EnrollmentService,
     agents: {
       list: async () => [],
@@ -205,7 +205,7 @@ describe('HTTP routes', () => {
         method: 'POST',
         url: '/api/keys',
         headers,
-        payload: { models: ['llama3:8b'], expiresAt: '2027-01-01T00:00:00Z' },
+        payload: { channelId: 'channel-1', expiresAt: '2099-01-01T00:00:00Z' },
       });
       expect(created.statusCode).toBe(201);
       expect(created.json().plaintext).toBe('dsh_live_secret');

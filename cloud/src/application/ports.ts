@@ -81,7 +81,7 @@ export interface SessionRepository {
 }
 
 export interface EnrollmentTokenRepository {
-  create(userId: string, tokenHash: string, expiresAt: Date): Promise<void>;
+  create(userId: string, name: string, tokenHash: string, expiresAt: Date): Promise<string>;
 }
 
 export interface AgentRepository {
@@ -91,6 +91,7 @@ export interface AgentRepository {
   register(input: AgentRegistrationInput): Promise<AgentRegistrationResult | null>;
   rotateCredential(userId: string, agentId: string, credentialHash: string): Promise<number | null>;
   revokeCredentials(userId: string, agentId: string): Promise<boolean>;
+  updateName(userId: string, agentId: string, name: string): Promise<boolean>;
   heartbeat(agentId: string, input: AgentHeartbeatInput): Promise<void>;
   markOffline(agentId: string): Promise<void>;
 }

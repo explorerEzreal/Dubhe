@@ -61,6 +61,7 @@ run('PostgreSQL migrations', () => {
         '0003_user_nickname.sql',
         '0004_groups.sql',
         '0005_agent_state_consistency.sql',
+        '0006_pending_agent_enrollment.sql',
       ]);
       expect(await runMigrations(scoped, directory)).toEqual([]);
 
@@ -128,7 +129,7 @@ run('PostgreSQL migrations', () => {
       await expect(auth.authenticate(session.token)).resolves.toMatchObject({
         id: session.user.id,
       });
-      const enrollmentToken = await enrollment.create(session.user.id);
+      const enrollmentToken = await enrollment.create(session.user.id, 'M2 Agent');
       const registered = await agents.register({
         token: enrollmentToken.token,
         deviceId: crypto.randomUUID(),

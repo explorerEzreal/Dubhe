@@ -19,7 +19,7 @@ import {
 import { groupApi, type GroupSummary } from '../../api/group-api';
 import { modelApi } from '../../api/model-api';
 import { config } from '../../config/config';
-import { DEFAULT_DEVICE_NAME, DEFAULT_LOCAL_MODEL_HOST, DEFAULT_LOCAL_MODEL_PORT, REQUEST_ERROR_MESSAGE } from '../../constants';
+import { DEFAULT_LOCAL_MODEL_HOST, DEFAULT_LOCAL_MODEL_PORT, REQUEST_ERROR_MESSAGE } from '../../constants';
 import { useAsyncList } from '../../hooks';
 import { copyText } from '../../utils/clipboard';
 import { EmptyState, ErrorState } from '../../components';
@@ -39,7 +39,6 @@ export function DeployerDashboardPage() {
   const [deviceModalOpen, setDeviceModalOpen] = useState(false);
   const [tokenResult, setTokenResult] = useState<EnrollmentTokenResult | null>(null);
   const [selectedModel, setSelectedModel] = useState('');
-  const [deviceName, setDeviceName] = useState(DEFAULT_DEVICE_NAME);
   const [localHost, setLocalHost] = useState(DEFAULT_LOCAL_MODEL_HOST);
   const [localPort, setLocalPort] = useState(DEFAULT_LOCAL_MODEL_PORT);
   const [creating, setCreating] = useState(false);
@@ -52,7 +51,7 @@ export function DeployerDashboardPage() {
   const [addAgentModalOpen, setAddAgentModalOpen] = useState(false);
 
   async function createToken(values: AddDeviceFormValues): Promise<void> {
-    setDeviceName(values.deviceName.trim());
+    const name = values.deviceName.trim();
     setLocalHost(values.localHost.trim());
     setLocalPort(values.localPort.trim());
     if (!selectedModel.trim()) {
@@ -61,8 +60,9 @@ export function DeployerDashboardPage() {
     }
     setCreating(true);
     try {
-      setTokenResult(await enrollmentApi.create());
+      setTokenResult(await enrollmentApi.create(name));
       setDeviceModalOpen(false);
+      await dashboard.reload();
     } catch {
       message.error(REQUEST_ERROR_MESSAGE);
     } finally {
@@ -140,7 +140,7 @@ export function DeployerDashboardPage() {
   const command = tokenResult
     ? (() => {
         const modelName = selectedModel || '<模型名>';
-        return `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --name ${shellQuote(deviceName || DEFAULT_DEVICE_NAME)} --model ${shellQuote(modelName)} --local-url ${shellQuote(`http://${localHost || DEFAULT_LOCAL_MODEL_HOST}:${localPort || DEFAULT_LOCAL_MODEL_PORT}`)}`;
+        return `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --model ${shellQuote(modelName)} --host ${shellQuote(localHost || DEFAULT_LOCAL_MODEL_HOST)} --port ${shellQuote(localPort || DEFAULT_LOCAL_MODEL_PORT)}`;
       })()
     : '';
 

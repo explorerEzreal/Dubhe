@@ -171,9 +171,10 @@ src/
 | GET | `/api/admin/users` | 🔑 admin | 用户列表 |
 | PATCH | `/api/admin/users/:id/password` | 🔑 admin | 改他人密码 |
 | DELETE | `/api/admin/users/:id` | 🔑 admin | 删除用户 |
-| POST | `/api/enrollment-tokens` | 🔑 | 生成部署令牌 |
+| POST | `/api/enrollment-tokens` | 🔑 | 预创建设备并生成绑定的部署令牌 |
 | GET | `/api/agents` | 🔑 | 设备列表 |
 | GET | `/api/agents/:id` | 🔑 | 设备详情 |
+| PATCH | `/api/agents/:id` | 🔑 | 修改设备名称 |
 | POST | `/api/agents/:id/credentials/rotate` | 🔑 | 轮换凭证 |
 | POST | `/api/agents/:id/credentials/revoke` | 🔑 | 撤销设备 |
 | GET | `/api/models` | 🔑 | 全局模型目录 |
@@ -225,8 +226,8 @@ src/
 |-----|------|---------|
 | `users` | 用户 | — |
 | `sessions` | Web 会话 | user_id |
-| `enrollment_tokens` | 部署注册令牌 | user_id |
-| `agents` | Agent 设备、标准状态、最近心跳和最新资源快照（`hardware_info`） | user_id |
+| `enrollment_tokens` | 绑定预创建设备的部署注册令牌 | user_id, agent_id |
+| `agents` | Agent 设备、Cloud 管理名称、标准状态、最近心跳和最新资源快照（`hardware_info`） | user_id |
 | `agent_credentials` | Agent 凭证 | agent_id, replaced_by |
 | `models` | 全局模型注册表 | — |
 | `model_instances` | Agent 上模型运行时 | agent_id, model_id |

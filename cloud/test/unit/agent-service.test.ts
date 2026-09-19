@@ -70,6 +70,10 @@ class FakeAgents implements AgentRepository {
     }
   }
 
+  async updateName(): Promise<boolean> {
+    return true;
+  }
+
   async heartbeat(_agentId: string, input: AgentHeartbeatInput): Promise<void> {
     try {
       this.heartbeatInput = input;

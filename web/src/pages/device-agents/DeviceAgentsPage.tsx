@@ -9,7 +9,6 @@ import { groupApi } from '../../api/group-api';
 import { modelApi } from '../../api/model-api';
 import { config } from '../../config/config';
 import {
-  DEFAULT_DEVICE_NAME,
   DEFAULT_LOCAL_MODEL_HOST,
   DEFAULT_LOCAL_MODEL_PORT,
   REQUEST_ERROR_MESSAGE,
@@ -60,10 +59,11 @@ export function DeviceAgentsPage() {
     null,
   );
   const [selectedModel, setSelectedModel] = useState('');
-  const [deviceName, setDeviceName] = useState(DEFAULT_DEVICE_NAME);
   const [localHost, setLocalHost] = useState(DEFAULT_LOCAL_MODEL_HOST);
   const [localPort, setLocalPort] = useState(DEFAULT_LOCAL_MODEL_PORT);
   const [creating, setCreating] = useState(false);
+  const [operatingAgentId, setOperatingAgentId] = useState<string | null>(null);
+  const [rotatedCredential, setRotatedCredential] = useState<{ name: string; credential: string } | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export function DeviceAgentsPage() {
   );
 
   async function createToken(values: AddDeviceFormValues): Promise<void> {
-    setDeviceName(values.deviceName.trim());
+    const name = values.deviceName.trim();
     setLocalHost(values.localHost.trim());
     setLocalPort(values.localPort.trim());
     if (!selectedModel.trim()) {
@@ -125,8 +125,9 @@ export function DeviceAgentsPage() {
     }
     setCreating(true);
     try {
-      setTokenResult(await enrollmentApi.create());
+      setTokenResult(await enrollmentApi.create(name));
       setDeviceModalOpen(false);
+      await dashboard.reload();
     } catch {
       message.error(REQUEST_ERROR_MESSAGE);
     } finally {
@@ -134,21 +135,81 @@ export function DeviceAgentsPage() {
     }
   }
 
-  async function copy(value: string, success = '已复制'): Promise<void> {
+  async function copy(value: string, success = '已复制'): Promise<boolean> {
     try {
       await copyText(value);
       message.success(success);
+      return true;
     } catch {
       message.error(REQUEST_ERROR_MESSAGE);
+      return false;
     }
   }
 
+  async function renameAgent(agentId: string, name: string): Promise<boolean> {
+    try {
+      await agentApi.rename(agentId, name);
+      message.success('设备名称已更新');
+      await dashboard.reload();
+      return true;
+    } catch {
+      message.error(REQUEST_ERROR_MESSAGE);
+      return false;
+    }
+  }
+
+  function rotateAgent(agentId: string, name: string): void {
+    Modal.confirm({
+      title: '轮换设备凭证？',
+      content: '当前凭证将立即失效，设备需要配置新凭证后才能重新连接。',
+      okText: '确认轮换',
+      cancelText: '取消',
+      onOk: async () => {
+        setOperatingAgentId(agentId);
+        try {
+          const result = await agentApi.rotate(agentId);
+          setRotatedCredential({ name, credential: result.credential });
+          await dashboard.reload();
+        } catch {
+          message.error(REQUEST_ERROR_MESSAGE);
+        } finally {
+          setOperatingAgentId(null);
+        }
+      },
+    });
+  }
+
+  function revokeAgent(agentId: string, status: string): void {
+    const pending = status === 'created';
+    Modal.confirm({
+      title: pending ? '取消设备接入？' : '撤销设备凭证？',
+      content: pending
+        ? '取消后当前部署令牌立即失效，该设备无法继续完成注册。'
+        : '撤销后设备将立即断开，并且无法继续连接 Cloud。',
+      okText: pending ? '确认取消' : '确认撤销',
+      okButtonProps: { danger: true },
+      cancelText: '返回',
+      onOk: async () => {
+        setOperatingAgentId(agentId);
+        try {
+          await agentApi.revoke(agentId);
+          message.success(pending ? '设备接入已取消' : '设备已撤销');
+          await dashboard.reload();
+        } catch {
+          message.error(REQUEST_ERROR_MESSAGE);
+        } finally {
+          setOperatingAgentId(null);
+        }
+      },
+    });
+  }
+
   const command = tokenResult
-    ? `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --name ${shellQuote(deviceName || DEFAULT_DEVICE_NAME)} --model ${shellQuote(selectedModel || '<模型名>')} --local-url ${shellQuote(`http://${localHost || DEFAULT_LOCAL_MODEL_HOST}:${localPort || DEFAULT_LOCAL_MODEL_PORT}`)}`
+    ? `npm install -g dubhe-agent@0.1.0\ndubhe service install --cloud-url ${shellQuote(config.apiBaseUrl)} --token ${shellQuote(tokenResult.token)} --model ${shellQuote(selectedModel || '<模型名>')} --host ${shellQuote(localHost || DEFAULT_LOCAL_MODEL_HOST)} --port ${shellQuote(localPort || DEFAULT_LOCAL_MODEL_PORT)}`
     : '';
 
   const updatedLabel = lastUpdatedAt
-    ? `最后更新时间：${lastUpdatedAt.getFullYear()}年${String(lastUpdatedAt.getMonth() + 1).padStart(2, '0')}月${String(lastUpdatedAt.getDate()).padStart(2, '0')}日 ${String(lastUpdatedAt.getHours()).padStart(2, '0')}时${String(lastUpdatedAt.getMinutes()).padStart(2, '0')}分`
+    ? `最后更新时间：${String(lastUpdatedAt.getHours()).padStart(2, '0')}:${String(lastUpdatedAt.getMinutes()).padStart(2, '0')}:${String(lastUpdatedAt.getSeconds()).padStart(2, '0')}`
     : '最后更新时间：暂无';
 
   return (
@@ -218,29 +279,13 @@ export function DeviceAgentsPage() {
                   <DeviceMonitorCard
                     key={agent.id}
                     agent={agent}
-                    onRotate={() =>
-                      void agentApi
-                        .rotate(agent.id)
-                        .then(() => message.success('凭证已轮换'))
-                        .catch(() => message.error(REQUEST_ERROR_MESSAGE))
-                    }
-                    onRevoke={() =>
-                      Modal.confirm({
-                        title: '撤销设备凭证？',
-                        content: '撤销后该设备将无法继续连接 Cloud。',
-                        okText: '撤销',
-                        cancelText: '取消',
-                        onOk: async () => {
-                          try {
-                            await agentApi.revoke(agent.id);
-                            message.success('设备已撤销');
-                            await dashboard.reload();
-                          } catch {
-                            message.error(REQUEST_ERROR_MESSAGE);
-                          }
-                        },
-                      })
-                    }
+                    operating={operatingAgentId === agent.id}
+                    onCopyName={() => copy(agent.name || agent.id, '设备名称已复制')}
+                    onCopyModel={(model) => copy(model, '模型名称已复制')}
+                    onCopyId={() => void copy(agent.id, '设备标识已复制')}
+                    onRename={(name) => renameAgent(agent.id, name)}
+                    onRotate={() => rotateAgent(agent.id, agent.name || '设备')}
+                    onRevoke={() => revokeAgent(agent.id, agent.status)}
                   />
                 ))}
               </div>
@@ -263,6 +308,15 @@ export function DeviceAgentsPage() {
         onClose={() => setTokenResult(null)}
         onCopy={() => void copy(command, '启动命令已复制')}
       />
+      <Modal
+        title='新设备凭证'
+        open={Boolean(rotatedCredential)}
+        onCancel={() => setRotatedCredential(null)}
+        footer={<Button type='primary' onClick={() => setRotatedCredential(null)}>完成</Button>}
+      >
+        <Typography.Paragraph type='warning'>该凭证仅展示一次。请立即更新“{rotatedCredential?.name}”的 Agent 配置。</Typography.Paragraph>
+        <Typography.Text copyable={{ text: rotatedCredential?.credential }}>{rotatedCredential?.credential}</Typography.Text>
+      </Modal>
     </section>
   );
 }

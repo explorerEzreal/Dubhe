@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { UserRecord } from '../../application/ports.js';
 import type { HttpServices } from './types.js';
-import { agentParamsSchema, apiKeySchema, adminPasswordSchema, channelAddSchema, groupAgentSchema, groupCreateSchema, groupUpdateSchema, passwordChangeSchema, profileSchema, userParamsSchema } from './schemas.js';
+import { agentParamsSchema, agentUpdateSchema, apiKeySchema, adminPasswordSchema, channelAddSchema, enrollmentCreateSchema, groupAgentSchema, groupCreateSchema, groupUpdateSchema, passwordChangeSchema, profileSchema, userParamsSchema } from './schemas.js';
 import { bearer, sendError } from './http-errors.js';
 import { errors } from '../../domain/common/index.js';
 
@@ -25,7 +25,9 @@ export function registerManagementRoutes(
   app.post('/api/enrollment-tokens', async (request, reply) => {
     try {
       const user = await authenticatedUser(request, services);
-      return reply.code(201).send(await services.enrollment.create(user.id));
+      const input = enrollmentCreateSchema.safeParse(request.body ?? {});
+      if (!input.success) throw errors.invalidRequest();
+      return reply.code(201).send(await services.enrollment.create(user.id, input.data.name));
     } catch (error) {
       return sendError(reply, error);
     }
@@ -97,6 +99,18 @@ export function registerManagementRoutes(
       const params = agentParamsSchema.safeParse(request.params);
       if (!params.success) throw errors.invalidRequest();
       return await services.agents.get(user.id, params.data.id);
+    } catch (error) {
+      return sendError(reply, error);
+    }
+  });
+
+  app.patch('/api/agents/:id', async (request, reply) => {
+    try {
+      const user = await authenticatedUser(request, services);
+      const params = agentParamsSchema.safeParse(request.params);
+      const input = agentUpdateSchema.safeParse(request.body ?? {});
+      if (!params.success || !input.success) throw errors.invalidRequest();
+      return await services.agents.rename(user.id, params.data.id, input.data.name);
     } catch (error) {
       return sendError(reply, error);
     }

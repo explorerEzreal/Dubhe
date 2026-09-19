@@ -12,16 +12,17 @@ export class EnrollmentService {
     private readonly ttlSeconds: number,
   ) {}
 
-  async create(userId: string): Promise<{ token: string; expiresIn: number }> {
+  async create(userId: string, name: string): Promise<{ token: string; expiresIn: number; agentId: string }> {
     try {
       const token = this.security.randomToken('dsh_enroll_');
-      await this.tokens.create(
+      const agentId = await this.tokens.create(
         userId,
+        name,
         this.security.digest(token),
         new Date(Date.now() + this.ttlSeconds * 1000),
       );
       await this.audits.record(userId, 'enrollment.create', 'enrollment-token');
-      return { token, expiresIn: this.ttlSeconds };
+      return { token, expiresIn: this.ttlSeconds, agentId };
     } catch (error) {
       throw error;
     }

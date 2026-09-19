@@ -27,6 +27,12 @@ export const agentApi = {
   get(id: string): Promise<AgentSummary> {
     return apiFetch<AgentSummary>(`/api/agents/${id}`);
   },
+  rename(id: string, name: string): Promise<AgentSummary> {
+    return apiFetch<AgentSummary>(`/api/agents/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    });
+  },
   rotate(id: string): Promise<{ credential: string; previousCount: number }> {
     return apiFetch<{ credential: string; previousCount: number }>(`/api/agents/${id}/credentials/rotate`, { method: 'POST' });
   },

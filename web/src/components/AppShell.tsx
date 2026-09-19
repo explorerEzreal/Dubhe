@@ -47,7 +47,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { mode, setTheme } = useAppTheme();
   const { email, nickname, role, logout } = useAuthStore();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches,
+  );
   const [profileOpen, setProfileOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
   const avatarText = (nickname?.[0] ?? email?.[0] ?? 'U').toUpperCase();
@@ -103,7 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <Layout className='wb-app'>
+    <Layout className={`wb-app${collapsed ? ' is-sidebar-collapsed' : ''}`}>
       <Sider
         width={320}
         collapsedWidth={68}

@@ -37,10 +37,17 @@
 - 2026-09-19：进一步收紧设备监控中心顶部 UI：主标题调整为 26px 紧凑层级，分组标题和卡片降低字号与高度，当前分组标题调整为 18px，并缩短顶部间距；统计、筛选和设备卡片区域未调整。
 - 2026-09-19：添加设备表单新增必填设备名称、模型服务域名和端口字段，默认值为 `Bubhe Agent-001`、`127.0.0.1`、`8080`；端口限制为 1-65535，并将名称和拼接后的本地服务地址写入 Agent 安装命令。未修改 enrollment API、Cloud 路由或 Agent 协议。
 - 2026-09-19：设备状态与资源快照链路适配完成。Cloud 按 `created/connecting/online/degraded/offline/revoked` 返回标准状态、状态原因、最近心跳和资源快照时间；Agent 心跳补充内存使用率、磁盘和 Linux 网络快照，GPU/平台不支持时保持空值；Web 直接展示标准状态及 CPU、GPU、内存、磁盘、网络当前快照。新增 `cloud/migrations/0005_agent_state_consistency.sql` 回填历史空名称并约束状态枚举；未新增资源历史表或接口。
+- 2026-09-19：添加设备调整为 Cloud 预创建 `created` 设备并将 enrollment token 绑定设备，Agent 注册不再覆盖 Cloud 名称；新增设备重命名 API。设备监控卡片隐藏技术 ID，支持复制/行内修改名称、模型名称省略与多模型提示，设备操作收纳到菜单，凭证轮换显示一次性新凭证，未安装设备支持取消接入。删除设备暂不实现。
 - 2026-09-19：新增 `agent/AGENT_OPERATIONS.md` 普通用户操作手册并在 Agent/root README 建立入口；Agent CLI 增加 `start`、`stop`、`close`、`restart`、`status --json`、`logs`、`version` 和内部 `run` 命令，服务配置改为调用 `run`，`doctor` 自动读取已安装服务配置，`service install --force` 和 `service uninstall --yes` 增加覆盖与自动化控制。Agent build 和 lint 通过；真实服务启停、模型服务和 Cloud 长连接仍待验收。
 - 2026-09-19：Agent CLI 完成不兼容升级：删除 `close`、位置参数、`--local-url`、`service status/uninstall` 和 `--force`；新增 `config show/set`、凭证复用的 `service install --host/--port`、升级迁移 `service migrate` 与彻底清理 `service reset --yes`。状态输出增加模型、主机、端口、URL 和版本；配置变更和迁移提供备份回滚。操作手册已重写为新版唯一用户说明；Agent 7 个单元测试、build、lint、CLI 帮助/旧命令拒绝及 npm pack dry-run 通过。
 - 2026-09-19：修复 Agent `service install` 本地开发接入。`http://` 会转换为 `ws://.../agent`，配置层仅允许本地环回地址使用 `ws://`，注册连接关闭时返回 Cloud 关闭码，安装失败输出非敏感错误；Agent 7 个单元测试、构建、ESLint 和全局本地安装验证通过。生产仍要求 HTTPS/WSS；本地 Cloud 需设置 `AGENT_REQUIRE_TLS=false`。
+- 2026-09-19：重新设计 Web 设备监控卡片，调整为最多两列布局，统一名称复制、编辑和设备操作入口，重组模型、资源、网络和时间信息层级，修正缺失状态原因时的错误回退，并补充移动端侧栏自动折叠与溢出约束；未修改接口或设备操作逻辑。
 
 ## 下一步
 
 在云服务器和模型设备执行干净目录 npm tarball 安装、systemd/launchd 服务启停、Compose、真实 OpenAI 兼容模型服务、TLS/WSS、断网恢复及 1000 条连接 24 小时测试；补齐证据后再将 M8 标记为“已完成”。
+## 设备管理 UI 优化（2026-09-19）
+
+- 状态：已实现并完成 Web 构建校验。
+- 变更：设备卡片按侧栏状态采用 3/4 列布局；设备名称和模型名称支持悬停、点击复制及键盘操作；顶部更新时间精简为时分秒。
+- 验证：`pnpm --dir web build` 通过；本次涉及文件定向 ESLint 通过。全量 lint 仍受既有 `CallerDashboardPage.tsx` 未使用类型报错影响。

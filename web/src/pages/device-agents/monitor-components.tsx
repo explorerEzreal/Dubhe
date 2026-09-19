@@ -1,16 +1,29 @@
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
-import { Button, Card, Input, Progress, Tag } from 'antd';
+import { useEffect, useState, type KeyboardEvent } from 'react';
+import { Button, Card, Dropdown, Input, Progress, Tag, Tooltip } from 'antd';
+import type { MenuProps } from 'antd';
 import {
   SearchOutlined,
   AppstoreOutlined,
   HddOutlined,
   ClusterOutlined,
   WifiOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  CopyOutlined,
+  EditOutlined,
+  MoreOutlined,
+  ReloadOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
 import type { AgentSummary } from '../../api/agent-api';
 import type { GroupSummary } from '../../api/group-api';
-import { AGENT_STATUS_REASON_TEXT, AGENT_STATUS_TEXT, statusColor } from '../../constants';
+import {
+  AGENT_STATUS_TEXT,
+  MODEL_STATE_TEXT,
+  statusColor,
+} from '../../constants';
 
 export type DeviceStatusFilter =
   | 'all'
@@ -46,7 +59,8 @@ function memoryUsage(agent: AgentSummary): number | null {
     | { totalBytes?: unknown; freeBytes?: unknown; usagePercent?: unknown }
     | undefined;
   const reported = metricNumber(memory?.usagePercent);
-  if (reported !== null && reported >= 0 && reported <= 100) return Math.round(reported);
+  if (reported !== null && reported >= 0 && reported <= 100)
+    return Math.round(reported);
   const total = metricNumber(memory?.totalBytes);
   const free = metricNumber(memory?.freeBytes);
   if (!total || free === null || free > total) return null;
@@ -58,7 +72,8 @@ function loadUsage(agent: AgentSummary): number | null {
     | { loadAverage?: unknown; cores?: unknown; usagePercent?: unknown }
     | undefined;
   const reported = metricNumber(cpu?.usagePercent);
-  if (reported !== null && reported >= 0 && reported <= 100) return Math.round(reported);
+  if (reported !== null && reported >= 0 && reported <= 100)
+    return Math.round(reported);
   const load = Array.isArray(cpu?.loadAverage)
     ? metricNumber(cpu.loadAverage[0])
     : null;
@@ -72,7 +87,9 @@ function nestedUsage(agent: AgentSummary, key: 'gpu' | 'disk'): number | null {
     | { usagePercent?: unknown }
     | undefined;
   const value = metricNumber(resource?.usagePercent);
-  return value !== null && value >= 0 && value <= 100 ? Math.round(value) : null;
+  return value !== null && value >= 0 && value <= 100
+    ? Math.round(value)
+    : null;
 }
 
 function networkLabel(agent: AgentSummary): string {
@@ -82,7 +99,8 @@ function networkLabel(agent: AgentSummary): string {
   const rx = metricNumber(network?.rxBytesPerSecond);
   const tx = metricNumber(network?.txBytesPerSecond);
   if (rx === null && tx === null) return '暂无数据';
-  const format = (value: number | null) => value === null ? '—' : `${Math.round(value / 1024)} KB/s`;
+  const format = (value: number | null) =>
+    value === null ? '—' : `${Math.round(value / 1024)} KB/s`;
   return `收 ${format(rx)} · 发 ${format(tx)}`;
 }
 
@@ -146,9 +164,9 @@ export function StatusFilters({
 }) {
   const filters: Array<[DeviceStatusFilter, string]> = [
     ['all', '全部状态'],
+    ['online', '在线'],
     ['created', '未安装'],
     ['connecting', '连接中'],
-    ['online', '在线'],
     ['degraded', '降级'],
     ['offline', '离线'],
     ['revoked', '已撤销'],
@@ -193,10 +211,15 @@ export function OverviewCards({
       result[statusOf(agent)] += 1;
       return result;
     },
-    { all: agents.length, created: 0, connecting: 0, online: 0, degraded: 0, offline: 0, revoked: 0 } as Record<
-      DeviceStatusFilter,
-      number
-    >,
+    {
+      all: agents.length,
+      created: 0,
+      connecting: 0,
+      online: 0,
+      degraded: 0,
+      offline: 0,
+      revoked: 0,
+    } as Record<DeviceStatusFilter, number>,
   );
   const averageMemory = agents
     .map(memoryUsage)
@@ -218,15 +241,31 @@ export function OverviewCards({
             name: '在线',
             itemStyle: { color: '#35d399' },
           },
-          { value: counts.connecting, name: '连接中', itemStyle: { color: '#fbbf24' } },
-          { value: counts.degraded, name: '降级', itemStyle: { color: '#f97316' } },
+          {
+            value: counts.connecting,
+            name: '连接中',
+            itemStyle: { color: '#fbbf24' },
+          },
+          {
+            value: counts.degraded,
+            name: '降级',
+            itemStyle: { color: '#f97316' },
+          },
           {
             value: counts.offline,
             name: '离线',
             itemStyle: { color: '#64748b' },
           },
-          { value: counts.created, name: '未安装', itemStyle: { color: '#94a3b8' } },
-          { value: counts.revoked, name: '已撤销', itemStyle: { color: '#ef4444' } },
+          {
+            value: counts.created,
+            name: '未安装',
+            itemStyle: { color: '#94a3b8' },
+          },
+          {
+            value: counts.revoked,
+            name: '已撤销',
+            itemStyle: { color: '#ef4444' },
+          },
         ],
       },
     ],
@@ -328,7 +367,10 @@ export function OverviewCards({
             在线 {counts.online}
           </span>
           <span>
-            <i className='status-dot' style={{ background: statusTone.degraded }} />
+            <i
+              className='status-dot'
+              style={{ background: statusTone.degraded }}
+            />
             降级 {counts.degraded}
           </span>
           <span>
@@ -354,8 +396,7 @@ export function OverviewCards({
                   className='status-dot'
                   style={{ background: statusTone[key] }}
                 />
-                {AGENT_STATUS_TEXT[key]}{' '}
-                {counts[key]}
+                {AGENT_STATUS_TEXT[key]} {counts[key]}
               </span>
             ),
           )}
@@ -393,39 +434,245 @@ export function OverviewCards({
 
 export function DeviceMonitorCard({
   agent,
+  operating,
+  onCopyName,
+  onCopyModel,
+  onCopyId,
+  onRename,
   onRotate,
   onRevoke,
 }: {
   agent: AgentSummary;
+  operating: boolean;
+  onCopyName: () => Promise<boolean>;
+  onCopyModel: (model: string) => Promise<boolean>;
+  onCopyId: () => void;
+  onRename: (name: string) => Promise<boolean>;
   onRotate: () => void;
   onRevoke: () => void;
 }) {
+  const [editing, setEditing] = useState(false);
+  const [draftName, setDraftName] = useState(agent.name || '');
+  const [saving, setSaving] = useState(false);
+  const [nameCopied, setNameCopied] = useState(false);
+  const [modelCopied, setModelCopied] = useState(false);
   const cpu = loadUsage(agent);
   const memory = memoryUsage(agent);
   const gpu = nestedUsage(agent, 'gpu');
   const disk = nestedUsage(agent, 'disk');
   const model = agent.modelInstances?.[0];
+  const modelNames = agent.modelInstances?.map((item) => item.name) ?? [];
+  const actions: MenuProps['items'] = [
+    {
+      key: 'copy-id',
+      label: '复制设备标识',
+      icon: <CopyOutlined />,
+      onClick: onCopyId,
+    },
+    {
+      key: 'rotate',
+      label: '轮换凭证',
+      icon: <ReloadOutlined />,
+      disabled: agent.status === 'created' || agent.status === 'revoked',
+      onClick: onRotate,
+    },
+    { type: 'divider' },
+    {
+      key: 'revoke',
+      label: agent.status === 'created' ? '取消接入' : '撤销设备',
+      icon: <StopOutlined />,
+      danger: true,
+      disabled: agent.status === 'revoked',
+      onClick: onRevoke,
+    },
+  ];
+
+  useEffect(() => {
+    if (!nameCopied) return;
+    const timer = window.setTimeout(() => setNameCopied(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [nameCopied]);
+  useEffect(() => {
+    if (!modelCopied) return;
+    const timer = window.setTimeout(() => setModelCopied(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [modelCopied]);
+
+  const saveName = async (): Promise<void> => {
+    const name = draftName.trim();
+    if (!name || name.length > 200 || name === agent.name) {
+      if (name === agent.name) setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      if (await onRename(name)) setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const cancelEdit = (): void => {
+    setDraftName(agent.name || '');
+    setEditing(false);
+  };
+
+  const handleNameKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter') void saveName();
+    if (event.key === 'Escape') cancelEdit();
+  };
+
+  const copyName = async (): Promise<void> => {
+    if (await onCopyName()) setNameCopied(true);
+  };
+
+  const heartbeatLabel = agent.lastSeenAt
+    ? new Date(agent.lastSeenAt).toLocaleString()
+    : '暂无记录';
+  const snapshotLabel = agent.resourceSnapshotAt
+    ? new Date(agent.resourceSnapshotAt).toLocaleString()
+    : '暂无记录';
+
   return (
     <Card className={`device-monitor-card status-${statusOf(agent)}`}>
-      <div className='device-card-head'>
-        <div>
-          <span className='device-name'>
-            <i
-              className='status-dot'
-              style={{ background: statusTone[statusOf(agent)] }}
-            />
-            {agent.name || agent.id}
-          </span>
-          <div className='device-id'>{agent.id}</div>
+      <div className={`device-card-head${editing ? ' is-editing' : ''}`}>
+        <div className='device-card-identity'>
+          <i
+            className='device-card-status-dot'
+            style={{ background: statusTone[statusOf(agent)] }}
+          />
+          <div className='device-card-heading'>
+            {editing ? (
+              <div className='device-name-editor'>
+                <Input
+                  autoFocus
+                  maxLength={200}
+                  value={draftName}
+                  disabled={saving}
+                  onFocus={(event) => event.currentTarget.select()}
+                  onChange={(event) => setDraftName(event.target.value)}
+                  onKeyDown={handleNameKeyDown}
+                  status={!draftName.trim() ? 'error' : undefined}
+                  aria-label='设备名称'
+                />
+                <Tooltip title='保存名称'>
+                  <Button
+                    type='primary'
+                    icon={<CheckOutlined />}
+                    loading={saving}
+                    disabled={!draftName.trim()}
+                    onClick={() => void saveName()}
+                    aria-label='保存名称'
+                  />
+                </Tooltip>
+                <Tooltip title='取消编辑'>
+                  <Button
+                    icon={<CloseOutlined />}
+                    disabled={saving}
+                    onClick={cancelEdit}
+                    aria-label='取消编辑'
+                  />
+                </Tooltip>
+              </div>
+            ) : (
+              <Tooltip title={nameCopied ? '已复制' : agent.name || agent.id}>
+                <span
+                  className={`device-name-text${nameCopied ? ' is-copied' : ''}`}
+                  role='button'
+                  tabIndex={0}
+                  onClick={() => void copyName()}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      void copyName();
+                    }
+                  }}
+                  aria-label='复制设备名称'
+                >
+                  {agent.name || agent.id}
+                </span>
+              </Tooltip>
+            )}
+          </div>
         </div>
-        <Tag color={statusColor(agent.status)}>
-          {AGENT_STATUS_TEXT[agent.status] ?? agent.status}
-        </Tag>
+        {!editing && (
+          <div className='device-card-actions'>
+            <Tooltip title='修改设备名称'>
+              <Button
+                type='text'
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setDraftName(agent.name || '');
+                  setEditing(true);
+                }}
+                aria-label='修改设备名称'
+              />
+            </Tooltip>
+            <Dropdown
+              menu={{ items: actions }}
+              trigger={['click']}
+              disabled={operating}
+            >
+              <Tooltip title='设备操作'>
+                <Button
+                  type='text'
+                  loading={operating}
+                  icon={<MoreOutlined />}
+                  aria-label='设备操作'
+                />
+              </Tooltip>
+            </Dropdown>
+          </div>
+        )}
       </div>
-      <div className='device-status-reason'>状态说明：{AGENT_STATUS_REASON_TEXT[agent.statusReason ?? 'heartbeat'] ?? '暂无'}</div>
       <div className='device-model'>
-        <HddOutlined /> {model?.name ?? '暂无模型状态'}
-        {model?.state && <Tag color={statusColor(model.state)}>{model.state}</Tag>}
+        <span className='device-model-icon'>
+          <HddOutlined />
+        </span>
+        <div className='device-model-copy'>
+          <Tooltip
+            title={
+              modelNames.length
+                ? modelCopied
+                  ? '已复制'
+                  : modelNames.join('、')
+                : undefined
+            }
+          >
+            <span
+              className={`device-model-name${modelCopied ? ' is-copied' : ''}`}
+              role={model?.name ? 'button' : undefined}
+              tabIndex={model?.name ? 0 : undefined}
+              onClick={() => {
+                if (model?.name)
+                  void onCopyModel(model.name).then(
+                    (copied) => copied && setModelCopied(true),
+                  );
+              }}
+              onKeyDown={(event) => {
+                if (
+                  model?.name &&
+                  (event.key === 'Enter' || event.key === ' ')
+                ) {
+                  event.preventDefault();
+                  void onCopyModel(model.name).then(
+                    (copied) => copied && setModelCopied(true),
+                  );
+                }
+              }}
+            >
+              {model?.name ?? '暂无模型状态'}
+            </span>
+          </Tooltip>
+        </div>
+        <div className='device-model-tags'>
+          {modelNames.length > 1 && <Tag>+{modelNames.length - 1}</Tag>}
+          {model?.state && (
+            <Tag color={statusColor(model.state)}>
+              {MODEL_STATE_TEXT[model.state] ?? model.state}
+            </Tag>
+          )}
+        </div>
       </div>
       <div className='device-resource-list'>
         <ResourceBar label='CPU' value={cpu} />
@@ -433,22 +680,22 @@ export function DeviceMonitorCard({
         <ResourceBar label='GPU' value={gpu} />
         <ResourceBar label='磁盘' value={disk} />
       </div>
-      <div className='device-network-summary'>网络：{networkLabel(agent)}</div>
-      <div className='device-card-foot'>
-        <span>
-          {agent.lastSeenAt
-            ? `最近心跳 ${new Date(agent.lastSeenAt).toLocaleString()}`
-            : '暂无心跳记录'}
-          {agent.resourceSnapshotAt && ` · 资源 ${new Date(agent.resourceSnapshotAt).toLocaleString()}`}
-        </span>
-        <span className='device-card-actions'>
-          <Button type='link' onClick={onRotate}>
-            轮换凭证
-          </Button>
-          <Button type='link' danger onClick={onRevoke}>
-            撤销
-          </Button>
-        </span>
+      <div className='device-card-meta'>
+        <div className='device-network-summary'>
+          <WifiOutlined />
+          <span>网络</span>
+          <b>{networkLabel(agent)}</b>
+        </div>
+        <div className='device-time-list'>
+          <span>
+            <small>最近心跳</small>
+            {heartbeatLabel}
+          </span>
+          <span>
+            <small>资源快照</small>
+            {snapshotLabel}
+          </span>
+        </div>
       </div>
     </Card>
   );
@@ -462,8 +709,11 @@ function ResourceBar({
   value: number | null;
 }) {
   return (
-    <div className='resource-row'>
-      <span>{label}</span>
+    <div className='device-resource-item'>
+      <div className='device-resource-head'>
+        <span>{label}</span>
+        <b>{value === null ? '暂无数据' : `${value}%`}</b>
+      </div>
       <Progress
         percent={value ?? 0}
         showInfo={false}
@@ -472,7 +722,6 @@ function ResourceBar({
         }
         trailColor='var(--device-track)'
       />
-      <b>{value === null ? '暂无数据' : `${value}%`}</b>
     </div>
   );
 }

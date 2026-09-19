@@ -20,6 +20,14 @@ export const agentParamsSchema = z.object({
   id: z.string().uuid(),
 }).strict();
 
+export const enrollmentCreateSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+}).strict();
+
+export const agentUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+}).strict();
+
 export const userParamsSchema = z.object({ id: z.string().uuid() }).strict();
 export const profileSchema = z.object({
   email: z.string().email().max(320),

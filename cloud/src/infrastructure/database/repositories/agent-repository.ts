@@ -104,29 +104,63 @@ export class PgAgentRepository implements AgentRepository {
     try {
       await client.query('begin');
       const enrollment = await client.query(
-        'select id,user_id from enrollment_tokens where token_hash=$1 and used=false and revoked_at is null and expires_at>now() for update',
+        'select id,user_id,agent_id from enrollment_tokens where token_hash=$1 and used=false and revoked_at is null and expires_at>now() for update',
         [input.tokenHash],
       );
       if (!enrollment.rowCount) {
         await rollback(client);
         return null;
       }
-      const agent = await client.query(
-        "insert into agents(user_id,device_id,name,status,hardware_info,last_seen_at) values($1,$2,$3,'online',$4,now()) on conflict(device_id) do update set status='online',last_seen_at=now(),updated_at=now(),name=excluded.name,hardware_info=excluded.hardware_info where agents.user_id=excluded.user_id returning id,user_id as \"userId\"",
-        [
-          enrollment.rows[0].user_id,
-          input.deviceId,
-          input.name,
-          input.hardwareInfo,
-        ],
-      );
+      const token = enrollment.rows[0] as { id: string; user_id: string; agent_id: string | null };
+      let agent;
+      if (token.agent_id) {
+        const pending = await client.query(
+          'select id,user_id,name from agents where id=$1 and user_id=$2 for update',
+          [token.agent_id, token.user_id],
+        );
+        if (!pending.rowCount) {
+          await rollback(client);
+          return null;
+        }
+        const existing = await client.query(
+          'select id,user_id from agents where device_id=$1 for update',
+          [input.deviceId],
+        );
+        if (existing.rowCount && existing.rows[0].user_id !== token.user_id) {
+          await rollback(client);
+          return null;
+        }
+        if (existing.rowCount && existing.rows[0].id !== token.agent_id) {
+          const targetId = existing.rows[0].id as string;
+          await client.query(
+            'insert into group_agents(group_id,agent_id) select group_id,$2 from group_agents where agent_id=$1 on conflict do nothing',
+            [token.agent_id, targetId],
+          );
+          agent = await client.query(
+            "update agents set name=$2,status='online',last_seen_at=now(),hardware_info=$3,updated_at=now() where id=$1 returning id,user_id as \"userId\"",
+            [targetId, pending.rows[0].name, input.hardwareInfo],
+          );
+          await client.query('update enrollment_tokens set agent_id=$2 where id=$1', [token.id, targetId]);
+          await client.query('delete from agents where id=$1', [token.agent_id]);
+        } else {
+          agent = await client.query(
+            "update agents set device_id=$2,status='online',last_seen_at=now(),hardware_info=$3,updated_at=now() where id=$1 and user_id=$4 returning id,user_id as \"userId\"",
+            [token.agent_id, input.deviceId, input.hardwareInfo, token.user_id],
+          );
+        }
+      } else {
+        agent = await client.query(
+          "insert into agents(user_id,device_id,name,status,hardware_info,last_seen_at) values($1,$2,$3,'online',$4,now()) on conflict(device_id) do update set status='online',last_seen_at=now(),updated_at=now(),hardware_info=excluded.hardware_info where agents.user_id=excluded.user_id returning id,user_id as \"userId\"",
+          [token.user_id, input.deviceId, input.name, input.hardwareInfo],
+        );
+      }
       if (!agent.rowCount) {
         await rollback(client);
         return null;
       }
       await client.query(
         'update enrollment_tokens set used=true,used_at=now() where id=$1',
-        [enrollment.rows[0].id],
+        [token.id],
       );
       await client.query(
         'update agent_credentials set revoked=true,revoked_at=now() where agent_id=$1 and revoked=false',
@@ -203,6 +237,10 @@ export class PgAgentRepository implements AgentRepository {
         'update agent_credentials set revoked=true,revoked_at=now() where agent_id=$1 and revoked=false',
         [agentId],
       );
+      await client.query(
+        'update enrollment_tokens set revoked_at=now() where agent_id=$1 and used=false and revoked_at is null',
+        [agentId],
+      );
       await client.query('commit');
       return true;
     } catch (error) {
@@ -210,6 +248,18 @@ export class PgAgentRepository implements AgentRepository {
       throw error;
     } finally {
       client.release();
+    }
+  }
+
+  async updateName(userId: string, agentId: string, name: string): Promise<boolean> {
+    try {
+      const result = await this.pool.query(
+        'update agents set name=$3,updated_at=now() where id=$1 and user_id=$2 returning id',
+        [agentId, userId, name],
+      );
+      return Boolean(result.rowCount);
+    } catch (error) {
+      throw error;
     }
   }
 

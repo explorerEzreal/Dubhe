@@ -3,10 +3,14 @@ import { apiFetch } from './client';
 export interface EnrollmentTokenResult {
   token: string;
   expiresIn: number;
+  agentId: string;
 }
 
 export const enrollmentApi = {
-  create(): Promise<EnrollmentTokenResult> {
-    return apiFetch<EnrollmentTokenResult>('/api/enrollment-tokens', { method: 'POST' });
+  create(name: string): Promise<EnrollmentTokenResult> {
+    return apiFetch<EnrollmentTokenResult>('/api/enrollment-tokens', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
   },
 };
