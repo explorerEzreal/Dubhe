@@ -28,7 +28,10 @@ function homePath(...parts: string[]): string {
 export function normalizeCloudUrl(value: string): string {
   const url = new URL(value);
   if (url.protocol === 'https:') url.protocol = 'wss:';
-  if (url.protocol !== 'wss:') throw new Error('Cloud 地址必须使用 https:// 或 wss://');
+  if (url.protocol === 'http:') url.protocol = 'ws:';
+  if (url.protocol !== 'wss:' && url.protocol !== 'ws:') {
+    throw new Error('Cloud 地址必须使用 https://、wss://，本地开发可使用 http:// 或 ws://');
+  }
   url.pathname = url.pathname.replace(/\/$/, '').endsWith('/agent')
     ? url.pathname.replace(/\/$/, '')
     : `${url.pathname.replace(/\/$/, '')}/agent`;

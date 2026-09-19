@@ -727,26 +727,30 @@ button { font: inherit; }
 
 /* ===== 设备监控中心 ===== */
 .device-monitor-page { max-width: 1680px; margin: 0 auto; }
-.device-monitor-page .dashboard-header { margin-bottom: 12px; }
+.device-monitor-page .dashboard-header { margin-bottom: 8px; }
+.device-page-heading h2 { margin: 0; font-size: 26px; line-height: 1.25; font-weight: 600; }
+.device-page-heading .ant-typography { margin-bottom: 0; }
+.device-page-heading .ant-typography-secondary { margin-top: 4px; font-size: 13px; }
+.device-header-actions { flex-wrap: wrap; justify-content: flex-end; }
+.device-updated-at { color: var(--muted-color); font-size: 12px; white-space: nowrap; }
 .monitoring-state { display: inline-flex; align-items: center; gap: 7px; color: var(--muted-color); font-size: 13px; }
 .monitoring-state .status-dot { background: #35d399; box-shadow: 0 0 0 4px rgba(53,211,153,.12); }
 .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
-.device-boundary-alert { margin-bottom: 18px; }
-.device-monitor-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 24px; align-items: start; }
-.device-group-rail { min-width: 0; }
-.device-group-title { padding: 5px 10px 10px; color: var(--muted-color); font-size: 13px; }
-.device-group-item { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; width: 100%; min-height: 68px; padding: 13px 12px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--text-color); text-align: left; cursor: pointer; }
+.device-group-section { min-width: 0; margin: 2px 0 14px; }
+.device-group-title { padding: 0 0 6px; color: var(--muted-color); font-size: 12px; line-height: 1.4; }
+.device-group-rail { display: flex; gap: 8px; min-width: 0; padding: 1px 0 5px; overflow-x: auto; scrollbar-width: thin; }
+.device-group-item { position: relative; display: grid; grid-template-columns: 20px minmax(110px, 1fr) auto; gap: 6px; flex: 0 0 180px; min-height: 58px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--panel-bg); color: var(--text-color); text-align: left; cursor: pointer; }
 .device-group-item:hover { background: var(--hover-bg); }
 .device-group-item.is-selected { border-color: var(--accent-color); background: var(--active-bg); }
 .device-group-icon { color: var(--accent-color); font-size: 16px; }
-.device-group-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
+.device-group-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
 .device-group-count { color: var(--muted-color); font-size: 12px; }
 .device-group-bar { grid-column: 1 / -1; height: 4px; margin-top: 3px; border-radius: 4px; background: var(--device-track, #e2e8f0); overflow: hidden; }
 .device-group-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent-color); }
 .device-group-empty { padding: 12px 10px; color: var(--muted-color); font-size: 12px; }
-.device-section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.device-section-heading h3 { margin: 0 0 4px; }
-.device-overview-grid { display: grid; grid-template-columns: minmax(160px, .8fr) repeat(3, minmax(220px, 1fr)); gap: 16px; margin-bottom: 18px; }
+.device-section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.device-section-heading h4 { margin: 0 0 2px; font-size: 18px; line-height: 1.35; font-weight: 600; }
+.device-overview-grid { display: grid; grid-template-columns: minmax(220px, .95fr) repeat(3, minmax(240px, 1fr)); gap: 16px; margin-bottom: 18px; }
 .device-overview-grid .ant-card { height: 100%; border-color: var(--border-color); background: var(--panel-bg); }
 .device-summary-card { display: flex; flex-direction: column; justify-content: center; min-height: 190px; }
 .summary-number { font-size: 42px; line-height: 1; font-weight: 700; color: var(--text-color); }
@@ -782,6 +786,7 @@ button { font: inherit; }
 .device-card-actions { display: inline-flex; gap: 2px; }
 .device-card-actions .ant-btn { padding-inline: 4px; font-size: 12px; }
 
-@media (max-width: 1250px) { .device-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .device-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 900px) { .device-monitor-layout { grid-template-columns: 1fr; } .device-group-rail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .device-group-title { grid-column: 1 / -1; } .device-toolbar { align-items: stretch; flex-direction: column; } .device-toolbar > .ant-input-affix-wrapper { width: 100%; } }
-@media (max-width: 620px) { .device-overview-grid, .device-card-grid { grid-template-columns: 1fr; } .device-group-rail { grid-template-columns: 1fr; } .device-group-title { grid-column: auto; } .device-card-foot { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 1450px) { .device-overview-grid { grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
+@media (max-width: 1250px) { .device-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .device-header-actions { width: 100%; justify-content: flex-start; } .device-toolbar { align-items: stretch; flex-direction: column; } .device-toolbar > .ant-input-affix-wrapper { width: 100%; } }
+@media (max-width: 620px) { .device-monitor-page .dashboard-header { gap: 6px; } .device-page-heading h2 { font-size: 24px; } .device-updated-at { flex-basis: 100%; order: 3; } .device-overview-grid, .device-card-grid { grid-template-columns: 1fr; } .device-group-section { margin: 1px 0 10px; } .device-group-rail { margin-inline: -4px; padding-inline: 4px; } .device-group-title { padding-bottom: 5px; } .device-group-item { flex-basis: 166px; min-height: 54px; } .device-section-heading { margin-bottom: 8px; } .device-section-heading h4 { font-size: 17px; } .device-card-foot { align-items: flex-start; flex-direction: column; } }

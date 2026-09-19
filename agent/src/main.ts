@@ -187,8 +187,8 @@ service
       });
       await startService(paths);
       console.log(`[service] 已安装并启动，凭证路径=${credentialsPath}`);
-    } catch {
-      console.error('[service] 安装失败，请稍后重试');
+    } catch (err) {
+      console.error(`[service] 安装失败: ${err instanceof Error ? err.message : '未知错误'}`);
       process.exitCode = 1;
     }
   });

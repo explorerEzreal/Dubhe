@@ -109,6 +109,11 @@ export async function registerDevice(
       fail(new Error('registration timeout'));
     }, 15000);
     socket.on('error', fail);
+    socket.once('close', (code, reason) => {
+      if (!completed) {
+        fail(new Error(`Cloud 连接已关闭: ${code} ${reason.toString() || '无原因'}`));
+      }
+    });
     socket.on('message', (raw) => {
       try {
         const parsed = registeredMessageSchema.safeParse(JSON.parse(raw.toString()));

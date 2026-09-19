@@ -15,8 +15,14 @@ function defaultCredentialsPath(): string {
 const cloudUrlSchema = z
   .string()
   .url()
-  .refine((value) => new URL(value).protocol === 'wss:', {
-    message: 'CLOUD_URL must use wss',
+  .refine((value) => {
+    const url = new URL(value);
+    return url.protocol === 'wss:' || (
+      url.protocol === 'ws:' &&
+      ['localhost', '127.0.0.1', '::1'].includes(url.hostname)
+    );
+  }, {
+    message: 'CLOUD_URL 必须使用 wss，本地环回地址可使用 ws',
   });
 
 const envSchema = z.object({
