@@ -15,7 +15,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { AgentSummary, ModelInstanceSummary } from '../../api/agent-api';
 import type { EnrollmentTokenResult } from '../../api/enrollment-api';
 import type { ModelSummary } from '../../api/model-api';
@@ -424,6 +424,7 @@ export function AddAgentToGroupModal({
   groups,
   agents,
   loading,
+  initialGroupId,
   onClose,
   onSubmit,
 }: {
@@ -431,11 +432,18 @@ export function AddAgentToGroupModal({
   groups: GroupSummary[];
   agents: AgentSummary[];
   loading: boolean;
+  initialGroupId?: string;
   onClose: () => void;
   onSubmit: (groupId: string, agentId: string) => void;
 }) {
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [selectedAgent, setSelectedAgent] = useState<string>('');
+  useEffect(() => {
+    if (open) {
+      setSelectedGroup(initialGroupId ?? '');
+      setSelectedAgent('');
+    }
+  }, [initialGroupId, open]);
   return (
     <Modal
       title='将设备加入分组'

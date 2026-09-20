@@ -18,6 +18,29 @@ button { font: inherit; }
 .dashboard-header h1 { margin: 0; }
 .state-view { min-height: 180px; display: grid; place-items: center; }
 
+/* 模型分组表格：保持密度，操作集中在行内 */
+.device-groups-page .dashboard-header h3 { margin: 0; }
+.device-groups-page .dashboard-header p { margin: 4px 0 0; }
+.group-overview-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 180px)); gap: 12px; margin-bottom: 14px; }
+.group-overview-grid .ant-card { border-color: var(--border-color); }
+.group-overview-grid .ant-statistic-title { color: var(--muted-color); font-size: 12px; }
+.group-overview-grid .ant-statistic-content { font-size: 22px; }
+.group-table-card { overflow: hidden; }
+.group-table-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
+.group-table-mark { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 7px; color: var(--accent-color); background: var(--active-bg); }
+.group-device-panel { padding: 2px 12px 12px 42px; }
+.group-device-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.group-device-panel .ant-table { background: transparent; }
+.group-device-panel .ant-table-thead > tr > th { background: transparent; }
+@media (max-width: 680px) {
+  .group-overview-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .group-overview-grid .ant-statistic-content { font-size: 18px; }
+  .group-table-toolbar { align-items: stretch; flex-direction: column; }
+  .group-table-toolbar .ant-space { width: 100%; }
+  .group-table-toolbar .ant-input { width: 100% !important; }
+  .group-device-panel { padding-left: 8px; }
+}
+
 .brand-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--accent-color); color: #fff; font-weight: 800; }
 .auth-overlay { position: relative; display: grid; place-items: center; min-height: 100vh; overflow: hidden; padding: 24px; background: radial-gradient(circle at 20% 20%, rgba(16,185,129,.13), transparent 35%), var(--content-bg); }
 .auth-panel { position: relative; z-index: 1; width: min(440px, 100%); padding: 36px; border: 1px solid var(--border-color); border-radius: 20px; background: var(--sidebar-bg); box-shadow: 0 24px 80px rgba(15,23,42,.12); }

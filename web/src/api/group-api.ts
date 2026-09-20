@@ -1,4 +1,5 @@
 import { apiFetch } from './client';
+import type { AgentSummary } from './agent-api';
 
 export interface GroupSummary {
   id: string;
@@ -10,7 +11,7 @@ export interface GroupSummary {
 }
 
 export interface GroupDetail extends GroupSummary {
-  agents: Array<Record<string, unknown>>;
+  agents: Array<AgentSummary & { agentId?: string }>;
 }
 
 export interface ChannelSummary {
