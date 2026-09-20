@@ -182,12 +182,15 @@ export interface InferenceCreateInput {
   userId: string;
   apiKeyId: string;
   groupId: string | null;
+  endpoint: 'chat/completions' | 'responses';
+  requestBytes: number;
 }
 
 export interface InferenceRouteInput {
   requestId: string;
   agentId: string;
   modelId: string;
+  modelName?: string;
 }
 
 export interface InferenceFinishInput {
@@ -198,6 +201,13 @@ export interface InferenceFinishInput {
   outputTokens?: number;
   totalTokens?: number;
   latencyMs: number;
+  endpoint?: 'chat/completions' | 'responses';
+  requestBytes?: number;
+  responseBytes?: number;
+  upstreamStatusCode?: number;
+  usageAvailable?: boolean;
+  usageSource?: string;
+  upstreamLatencyMs?: number;
 }
 
 export interface InferenceRepository {

@@ -7,9 +7,11 @@ import type {
 export interface AgentInferenceRequest {
   request_id: string;
   payload: {
+    endpoint: 'chat/completions' | 'responses';
     model: string;
-    messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+    body: Record<string, unknown>;
     stream: boolean;
+    request_bytes: number;
     [key: string]: unknown;
   };
 }
@@ -24,10 +26,6 @@ export interface AgentInferenceService {
 interface ActiveTask {
   controller: AbortController;
   cancelled: boolean;
-}
-
-function emptyUsage(): InferenceUsage {
-  return { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
 }
 
 export function createInferenceService(
@@ -76,28 +74,53 @@ export function createInferenceService(
           await sendError(request.request_id, sender, 'MODEL_NOT_READY');
           return;
         }
-        let content = '';
-        let usage = emptyUsage();
+        let usage: InferenceUsage | undefined;
+        let statusCode = 200;
+        let responseHeaders: Record<string, string> = {};
+        let responseBytes = 0;
+        const responseParts: Buffer[] = [];
         let seq = 0;
-        for await (const chunk of backend.chat(
-          request.payload.model,
-          request.payload,
-          task.controller.signal,
-        )) {
-          if (typeof chunk === 'string') content += chunk;
-          else {
-            content += chunk.content ?? '';
-            usage = chunk.usage ?? usage;
+        const legacyBackend = !backend.request;
+        const stream = backend.request
+          ? backend.request(request.payload.endpoint, request.payload.model, request.payload.body, task.controller.signal)
+          : backend.chat?.(request.payload.model, request.payload, task.controller.signal);
+        if (!stream) throw new Error('inference backend unavailable');
+        for await (const chunk of stream) {
+          if (typeof chunk === 'string') {
+            const bytes = Buffer.from(chunk, 'utf8');
+            responseParts.push(bytes);
+            responseBytes += bytes.byteLength;
+            if (request.payload.stream) {
+              await sender.send({ protocol_version: 1, type: 'infer_chunk', timestamp: new Date().toISOString(), request_id: request.request_id, payload: legacyBackend ? { seq, content: chunk } : { seq, data: bytes.toString('base64'), content: chunk, encoding: 'base64', response_bytes: responseBytes } });
+              seq += 1;
+            }
+            continue;
           }
-          if (request.payload.stream) {
-            const text = typeof chunk === 'string' ? chunk : chunk.content ?? '';
-            if (text) {
+          if (!chunk.data && 'content' in chunk && typeof (chunk as { content?: unknown }).content === 'string') {
+            const bytes = Buffer.from(String((chunk as { content: string }).content), 'utf8');
+            responseParts.push(bytes);
+            responseBytes += bytes.byteLength;
+            usage = chunk.usage ?? usage;
+            if (request.payload.stream) {
+              await sender.send({ protocol_version: 1, type: 'infer_chunk', timestamp: new Date().toISOString(), request_id: request.request_id, payload: legacyBackend ? { seq, content: String((chunk as { content: string }).content) } : { seq, data: bytes.toString('base64'), content: String((chunk as { content: string }).content), encoding: 'base64', response_bytes: responseBytes } });
+              seq += 1;
+            }
+            continue;
+          }
+          if (chunk.statusCode !== undefined) statusCode = chunk.statusCode;
+          if (chunk.headers) responseHeaders = chunk.headers;
+          responseBytes = chunk.responseBytes;
+          usage = chunk.usage ?? usage;
+          if (chunk.data) {
+            const bytes = Buffer.from(chunk.data, 'base64');
+            responseParts.push(bytes);
+            if (request.payload.stream) {
               await sender.send({
                 protocol_version: 1,
                 type: 'infer_chunk',
                 timestamp: new Date().toISOString(),
                 request_id: request.request_id,
-                payload: { seq, content: text },
+                payload: { seq, data: chunk.data, content: Buffer.from(chunk.data, 'base64').toString('utf8'), encoding: 'base64', response_bytes: responseBytes, ...(seq === 0 ? { status_code: statusCode, headers: responseHeaders } : {}) },
               });
               seq += 1;
             }
@@ -109,7 +132,18 @@ export function createInferenceService(
           type: 'infer_done',
           timestamp: new Date().toISOString(),
           request_id: request.request_id,
-          payload: { content, finish_reason: 'stop', usage },
+            payload: legacyBackend ? {
+              content: Buffer.concat(responseParts).toString('utf8'),
+              finish_reason: 'stop',
+              usage,
+            } : {
+            status_code: statusCode,
+            headers: responseHeaders,
+            ...(request.payload.stream ? {} : { body: Buffer.concat(responseParts).toString('base64'), encoding: 'base64' as const }),
+            response_bytes: responseBytes,
+            content: Buffer.concat(responseParts).toString('utf8'),
+            usage,
+          },
         });
       } catch {
         if (task.cancelled || task.controller.signal.aborted) return;

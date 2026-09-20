@@ -11,9 +11,9 @@ interface UsageMonitoringProps {
 }
 
 function downloadCsv(data: MonitoringData): void {
-  const header = ['时间', '用户', '分组', 'API Key', '模型', '设备', '状态', '输入 Token', '输出 Token', '总 Token', '延迟'];
+  const header = ['时间', '用户', '分组', 'API Key', '模型', '设备', '端点', '状态', '输入 Token', '输出 Token', '总 Token', '请求字节', '响应字节', '上游状态', '延迟'];
   const escape = (value: unknown): string => `"${String(value ?? '').replace(/"/g, '""')}"`;
-  const rows = data.requests.map((item) => [item.startedAt, item.email, item.groupName, item.apiKeyPrefix, item.modelName, item.agentName, item.status, item.inputTokens, item.outputTokens, item.totalTokens, item.latencyMs].map(escape).join(','));
+  const rows = data.requests.map((item) => [item.startedAt, item.email, item.groupName, item.apiKeyPrefix, item.modelName, item.agentName, item.endpoint, item.status, item.inputTokens, item.outputTokens, item.totalTokens, item.requestBytes, item.responseBytes, item.upstreamStatusCode, item.latencyMs].map(escape).join(','));
   const blob = new Blob([`\uFEFF${[header.join(','), ...rows].join('\n')}`], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -30,7 +30,7 @@ export function UsageMonitoring({ data, showUser }: UsageMonitoringProps) {
     ...(showUser ? [{ title: '用户', dataIndex: 'email' }] : []),
     { title: '分组', dataIndex: 'groupName' }, { title: 'API Key', dataIndex: 'apiKeyPrefix' }, { title: '模型', dataIndex: 'modelName' },
     { title: '输入', dataIndex: 'inputTokens', render: (value: number | null) => value ?? '缺失' }, { title: '输出', dataIndex: 'outputTokens', render: (value: number | null) => value ?? '缺失' }, { title: '总 Token', dataIndex: 'totalTokens' },
-    { title: '延迟', dataIndex: 'latencyMs', render: (value: number | null) => value == null ? '—' : `${value} ms` }, { title: '状态', dataIndex: 'status', render: (value: string) => <Tag color={value === 'completed' ? 'green' : 'red'}>{value}</Tag> },
+    { title: '端点', dataIndex: 'endpoint', render: (value: string | null | undefined) => value ?? '—' }, { title: '请求/响应', key: 'bytes', render: (_: unknown, item) => `${item.requestBytes ?? 0} / ${item.responseBytes ?? 0} B` }, { title: '延迟', dataIndex: 'latencyMs', render: (value: number | null) => value == null ? '—' : `${value} ms` }, { title: '状态', dataIndex: 'status', render: (value: string) => <Tag color={value === 'completed' ? 'green' : 'red'}>{value}</Tag> },
   ];
   const chartOption = { tooltip: { trigger: 'axis' }, legend: { data: ['Token', '调用次数'] }, grid: { left: 48, right: 48, bottom: 32, top: 48 }, xAxis: { type: 'category', data: data.trend.map((item) => new Date(item.date).toLocaleDateString()) }, yAxis: [{ type: 'value', name: 'Token' }, { type: 'value', name: '调用次数' }], series: [{ name: 'Token', type: 'line', smooth: true, data: data.trend.map((item) => item.totalTokens) }, { name: '调用次数', type: 'bar', yAxisIndex: 1, data: data.trend.map((item) => item.totalCalls) }] };
   const recent = Number(data.trend[data.trend.length - 1]?.totalTokens ?? 0);

@@ -19,7 +19,7 @@ export interface MonitoringData {
   models: Array<{ id: string | null; name: string; totalCalls: number; totalTokens: number }>;
   agents: Array<{ id: string | null; name: string; totalCalls: number; totalTokens: number }>;
   devices?: Array<{ id: string | null; name: string; totalCalls: number; totalTokens: number }>;
-  requests: Array<{ requestId: string; startedAt: string; email: string; groupName: string; apiKeyPrefix: string; modelName: string; agentName?: string; deviceName?: string; status: string; errorCode: string | null; inputTokens: number | null; outputTokens: number | null; totalTokens: number; latencyMs: number | null }>;
+  requests: Array<{ requestId: string; startedAt: string; email: string; groupName: string; apiKeyPrefix: string; modelName: string; agentName?: string; deviceName?: string; status: string; errorCode: string | null; inputTokens: number | null; outputTokens: number | null; totalTokens: number | null; latencyMs: number | null; endpoint?: string | null; requestBytes?: number | null; responseBytes?: number | null; upstreamStatusCode?: number | null; usageAvailable?: boolean | null }>;
   generatedAt: string;
   dataQuality: { missingTokenCalls: number; ungroupedCalls: number; truncated: boolean };
   granularity?: 'hour' | 'day';

@@ -47,10 +47,10 @@ export class PgInferenceRepository implements InferenceRepository {
   async createAccepted(input: InferenceCreateInput): Promise<void> {
     try {
       await this.pool.query(
-        `insert into inference_requests(request_id,user_id,api_key_id,group_id,status)
-         values($1,$2,$3,$4,'accepted')
+        `insert into inference_requests(request_id,user_id,api_key_id,group_id,status,endpoint,request_bytes)
+         values($1,$2,$3,$4,'accepted',$5,$6)
          on conflict (request_id) do nothing`,
-        [input.requestId, input.userId, input.apiKeyId, input.groupId],
+        [input.requestId, input.userId, input.apiKeyId, input.groupId, input.endpoint, input.requestBytes],
       );
     } catch (error) {
       throw error;
@@ -61,9 +61,9 @@ export class PgInferenceRepository implements InferenceRepository {
     try {
       await this.pool.query(
         `update inference_requests
-            set agent_id=$2, model_id=$3, status='routed'
+            set agent_id=$2, model_id=$3, status='routed', model_name_snapshot=coalesce(model_name_snapshot,$4)
           where request_id=$1`,
-        [input.requestId, input.agentId, input.modelId],
+        [input.requestId, input.agentId, input.modelId, input.modelName ?? null],
       );
     } catch (error) {
       throw error;
@@ -76,6 +76,7 @@ export class PgInferenceRepository implements InferenceRepository {
         `update inference_requests
             set status=$2, status_code=$3, error_code=$4,
                 input_tokens=$5, output_tokens=$6, total_tokens=$7, latency_ms=$8,
+                response_bytes=coalesce($9,response_bytes), upstream_status_code=coalesce($10,upstream_status_code), usage_available=coalesce($11,usage_available), usage_source=coalesce($12,usage_source), upstream_latency_ms=coalesce($13,upstream_latency_ms),
                 finished_at=now()
           where request_id=$1 and finished_at is null`,
         [
@@ -88,7 +89,7 @@ export class PgInferenceRepository implements InferenceRepository {
           input.totalTokens ?? (input.inputTokens == null && input.outputTokens == null
             ? null
             : (input.inputTokens ?? 0) + (input.outputTokens ?? 0)),
-          input.latencyMs,
+          input.latencyMs, input.responseBytes ?? null, input.upstreamStatusCode ?? null, input.usageAvailable ?? null, input.usageSource ?? null, input.upstreamLatencyMs ?? input.latencyMs,
         ],
       );
     } catch (error) {

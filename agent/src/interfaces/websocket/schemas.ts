@@ -74,24 +74,15 @@ export const heartbeatMessageSchema = envelopeSchema.extend({
 
 export const agentMessageSchema = envelopeSchema;
 
-const completionMessageSchema = z.object({
-  role: z.enum(['system', 'user', 'assistant']),
-  content: z.string().min(1).max(1_000_000),
-}).strict();
-
 export const inferRequestMessageSchema = envelopeSchema.extend({
   type: z.literal('infer_request'),
   request_id: z.string().min(1).max(200),
   payload: z.object({
+    endpoint: z.enum(['chat/completions', 'responses']),
     model: modelNameSchema,
-    messages: z.array(completionMessageSchema).min(1).max(100),
+    body: z.record(z.unknown()),
     stream: z.boolean(),
-    temperature: z.number().min(0).max(2).optional(),
-    top_p: z.number().min(0).max(1).optional(),
-    max_tokens: z.number().int().positive().max(100_000).optional(),
-    stop: z.union([z.string(), z.array(z.string().min(1)).max(20)]).optional(),
-    presence_penalty: z.number().min(-2).max(2).optional(),
-    frequency_penalty: z.number().min(-2).max(2).optional(),
+    request_bytes: z.number().int().nonnegative(),
   }).passthrough(),
 });
 
@@ -100,7 +91,12 @@ export const inferChunkMessageSchema = envelopeSchema.extend({
   request_id: z.string().min(1).max(200),
   payload: z.object({
     seq: z.number().int().nonnegative(),
-    content: z.string(),
+    data: z.string().optional(),
+    encoding: z.literal('base64').optional(),
+    content: z.string().optional(),
+    response_bytes: z.number().int().nonnegative().optional(),
+    status_code: z.number().int().min(100).max(599).optional(),
+    headers: z.record(z.string()).optional(),
     usage: z.object({
       prompt_tokens: z.number().int().nonnegative(),
       completion_tokens: z.number().int().nonnegative(),
@@ -113,8 +109,13 @@ export const inferDoneMessageSchema = envelopeSchema.extend({
   type: z.literal('infer_done'),
   request_id: z.string().min(1).max(200),
   payload: z.object({
-    content: z.string(),
-    finish_reason: z.literal('stop').optional(),
+    status_code: z.number().int().min(100).max(599).optional(),
+    headers: z.record(z.string()).optional(),
+    content: z.string().optional(),
+    body: z.string().optional(),
+    encoding: z.literal('base64').optional(),
+    response_bytes: z.number().int().nonnegative().optional(),
+    finish_reason: z.string().optional(),
     usage: z.object({
       prompt_tokens: z.number().int().nonnegative(),
       completion_tokens: z.number().int().nonnegative(),

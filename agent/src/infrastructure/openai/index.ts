@@ -4,17 +4,7 @@ import type {
   InferenceUsage,
 } from '../../interfaces/inference/index.js';
 
-interface OpenAiModelList {
-  data?: Array<{ id?: string }>;
-}
-
-interface OpenAiStreamChunk {
-  choices?: Array<{
-    delta?: { content?: string };
-    message?: { content?: string };
-  }>;
-  usage?: InferenceUsage;
-}
+interface OpenAiModelList { data?: Array<{ id?: string }>; }
 
 function apiRoot(baseUrl: string): string {
   const url = new URL(baseUrl);
@@ -24,9 +14,7 @@ function apiRoot(baseUrl: string): string {
 }
 
 function payloadRecord(payload: unknown): Record<string, unknown> {
-  return typeof payload === 'object' && payload !== null
-    ? payload as Record<string, unknown>
-    : {};
+  return typeof payload === 'object' && payload !== null ? payload as Record<string, unknown> : {};
 }
 
 function headers(apiKey?: string): HeadersInit {
@@ -35,94 +23,63 @@ function headers(apiKey?: string): HeadersInit {
     : { 'content-type': 'application/json' };
 }
 
-function parseChunk(data: string): InferenceChatChunk | undefined {
-  const parsed = JSON.parse(data) as OpenAiStreamChunk;
-  const choice = parsed.choices?.[0];
-  const content = choice?.delta?.content ?? choice?.message?.content;
-  if (!content && !parsed.usage) return undefined;
-  return { content, usage: parsed.usage };
+function responseHeaders(response: Response): Record<string, string> {
+  const result: Record<string, string> = {};
+  response.headers.forEach((value, key) => { result[key] = value; });
+  return result;
 }
 
-const STREAM_DONE = Symbol('stream-done');
+function extractUsage(text: string): InferenceUsage | undefined {
+  const candidates = text.split(/\n\n+/).map((item) => item.replace(/^data:\s*/, '').trim()).filter((item) => item && item !== '[DONE]');
+  for (const candidate of [...candidates.reverse(), text]) {
+    try {
+      const parsed = JSON.parse(candidate) as { usage?: InferenceUsage };
+      if (parsed.usage && Number.isFinite(parsed.usage.total_tokens)) return parsed.usage;
+    } catch { /* 原始响应可能是非 JSON，保持透传 */ }
+  }
+  return undefined;
+}
 
-export function createOpenAiClient(
-  baseUrl: string,
-  configuredModel: string,
-  apiKey?: string,
-): InferenceBackend {
+function encode(data: Uint8Array): string {
+  return Buffer.from(data).toString('base64');
+}
+
+export function createOpenAiClient(baseUrl: string, configuredModel: string, apiKey?: string): InferenceBackend {
   const root = apiRoot(baseUrl);
   const model = configuredModel.trim();
-
   const listModels = async (): Promise<string[]> => {
     const response = await fetch(`${root}/models`, { headers: apiKey ? { authorization: `Bearer ${apiKey}` } : undefined });
     if (!response.ok) throw new Error('local model service unavailable');
     const body = await response.json() as OpenAiModelList;
-    const discovered = (body.data ?? [])
-      .map((item) => item.id?.trim())
-      .filter((item): item is string => Boolean(item));
+    const discovered = (body.data ?? []).map((item) => item.id?.trim()).filter((item): item is string => Boolean(item));
     return discovered.length > 0 ? discovered : model ? [model] : [];
   };
 
   return {
-    async health(): Promise<boolean> {
-      try {
-        await listModels();
-        return true;
-      } catch {
-        return false;
-      }
-    },
-
+    async health(): Promise<boolean> { try { await listModels(); return true; } catch { return false; } },
     listModels,
-
-    async *chat(requestModel: string, payload: unknown, signal: AbortSignal): AsyncIterable<string | InferenceChatChunk> {
-      const response = await fetch(`${root}/chat/completions`, {
-        method: 'POST',
-        headers: headers(apiKey),
-        body: JSON.stringify({ ...payloadRecord(payload), model: requestModel, stream: true }),
-        signal,
-      });
-      if (!response.ok || !response.body) throw new Error('local model service request failed');
-
+    async *request(endpoint, requestModel, payload, signal): AsyncIterable<string | InferenceChatChunk> {
+      const body = JSON.stringify({ ...payloadRecord(payload), model: requestModel });
+      const response = await fetch(`${root}/${endpoint}`, { method: 'POST', headers: headers(apiKey), body, signal });
+      const meta = { statusCode: response.status, headers: responseHeaders(response) };
+      if (!response.body) {
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        yield { ...meta, data: encode(bytes), encoding: 'base64', responseBytes: bytes.byteLength, usage: extractUsage(new TextDecoder().decode(bytes)) };
+        return;
+      }
       const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let eventData = '';
-      const consumeLine = (line: string): InferenceChatChunk | typeof STREAM_DONE | undefined => {
-        const normalized = line.endsWith('\r') ? line.slice(0, -1) : line;
-        if (normalized.startsWith('data:')) {
-          eventData += normalized.slice(5).trimStart();
-          return undefined;
-        }
-        if (normalized !== '' || eventData === '') return undefined;
-        const data = eventData;
-        eventData = '';
-        if (data === '[DONE]') return STREAM_DONE;
-        return parseChunk(data);
-      };
-
+      let total = 0;
+      let text = '';
       while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-          const chunk = consumeLine(line);
-          if (chunk === STREAM_DONE) return;
-          if (chunk) yield chunk;
-        }
+        const next = await reader.read();
+        if (next.done) break;
+        const bytes = next.value;
+        total += bytes.byteLength;
+        text += new TextDecoder().decode(bytes, { stream: true });
+        yield { ...(total === bytes.byteLength ? meta : {}), data: encode(bytes), encoding: 'base64', responseBytes: total, usage: extractUsage(text) };
       }
-      buffer += decoder.decode();
-      if (buffer) {
-        const chunk = consumeLine(buffer);
-        if (chunk === STREAM_DONE) return;
-        if (chunk) yield chunk;
-      }
-      if (eventData && eventData !== '[DONE]') {
-        const chunk = parseChunk(eventData);
-        if (chunk) yield chunk;
-      }
+      const usage = extractUsage(text);
+      if (usage) yield { data: '', encoding: 'base64', responseBytes: total, usage };
     },
   };
 }

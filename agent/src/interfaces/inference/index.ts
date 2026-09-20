@@ -6,16 +6,22 @@ export interface InferenceUsage {
 }
 
 export interface InferenceChatChunk {
-  content?: string;
+  data: string;
+  encoding: 'base64';
+  responseBytes: number;
+  statusCode?: number;
+  headers?: Record<string, string>;
   usage?: InferenceUsage;
 }
 
 export interface InferenceBackend {
   health(): Promise<boolean>;
   listModels(): Promise<string[]>;
-  chat(
+  request?: (
+    endpoint: 'chat/completions' | 'responses',
     model: string,
     payload: unknown,
     signal: AbortSignal,
-  ): AsyncIterable<string | InferenceChatChunk>;
+  ) => AsyncIterable<string | InferenceChatChunk>;
+  chat?: (model: string, payload: unknown, signal: AbortSignal) => AsyncIterable<string | InferenceChatChunk>;
 }

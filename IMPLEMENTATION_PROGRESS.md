@@ -72,3 +72,11 @@
 - 变更：新增版本化监控事件端口与数据库事件仓储；推理生命周期接入 started、routed、completed、failed、timeout、cancelled、disconnected；新增模型/分组/设备名称快照迁移；部署者监控接口移除 scope，返回设备、活跃设备、错误率、数据质量和真实截断状态；仪表盘改为部署者视图，移除运营总览/我的使用切换，展示模型/分组/设备分布；仪表盘组件与 Less 独立拆分。
 - 验证：`pnpm --config.verify-deps-before-run=warn --dir cloud build`、`pnpm --config.verify-deps-before-run=warn --dir web build` 通过。
 - 风险：监控事件当前复用 `inference_requests`，事件中的用户/分组快照在运行期仍可进一步从路由快照传递；尚未执行 PostgreSQL 迁移重复运行、真实推理链路和浏览器视觉验收；全量 lint 可能受既有页面问题影响。
+
+## 透明转发与流量统计重构（2026-09-20）
+
+- 状态：代码与自动化验证完成，真实 Responses/Chat 上游原始字节、错误透传和断网恢复仍需部署环境验收。
+- 变更：Cloud 保留鉴权、限流、分组路由、并发、超时、取消和请求事实记录；移除 Responses 到 Chat Completions 的转换，按请求端点将原始 body 交给 Agent。Agent 按 `chat/completions` 或 `responses` 调用本地同名端点，通过 base64 WSS 分片将原始响应数据返回，Cloud 不重建业务响应。
+- 统计：`inference_requests` 新增 endpoint、请求/响应字节数、上游状态码、usage 可用性、usage 来源和上游延迟；Token 缺失保留为空，不再用 Cloud 侧 0 伪造；监控请求明细和 CSV 展示端点、字节与上游状态。
+- 验证：`pnpm test`、`pnpm build`、`pnpm lint`、`pnpm contracts:check` 通过；三份 Agent 协议 schema 已 JSON 解析并通过两次 `diff -q`。
+- 待验收：真实本地 `/v1/chat/completions` 与 `/v1/responses` 的非流式/流式原始响应、上游 4xx/5xx、客户端取消、Agent 断线恢复，以及 PostgreSQL 新迁移在目标环境的连续幂等执行。
