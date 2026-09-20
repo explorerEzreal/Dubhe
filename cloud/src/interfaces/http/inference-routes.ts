@@ -35,7 +35,16 @@ export function registerInferenceRoutes(app: FastifyInstance, services: HttpServ
         if (!limit.allowed) return sendRateLimit(reply, limit.retryAfterSeconds);
         if (!key.groupId) return { object: 'list', data: [] };
         const models = await services.apiKeys.listModelsByGroup(key.groupId);
-        return { object: 'list', data: models.map((model) => ({ ...model, object: 'model', owned_by: 'local' })) };
+        return {
+          object: 'list',
+          data: models.map((model) => ({
+            ...model,
+            // OpenAI 客户端会把 id 原样用于后续推理请求，必须使用模型名称而非数据库 UUID。
+            id: String(model.name),
+            object: 'model',
+            owned_by: 'local',
+          })),
+        };
       } catch (error) { return sendError(reply, error); }
     });
 
