@@ -160,11 +160,14 @@ export function registerManagementRoutes(
   app.get('/api/monitoring', async (request, reply) => {
     try {
       const user = await authenticatedUser(request, services);
-      const query = request.query as { from?: string; to?: string; scope?: string };
+      const query = request.query as { from?: string; to?: string; granularity?: string };
       const to = query.to ? new Date(query.to) : new Date();
       const from = query.from ? new Date(query.from) : new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000);
-      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to || !['caller', 'deployer'].includes(query.scope ?? 'caller')) throw errors.invalidRequest();
-      return await services.catalog.getMonitoring(user.id, from, to, query.scope === 'deployer' ? 'deployer' : 'caller');
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to || !['hour', 'day'].includes(query.granularity ?? 'day')) throw errors.invalidRequest();
+      const requestedGranularity = query.granularity === 'hour' ? 'hour' : 'day';
+      const granularity = requestedGranularity === 'hour' && to.getTime() - from.getTime() > 48 * 60 * 60 * 1000 ? 'day' : requestedGranularity;
+      const monitoring = await services.monitoring.getDeployerDashboard(user.id, from, to, granularity);
+      return { ...monitoring, granularity };
     } catch (error) { return sendError(reply, error); }
   });
 

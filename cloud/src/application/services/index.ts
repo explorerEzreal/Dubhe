@@ -5,3 +5,4 @@ export * from './catalog-service.js';
 export * from './enrollment-service.js';
 export * from './group-service.js';
 export * from './inference-service.js';
+export * from './monitoring-query-service.js';

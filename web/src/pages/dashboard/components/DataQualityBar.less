@@ -1,0 +1,8 @@
+.design-quality { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; color: var(--muted-color); font-size: 12px; }
+.design-quality span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--border-color); border-radius: 999px; background: var(--panel-bg); }
+.design-quality svg { width: 13px; height: 13px; }
+.design-quality .quality-ok { color: #12b76a; }
+@media (max-width: 600px) {
+  .design-quality { align-items: stretch; flex-direction: column; }
+  .design-quality span { max-width: 100%; overflow-wrap: anywhere; }
+}

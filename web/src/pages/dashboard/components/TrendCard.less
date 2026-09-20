@@ -1,0 +1,11 @@
+.design-trend .ant-card-body { padding: 8px 8px 0; }
+.design-legend { display: flex; align-items: center; gap: 10px; color: var(--menu-color); font-size: 12px; font-weight: 400; }
+.design-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.design-legend i { width: 8px; height: 8px; border-radius: 2px; }
+.design-legend .blue { background: #2e90fa; } .design-legend .green { background: #00c29a; } .design-legend .red { background: #f04438; }
+@media (max-width: 768px) {
+  .design-trend .ant-card-head-wrapper { align-items: flex-start; }
+  .design-legend { flex-wrap: wrap; justify-content: flex-end; gap: 6px 8px; }
+  .design-trend .ant-card-body { min-width: 0; padding: 4px 4px 0; }
+  .design-trend .echarts-for-react { min-width: 0 !important; }
+}

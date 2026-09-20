@@ -126,7 +126,40 @@ export interface GroupRepository {
 export interface CatalogRepository {
   listModels(): Promise<Array<Record<string, unknown>>>;
   getUsage(userId: string): Promise<Record<string, unknown>>;
-  getMonitoring(userId: string, from: Date, to: Date, scope: 'caller' | 'deployer'): Promise<Record<string, unknown>>;
+  getMonitoring(userId: string, from: Date, to: Date, scope: 'caller' | 'deployer', granularity?: 'hour' | 'day'): Promise<Record<string, unknown>>;
+}
+
+export type MonitoringEventType = 'inference.started' | 'inference.routed' | 'inference.completed' | 'inference.failed' | 'inference.timeout' | 'inference.cancelled' | 'inference.disconnected';
+
+export interface MonitoringEvent {
+  eventId: string;
+  eventVersion: 1;
+  type: MonitoringEventType;
+  requestId: string;
+  occurredAt: Date;
+  userId: string;
+  apiKeyId: string;
+  groupId: string | null;
+  modelId?: string | null;
+  modelName?: string | null;
+  deviceId?: string | null;
+  deviceName?: string | null;
+  groupName?: string | null;
+  status?: InferenceFinishInput['status'];
+  statusCode?: number;
+  errorCode?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  latencyMs?: number;
+}
+
+export interface MonitoringEventPort {
+  publish(event: MonitoringEvent): Promise<void>;
+}
+
+export interface MonitoringQueryService {
+  getDeployerDashboard(userId: string, from: Date, to: Date, granularity: 'hour' | 'day'): Promise<Record<string, unknown>>;
 }
 
 export interface ModelRouteCandidate {

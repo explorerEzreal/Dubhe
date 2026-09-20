@@ -10,26 +10,32 @@ export interface UsageSummary {
 }
 
 export interface MonitoringData {
-  overview: UsageSummary & { p50LatencyMs: number; p95LatencyMs: number; missingTokenCalls: number; activeUsers: number; activeApiKeys: number; lastRequestAt: string | null };
+  overview: UsageSummary & { p50LatencyMs: number; p95LatencyMs: number; missingTokenCalls: number; activeUsers: number; activeApiKeys: number; activeDevices?: number; totalDevices?: number; lastRequestAt: string | null };
   todayOverview: { totalCalls: number; totalTokens: number; errorRate: number };
-  trend: Array<{ date: string; totalCalls: number; totalTokens: number }>;
+  trend: Array<{ date: string; totalCalls: number; totalTokens: number; errorRate: number }>;
   groups: Array<{ id: string | null; name: string; totalCalls: number; totalTokens: number }>;
   users: Array<{ id: string; email: string; groupId: string | null; groupName: string; totalCalls: number; totalTokens: number; avgLatencyMs: number; lastUsedAt: string }>;
   apiKeys: Array<{ id: string | null; prefix: string; groupId: string | null; totalCalls: number; totalTokens: number }>;
   models: Array<{ id: string | null; name: string; totalCalls: number; totalTokens: number }>;
   agents: Array<{ id: string | null; name: string; totalCalls: number; totalTokens: number }>;
-  requests: Array<{ requestId: string; startedAt: string; email: string; groupName: string; apiKeyPrefix: string; modelName: string; agentName: string; status: string; errorCode: string | null; inputTokens: number | null; outputTokens: number | null; totalTokens: number; latencyMs: number | null }>;
+  devices?: Array<{ id: string | null; name: string; totalCalls: number; totalTokens: number }>;
+  requests: Array<{ requestId: string; startedAt: string; email: string; groupName: string; apiKeyPrefix: string; modelName: string; agentName?: string; deviceName?: string; status: string; errorCode: string | null; inputTokens: number | null; outputTokens: number | null; totalTokens: number; latencyMs: number | null }>;
   generatedAt: string;
   dataQuality: { missingTokenCalls: number; ungroupedCalls: number; truncated: boolean };
+  granularity?: 'hour' | 'day';
 }
 
 export const usageApi = {
   summary(): Promise<UsageSummary> {
       return apiFetch<UsageSummary>('/api/usage');
   },
-  monitoring(scope: 'caller' | 'deployer', from?: string, to?: string): Promise<MonitoringData> {
+  monitoring(scopeOrFrom?: 'caller' | 'deployer' | string, fromOrTo?: string, toOrGranularity?: string, requestedGranularity: 'hour' | 'day' = 'day'): Promise<MonitoringData> {
     const query = new URLSearchParams();
-    query.set('scope', scope);
+    const legacy = scopeOrFrom === 'caller' || scopeOrFrom === 'deployer';
+    const from = legacy ? fromOrTo : scopeOrFrom;
+    const to = legacy ? toOrGranularity : fromOrTo;
+    const granularity = legacy ? requestedGranularity : (toOrGranularity === 'hour' ? 'hour' : 'day');
+    query.set('granularity', granularity);
     if (from) query.set('from', from);
     if (to) query.set('to', to);
     return apiFetch<MonitoringData>(`/api/monitoring${query.toString() ? `?${query.toString()}` : ''}`);

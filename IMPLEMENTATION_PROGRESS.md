@@ -65,3 +65,10 @@
 - 状态：已实现并完成 Web 构建校验。
 - 变更：设备卡片按侧栏状态采用 3/4 列布局；设备名称和模型名称支持悬停、点击复制及键盘操作；顶部更新时间精简为时分秒。
 - 验证：`pnpm --dir web build` 通过；本次涉及文件定向 ESLint 通过。全量 lint 仍受既有 `CallerDashboardPage.tsx` 未使用类型报错影响。
+
+## Cloud 数据监控与部署者仪表盘重构（2026-09-20）
+
+- 状态：代码实现完成，真实 PostgreSQL、浏览器亮/暗色和多尺寸验收待执行。
+- 变更：新增版本化监控事件端口与数据库事件仓储；推理生命周期接入 started、routed、completed、failed、timeout、cancelled、disconnected；新增模型/分组/设备名称快照迁移；部署者监控接口移除 scope，返回设备、活跃设备、错误率、数据质量和真实截断状态；仪表盘改为部署者视图，移除运营总览/我的使用切换，展示模型/分组/设备分布；仪表盘组件与 Less 独立拆分。
+- 验证：`pnpm --config.verify-deps-before-run=warn --dir cloud build`、`pnpm --config.verify-deps-before-run=warn --dir web build` 通过。
+- 风险：监控事件当前复用 `inference_requests`，事件中的用户/分组快照在运行期仍可进一步从路由快照传递；尚未执行 PostgreSQL 迁移重复运行、真实推理链路和浏览器视觉验收；全量 lint 可能受既有页面问题影响。

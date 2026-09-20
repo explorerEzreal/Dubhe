@@ -63,6 +63,7 @@ run('PostgreSQL migrations', () => {
         '0005_agent_state_consistency.sql',
         '0006_pending_agent_enrollment.sql',
         '0007_traffic_monitoring.sql',
+        '0008_monitoring_snapshots.sql',
       ]);
       expect(await runMigrations(scoped, directory)).toEqual([]);
 

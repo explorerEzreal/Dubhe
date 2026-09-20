@@ -3,6 +3,8 @@ import type {
   ConnectionRegistry,
   InferenceRepository,
   ModelRouteCandidate,
+  MonitoringEvent,
+  MonitoringEventPort,
 } from '../ports.js';
 import {
   inferChunkMessageSchema,
@@ -68,6 +70,7 @@ export class InferenceService {
     private readonly connections: ConnectionRegistry,
     private readonly timeoutMs: number,
     private readonly logger: InferenceLogger,
+    private readonly monitoring?: MonitoringEventPort,
   ) {}
 
   activeCount(): number { return this.active.size; }
@@ -83,7 +86,9 @@ export class InferenceService {
       throw errors.agentBusy();
     }
     await this.repository.createAccepted({ requestId, userId: input.userId, apiKeyId: input.apiKeyId, groupId: input.groupId });
+    await this.publish({ eventId: `${requestId}:started`, eventVersion: 1, type: 'inference.started', requestId, occurredAt: new Date(), userId: input.userId, apiKeyId: input.apiKeyId, groupId: input.groupId, modelName: input.model });
     await this.repository.markRouted({ requestId, agentId: candidate.agentId, modelId: candidate.modelId });
+    await this.publish({ eventId: `${requestId}:routed`, eventVersion: 1, type: 'inference.routed', requestId, occurredAt: new Date(), userId: input.userId, apiKeyId: input.apiKeyId, groupId: input.groupId, modelId: candidate.modelId, modelName: candidate.modelName, deviceId: candidate.agentId });
     this.increment(candidate.agentId);
     const socket = this.connections.get(candidate.agentId);
     if (!socket) {
@@ -176,6 +181,7 @@ export class InferenceService {
   private async finishSuccess(active: ActiveRequest, content: string, usage: InferenceRunResult['usage']): Promise<void> {
     const latencyMs = Date.now() - active.startedAt;
     await this.repository.finish(active.requestId, { status: 'completed', statusCode: 200, inputTokens: usage.prompt_tokens, outputTokens: usage.completion_tokens, latencyMs }).catch(() => this.logger.warn({ requestId: active.requestId }, 'inference persistence failed'));
+    await this.publish({ eventId: `${active.requestId}:completed`, eventVersion: 1, type: 'inference.completed', requestId: active.requestId, occurredAt: new Date(), userId: '', apiKeyId: '', groupId: null, status: 'completed', statusCode: 200, inputTokens: usage.prompt_tokens, outputTokens: usage.completion_tokens, totalTokens: usage.total_tokens, latencyMs });
     this.complete(active.requestId, { requestId: active.requestId, model: active.model, content, usage, created: Math.floor(active.startedAt / 1000) });
   }
 
@@ -187,7 +193,13 @@ export class InferenceService {
     this.active.delete(requestId);
     this.release(active.agentId);
     await this.repository.finish(requestId, { status, statusCode, errorCode, latencyMs: Date.now() - active.startedAt }).catch(() => this.logger.warn({ requestId }, 'inference persistence failed'));
+    await this.publish({ eventId: `${requestId}:${status}`, eventVersion: 1, type: status === 'timeout' ? 'inference.timeout' : status === 'cancelled' ? 'inference.cancelled' : status === 'agent_disconnected' ? 'inference.disconnected' : 'inference.failed', requestId, occurredAt: new Date(), userId: '', apiKeyId: '', groupId: null, status, statusCode, errorCode, latencyMs: Date.now() - active.startedAt });
     active.reject(error);
+  }
+
+  private async publish(event: MonitoringEvent): Promise<void> {
+    if (!this.monitoring) return;
+    try { await this.monitoring.publish(event); } catch (error) { this.logger.warn({ requestId: event.requestId, error }, 'monitoring persistence failed'); }
   }
 
   private selectCandidate(instances: ModelRouteCandidate[]): ModelRouteCandidate | undefined {

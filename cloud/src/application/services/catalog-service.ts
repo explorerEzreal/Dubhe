@@ -19,7 +19,7 @@ export class CatalogService {
     }
   }
 
-  async getMonitoring(userId: string, from: Date, to: Date, scope: 'caller' | 'deployer'): Promise<Record<string, unknown>> {
-    try { return await this.catalog.getMonitoring(userId, from, to, scope); } catch (error) { throw error; }
+  async getMonitoring(userId: string, from: Date, to: Date, scope: 'caller' | 'deployer', granularity: 'hour' | 'day' = 'day'): Promise<Record<string, unknown>> {
+    try { return await this.catalog.getMonitoring(userId, from, to, scope, granularity); } catch (error) { throw error; }
   }
 }

@@ -9,6 +9,7 @@ import {
   EnrollmentService,
   GroupService,
   InferenceService,
+  DeployerMonitoringQueryService,
   SlidingWindowRateLimiter,
 } from '../application/index.js';
 import {
@@ -23,6 +24,7 @@ import {
   PgSessionRepository,
   PgUserRepository,
   PgInferenceRepository,
+  PgMonitoringEventRepository,
 } from '../infrastructure/database/index.js';
 import { HmacSecurityService } from '../infrastructure/security/index.js';
 import {
@@ -55,12 +57,15 @@ export function buildApp(app: FastifyInstance, config: CloudConfig): Pool {
     connections,
     security,
   );
+  const monitoringEvents = new PgMonitoringEventRepository(pool);
   const inference = new InferenceService(
     new PgInferenceRepository(pool),
     connections,
     config.INFERENCE_TIMEOUT_MS,
     app.log,
+    monitoringEvents,
   );
+  const catalog = new PgCatalogRepository(pool);
   const heartbeatMonitor = new AgentHeartbeatMonitor(
     connections,
     agents,
@@ -90,7 +95,8 @@ export function buildApp(app: FastifyInstance, config: CloudConfig): Pool {
     ),
     agents,
     apiKeys: new ApiKeyService(new PgApiKeyRepository(pool), audits, security),
-    catalog: new CatalogService(new PgCatalogRepository(pool)),
+    catalog: new CatalogService(catalog),
+    monitoring: new DeployerMonitoringQueryService(catalog),
     groups: new GroupService(new PgGroupRepository(pool), audits, security),
     authLimiter: new SlidingWindowRateLimiter(
       config.AUTH_RATE_LIMIT_MAX_REQUESTS,

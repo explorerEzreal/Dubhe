@@ -1,0 +1,20 @@
+.design-distribution .ant-card-body { padding: 14px 16px; }
+.distribution-body { display: grid; grid-template-columns: 118px minmax(0, 1fr); align-items: center; gap: 16px; min-height: 160px; }
+.donut { display: grid; width: 118px; height: 118px; place-items: center; border-radius: 50%; }
+.donut > div { display: grid; width: 72px; height: 72px; place-content: center; border-radius: 50%; background: var(--panel-bg); text-align: center; }
+.donut b { font-size: 15px; } .donut span { color: var(--muted-color); font-size: 10px; }
+.distribution-rank { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.rank-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; font-size: 12px; }
+.rank-name { overflow: hidden; color: var(--text-color); text-overflow: ellipsis; white-space: nowrap; }
+.rank-name i { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 2px; }
+.rank-track { grid-column: 1 / -1; height: 5px; overflow: hidden; border-radius: 999px; background: var(--content-bg); }
+.rank-track span { display: block; height: 100%; border-radius: inherit; }
+@media (max-width: 768px) {
+  .distribution-body { grid-template-columns: 1fr; justify-items: center; gap: 14px; min-height: 0; }
+  .distribution-rank { width: 100%; }
+  .donut { flex: 0 0 auto; }
+}
+@media (max-width: 390px) {
+  .distribution-body { gap: 10px; }
+  .distribution-rank { gap: 8px; }
+}
