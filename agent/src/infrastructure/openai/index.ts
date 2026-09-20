@@ -33,8 +33,13 @@ function extractUsage(text: string): InferenceUsage | undefined {
   const candidates = text.split(/\n\n+/).map((item) => item.replace(/^data:\s*/, '').trim()).filter((item) => item && item !== '[DONE]');
   for (const candidate of [...candidates.reverse(), text]) {
     try {
-      const parsed = JSON.parse(candidate) as { usage?: InferenceUsage };
-      if (parsed.usage && Number.isFinite(parsed.usage.total_tokens)) return parsed.usage;
+      const parsed = JSON.parse(candidate) as { usage?: InferenceUsage & { input_tokens?: number; output_tokens?: number } };
+      if (!parsed.usage || !Number.isFinite(parsed.usage.total_tokens)) continue;
+      const promptTokens = parsed.usage.prompt_tokens ?? parsed.usage.input_tokens;
+      const completionTokens = parsed.usage.completion_tokens ?? parsed.usage.output_tokens;
+      if (Number.isFinite(promptTokens) && Number.isFinite(completionTokens)) {
+        return { prompt_tokens: Number(promptTokens), completion_tokens: Number(completionTokens), total_tokens: Number(parsed.usage.total_tokens) };
+      }
     } catch { /* 原始响应可能是非 JSON，保持透传 */ }
   }
   return undefined;
