@@ -82,7 +82,7 @@ export class InferenceService {
       if (!snapshot.instances.some((item) => item.state === 'ready')) throw errors.modelNotReady();
       throw errors.agentBusy();
     }
-    await this.repository.createAccepted({ requestId, userId: input.userId, apiKeyId: input.apiKeyId });
+    await this.repository.createAccepted({ requestId, userId: input.userId, apiKeyId: input.apiKeyId, groupId: input.groupId });
     await this.repository.markRouted({ requestId, agentId: candidate.agentId, modelId: candidate.modelId });
     this.increment(candidate.agentId);
     const socket = this.connections.get(candidate.agentId);

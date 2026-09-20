@@ -62,19 +62,20 @@ run('PostgreSQL migrations', () => {
         '0004_groups.sql',
         '0005_agent_state_consistency.sql',
         '0006_pending_agent_enrollment.sql',
+        '0007_traffic_monitoring.sql',
       ]);
       expect(await runMigrations(scoped, directory)).toEqual([]);
 
       const columns = await scoped.query(
-        "select table_name,column_name from information_schema.columns where table_schema=$1 and ((table_name='sessions' and column_name in ('revoked_at','last_used_at')) or (table_name='agent_credentials' and column_name in ('revoked_at','replaced_by')))",
+        "select table_name,column_name from information_schema.columns where table_schema=$1 and ((table_name='sessions' and column_name in ('revoked_at','last_used_at')) or (table_name='agent_credentials' and column_name in ('revoked_at','replaced_by')) or (table_name='inference_requests' and column_name in ('group_id','total_tokens')))",
         [schema],
       );
-      expect(columns.rowCount).toBe(4);
+      expect(columns.rowCount).toBe(6);
       const indexes = await scoped.query(
-        "select indexname from pg_indexes where schemaname=$1 and indexname in ('idx_sessions_token_active','idx_agent_credentials_active','idx_audit_logs_actor_created','idx_audit_logs_action_created','idx_audit_logs_resource_created')",
+        "select indexname from pg_indexes where schemaname=$1 and indexname in ('idx_sessions_token_active','idx_agent_credentials_active','idx_audit_logs_actor_created','idx_audit_logs_action_created','idx_audit_logs_resource_created','idx_inference_requests_group_started','idx_inference_requests_user_started','idx_inference_requests_key_started','idx_inference_requests_agent_started','idx_inference_requests_status_started')",
         [schema],
       );
-      expect(indexes.rowCount).toBe(5);
+      expect(indexes.rowCount).toBe(10);
     } catch (error) {
       throw error;
     }
@@ -170,9 +171,17 @@ run('PostgreSQL migrations', () => {
       await scoped.query(
         "insert into models(name) values('llama3:8b') on conflict do nothing",
       );
+      const group = await scoped.query(
+        "insert into groups(user_id,name) values($1,'M2 分组') returning id",
+        [session.user.id],
+      );
+      await scoped.query(
+        "insert into user_group_access(user_id,group_id,source) values($1,$2,'owner')",
+        [session.user.id, group.rows[0].id],
+      );
       const apiKey = await keys.create(
         session.user.id,
-        ['llama3:8b'],
+        String(group.rows[0].id),
         new Date(Date.now() + 3600_000),
       );
       await expect(

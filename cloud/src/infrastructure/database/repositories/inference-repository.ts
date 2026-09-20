@@ -47,10 +47,10 @@ export class PgInferenceRepository implements InferenceRepository {
   async createAccepted(input: InferenceCreateInput): Promise<void> {
     try {
       await this.pool.query(
-        `insert into inference_requests(request_id,user_id,api_key_id,status)
-         values($1,$2,$3,'accepted')
+        `insert into inference_requests(request_id,user_id,api_key_id,group_id,status)
+         values($1,$2,$3,$4,'accepted')
          on conflict (request_id) do nothing`,
-        [input.requestId, input.userId, input.apiKeyId],
+        [input.requestId, input.userId, input.apiKeyId, input.groupId],
       );
     } catch (error) {
       throw error;
@@ -75,7 +75,7 @@ export class PgInferenceRepository implements InferenceRepository {
       await this.pool.query(
         `update inference_requests
             set status=$2, status_code=$3, error_code=$4,
-                input_tokens=$5, output_tokens=$6, latency_ms=$7,
+                input_tokens=$5, output_tokens=$6, total_tokens=$7, latency_ms=$8,
                 finished_at=now()
           where request_id=$1 and finished_at is null`,
         [
@@ -85,6 +85,9 @@ export class PgInferenceRepository implements InferenceRepository {
           input.errorCode ?? null,
           input.inputTokens ?? null,
           input.outputTokens ?? null,
+          input.totalTokens ?? (input.inputTokens == null && input.outputTokens == null
+            ? null
+            : (input.inputTokens ?? 0) + (input.outputTokens ?? 0)),
           input.latencyMs,
         ],
       );

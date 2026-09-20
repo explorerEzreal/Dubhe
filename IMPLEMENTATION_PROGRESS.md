@@ -45,6 +45,20 @@
 
 ## 下一步
 
+### 流量监控 M9（阶段一至五，2026-09-20）
+
+- 状态：已完成代码实现，真实 PostgreSQL 与浏览器验收待执行。
+- 变更：新增 `docs/traffic-monitoring-plan.md`；请求事实表增加分组快照、总 Token 和维度索引；`/api/monitoring` 严格区分调用者与部署者范围，返回总览、趋势、分组、用户、Key、模型、设备及最近请求；部署者看板增加多维排行、分组内用户、趋势、筛选、异常提示和 CSV；分组表、设备卡片及调用者 API Key 表增加近 30 天 Token；调用者增加个人趋势、筛选和使用日志。
+- 验证：Cloud/Web TypeScript、Web 构建、Cloud 推理单测、HTTP 路由测试、定向 ESLint、`git diff --check` 通过；使用本机 `TEST_DATABASE_URL` 执行 `pnpm test:postgres`，2 个 PostgreSQL 验收测试全部通过，迁移重复执行返回空结果；同步修正验收夹具以适配当前分组 API Key 模型。
+- 风险：历史请求无法恢复已变更 API Key 的原分组；当前日志查询最多返回最近 200 条，超大规模导出与小时/日聚合表留待数据规模增长后实施；浏览器检查因本地无可用 Cloud 登录态而停留在认证页，真实看板视觉和 Cloud 聚合数据展示仍待验收。
+
+### 仪表盘与使用记录重构（2026-09-20）
+
+- 状态：已实现路由、菜单、默认首页、八项指标卡片、趋势/排行图表和独立使用记录入口。
+- 变更：新增 `/dashboard`、`/usage-records`；根路径默认进入仪表盘；`/device/traffic` 兼容重定向；Cloud 监控返回 `todayOverview` 和 `dataQuality`；使用记录支持用户汇总/请求明细切换；菜单将仪表盘和使用记录置于首位。
+- 验证：Cloud 全量 35 项测试通过（含 PostgreSQL 2 项）；Web TypeScript、全量 ESLint、生产构建和 `git diff --check` 通过。
+- 风险：使用记录当前仍复用现有最近 200 条请求数据，树形用户下钻和带筛选分页 API 需后续阶段补齐；图表点击联动和真实浏览器验收待完成。
+
 在云服务器和模型设备执行干净目录 npm tarball 安装、systemd/launchd 服务启停、Compose、真实 OpenAI 兼容模型服务、TLS/WSS、断网恢复及 1000 条连接 24 小时测试；补齐证据后再将 M8 标记为“已完成”。
 ## 设备管理 UI 优化（2026-09-19）
 

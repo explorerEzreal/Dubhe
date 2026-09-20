@@ -23,6 +23,7 @@ import {
   DeploymentCommandModal,
 } from '../deployer-dashboard/components';
 import { shellQuote } from '../../utils/format';
+import { usageApi } from '../../api/usage-api';
 import {
   DeviceMonitorCard,
   GroupRail,
@@ -36,18 +37,20 @@ export function DeviceAgentsPage() {
   const { mode } = useAppTheme();
   const dashboard = useAsyncList(
     async () => {
-      const [agents, models, groups] = await Promise.all([
+      const [agents, models, groups, monitoring] = await Promise.all([
         agentApi.list(),
         modelApi.list(),
         groupApi.list(),
+        usageApi.monitoring('deployer'),
       ]);
-      return { agents, models, groups };
+      return { agents, models, groups, monitoring };
     },
     { poll: true },
   );
   const agents = dashboard.data?.agents ?? [];
   const models = dashboard.data?.models ?? [];
   const groups = dashboard.data?.groups ?? [];
+  const agentUsage = new Map((dashboard.data?.monitoring.agents ?? []).map((item) => [item.id, item]));
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [selectedGroupAgentIds, setSelectedGroupAgentIds] = useState<
     string[] | null
@@ -279,6 +282,7 @@ export function DeviceAgentsPage() {
                   <DeviceMonitorCard
                     key={agent.id}
                     agent={agent}
+                    usage={agentUsage.get(agent.id)}
                     operating={operatingAgentId === agent.id}
                     onCopyName={() => copy(agent.name || agent.id, '设备名称已复制')}
                     onCopyModel={(model) => copy(model, '模型名称已复制')}

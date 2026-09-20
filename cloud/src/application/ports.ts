@@ -126,6 +126,7 @@ export interface GroupRepository {
 export interface CatalogRepository {
   listModels(): Promise<Array<Record<string, unknown>>>;
   getUsage(userId: string): Promise<Record<string, unknown>>;
+  getMonitoring(userId: string, from: Date, to: Date, scope: 'caller' | 'deployer'): Promise<Record<string, unknown>>;
 }
 
 export interface ModelRouteCandidate {
@@ -147,6 +148,7 @@ export interface InferenceCreateInput {
   requestId: string;
   userId: string;
   apiKeyId: string;
+  groupId: string | null;
 }
 
 export interface InferenceRouteInput {
@@ -161,6 +163,7 @@ export interface InferenceFinishInput {
   errorCode?: string;
   inputTokens?: number;
   outputTokens?: number;
+  totalTokens?: number;
   latencyMs: number;
 }
 

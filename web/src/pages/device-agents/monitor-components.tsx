@@ -434,6 +434,7 @@ export function OverviewCards({
 
 export function DeviceMonitorCard({
   agent,
+  usage,
   operating,
   onCopyName,
   onCopyModel,
@@ -443,6 +444,7 @@ export function DeviceMonitorCard({
   onRevoke,
 }: {
   agent: AgentSummary;
+  usage?: { totalCalls: number; totalTokens: number };
   operating: boolean;
   onCopyName: () => Promise<boolean>;
   onCopyModel: (model: string) => Promise<boolean>;
@@ -675,6 +677,10 @@ export function DeviceMonitorCard({
         </div>
       </div>
       <div className='device-resource-list'>
+        <div className='device-network-summary'>
+          <span>近 30 天</span>
+          <b>{Number(usage?.totalTokens ?? 0).toLocaleString()} Token · {Number(usage?.totalCalls ?? 0).toLocaleString()} 次调用</b>
+        </div>
         <ResourceBar label='CPU' value={cpu} />
         <ResourceBar label='内存' value={memory} />
         <ResourceBar label='GPU' value={gpu} />

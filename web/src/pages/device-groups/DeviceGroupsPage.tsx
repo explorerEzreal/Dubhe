@@ -37,6 +37,7 @@ import {
   InviteTokenModal,
 } from '../deployer-dashboard/components';
 import { REQUEST_ERROR_MESSAGE } from '../../constants';
+import { usageApi } from '../../api/usage-api';
 
 type GroupRow = GroupSummary & { key: string };
 
@@ -50,11 +51,12 @@ function statusLabel(status: string): { text: string; color: string } {
 export function DeviceGroupsPage() {
   const { message } = App.useApp();
   const dashboard = useAsyncList(async () => {
-    const [groups, agents] = await Promise.all([groupApi.list(), agentApi.list()]);
-    return { groups, agents };
+    const [groups, agents, monitoring] = await Promise.all([groupApi.list(), agentApi.list(), usageApi.monitoring('deployer')]);
+    return { groups, agents, monitoring };
   }, { poll: true });
   const groups = dashboard.data?.groups ?? [];
   const agents = dashboard.data?.agents ?? [];
+  const groupUsage = new Map((dashboard.data?.monitoring.groups ?? []).map((item) => [item.id, item]));
   const [search, setSearch] = useState('');
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const [details, setDetails] = useState<Record<string, GroupDetail>>({});
@@ -145,6 +147,7 @@ export function DeviceGroupsPage() {
   const columns: ColumnsType<GroupRow> = [
     { title: '分组名称', dataIndex: 'name', width: 250, render: (name: string, group) => <Space><span className='group-table-mark'><TeamOutlined /></span><span><Typography.Text strong>{name}</Typography.Text><Typography.Text type='secondary' ellipsis style={{ display: 'block', maxWidth: 190 }}>{group.description || '暂无描述'}</Typography.Text></span></Space> },
     { title: '设备数', dataIndex: 'agentCount', width: 110, render: (count: number) => <Typography.Text>{count} <Typography.Text type='secondary'>台</Typography.Text></Typography.Text> },
+    { title: '近 30 天 Token', key: 'totalTokens', width: 150, render: (_value, group) => Number(groupUsage.get(group.id)?.totalTokens ?? 0).toLocaleString() },
     { title: '运行状态', key: 'health', width: 150, render: (_value, group) => { const detail = details[group.id]; const online = detail?.agents.filter((agent) => ['online', 'ready'].includes(String(agent.status))).length; return detail ? <Badge status={online ? 'success' : 'default'} text={online ? `${online} 台在线` : '暂无在线设备'} /> : <Typography.Text type='secondary'>展开查看</Typography.Text>; } },
     { title: '更新时间', dataIndex: 'updatedAt', width: 180, render: (value: string) => value ? new Date(value).toLocaleString() : '—' },
     { title: '操作', key: 'actions', width: 260, render: (_value, group) => <Space size={2}><Tooltip title='编辑分组'><Button type='text' icon={<EditOutlined />} aria-label='编辑分组' onClick={() => { setEditingGroup(group); setGroupModalOpen(true); }} /></Tooltip><Tooltip title='添加设备'><Button type='text' icon={<LinkOutlined />} aria-label='添加设备' onClick={() => { setSelectedGroupId(group.id); setAddAgentModalOpen(true); }} /></Tooltip><Tooltip title='生成邀请码'><Button type='text' icon={<SendOutlined />} aria-label='生成邀请码' onClick={() => void createInvite(group)} /></Tooltip><Button type='link' size='small' danger icon={<DeleteOutlined />} onClick={() => handleDeleteGroup(group)}>删除</Button></Space> },
