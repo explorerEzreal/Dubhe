@@ -10,6 +10,7 @@ import {
   GroupService,
   InferenceService,
   DeployerMonitoringQueryService,
+  UsageQueryService,
   SlidingWindowRateLimiter,
 } from '../application/index.js';
 import {
@@ -97,6 +98,7 @@ export function buildApp(app: FastifyInstance, config: CloudConfig): Pool {
     apiKeys: new ApiKeyService(new PgApiKeyRepository(pool), audits, security),
     catalog: new CatalogService(catalog),
     monitoring: new DeployerMonitoringQueryService(catalog),
+    usage: new UsageQueryService(catalog),
     groups: new GroupService(new PgGroupRepository(pool), audits, security),
     authLimiter: new SlidingWindowRateLimiter(
       config.AUTH_RATE_LIMIT_MAX_REQUESTS,

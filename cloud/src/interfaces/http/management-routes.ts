@@ -148,26 +148,29 @@ export function registerManagementRoutes(
     }
   });
 
-  app.get('/api/usage', async (request, reply) => {
-    try {
-      const user = await authenticatedUser(request, services);
-      return await services.catalog.getUsage(user.id);
-    } catch (error) {
-      return sendError(reply, error);
-    }
+  const parseUsageQuery = (request: FastifyRequest, user: UserRecord) => {
+    const query = request.query as Record<string, unknown>;
+    const array = (value: unknown): string[] | undefined => value === undefined ? undefined : (Array.isArray(value) ? value : [value]).map(String).filter(Boolean);
+    const page = Number(query.page ?? 1);
+    const pageSize = Number(query.page_size ?? 20);
+    const from = query.created_at_from ? new Date(String(query.created_at_from)) : undefined;
+    const to = query.created_at_to ? new Date(String(query.created_at_to)) : undefined;
+    const userIds = array(query.user_ids);
+    if (!Number.isInteger(page) || page < 1 || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 200 || (from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime())) || (from && to && from >= to) || (userIds && user.role !== 'super_admin')) throw errors.invalidRequest();
+    return { userId: user.id, role: user.role, page, pageSize, from, to, status: array(query.status), modelIds: array(query.model_ids), deviceIds: array(query.device_ids), groupIds: array(query.group_ids), userIds, includeFacets: query.include === 'facets' };
+  };
+
+  app.get('/api/usage-records', async (request, reply) => {
+    try { const user = await authenticatedUser(request, services); return await services.usage.records(parseUsageQuery(request, user)); }
+    catch (error) { return sendError(reply, error); }
   });
 
-  app.get('/api/monitoring', async (request, reply) => {
+  app.get('/api/usage-analytics', async (request, reply) => {
     try {
       const user = await authenticatedUser(request, services);
-      const query = request.query as { from?: string; to?: string; granularity?: string };
-      const to = query.to ? new Date(query.to) : new Date();
-      const from = query.from ? new Date(query.from) : new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000);
-      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to || !['hour', 'day'].includes(query.granularity ?? 'day')) throw errors.invalidRequest();
-      const requestedGranularity = query.granularity === 'hour' ? 'hour' : 'day';
-      const granularity = requestedGranularity === 'hour' && to.getTime() - from.getTime() > 48 * 60 * 60 * 1000 ? 'day' : requestedGranularity;
-      const monitoring = await services.monitoring.getDeployerDashboard(user.id, from, to, granularity);
-      return { ...monitoring, granularity };
+      const query = parseUsageQuery(request, user) as Record<string, unknown>;
+      const granularity = query.granularity === 'hour' ? 'hour' : ((request.query as Record<string, unknown>).granularity === 'hour' ? 'hour' : 'day');
+      return await services.usage.analytics({ ...query, granularity } as never);
     } catch (error) { return sendError(reply, error); }
   });
 

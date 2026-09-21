@@ -19,6 +19,7 @@ import {
 } from '@ant-design/icons';
 import type { AgentSummary } from '../../api/agent-api';
 import type { GroupSummary } from '../../api/group-api';
+import { useChartTheme, useStatusTone } from '../../hooks/useChartTheme';
 import {
   AGENT_STATUS_TEXT,
   MODEL_STATE_TEXT,
@@ -34,18 +35,18 @@ export type DeviceStatusFilter =
   | 'offline'
   | 'revoked';
 
-const statusTone: Record<DeviceStatusFilter, string> = {
-  all: '#94a3b8',
-  created: '#94a3b8',
-  connecting: '#fbbf24',
-  online: '#35d399',
-  degraded: '#f97316',
-  offline: '#64748b',
-  revoked: '#ef4444',
-};
+/** 合法设备状态集合，用于运行时校验；颜色统一由 useStatusTone() 提供 */
+const DEVICE_STATUSES: readonly string[] = [
+  'created',
+  'connecting',
+  'online',
+  'degraded',
+  'offline',
+  'revoked',
+];
 
 function statusOf(agent: AgentSummary): DeviceStatusFilter {
-  return Object.prototype.hasOwnProperty.call(statusTone, agent.status)
+  return DEVICE_STATUSES.includes(agent.status)
     ? (agent.status as DeviceStatusFilter)
     : 'offline';
 }
@@ -162,6 +163,7 @@ export function StatusFilters({
   search: string;
   onSearch: (value: string) => void;
 }) {
+  const statusTone = useStatusTone();
   const filters: Array<[DeviceStatusFilter, string]> = [
     ['all', '全部状态'],
     ['online', '在线'],
@@ -199,13 +201,9 @@ export function StatusFilters({
   );
 }
 
-export function OverviewCards({
-  agents,
-  dark,
-}: {
-  agents: AgentSummary[];
-  dark: boolean;
-}) {
+export function OverviewCards({ agents }: { agents: AgentSummary[] }) {
+  const statusTone = useStatusTone();
+  const chart = useChartTheme();
   const counts = agents.reduce(
     (result, agent) => {
       result[statusOf(agent)] += 1;
@@ -228,7 +226,12 @@ export function OverviewCards({
     .map(loadUsage)
     .filter((value): value is number => value !== null);
   const statusOption: EChartsOption = {
-    tooltip: { trigger: 'item' },
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: chart.tooltipBg,
+      borderColor: chart.tooltipBorder,
+      textStyle: { color: chart.tooltipText },
+    },
     series: [
       {
         type: 'pie',
@@ -239,39 +242,44 @@ export function OverviewCards({
           {
             value: counts.online,
             name: '在线',
-            itemStyle: { color: '#35d399' },
+            itemStyle: { color: statusTone.online },
           },
           {
             value: counts.connecting,
             name: '连接中',
-            itemStyle: { color: '#fbbf24' },
+            itemStyle: { color: statusTone.connecting },
           },
           {
             value: counts.degraded,
             name: '降级',
-            itemStyle: { color: '#f97316' },
+            itemStyle: { color: statusTone.degraded },
           },
           {
             value: counts.offline,
             name: '离线',
-            itemStyle: { color: '#64748b' },
+            itemStyle: { color: statusTone.offline },
           },
           {
             value: counts.created,
             name: '未安装',
-            itemStyle: { color: '#94a3b8' },
+            itemStyle: { color: statusTone.created },
           },
           {
             value: counts.revoked,
             name: '已撤销',
-            itemStyle: { color: '#ef4444' },
+            itemStyle: { color: statusTone.revoked },
           },
         ],
       },
     ],
   };
   const resourceOption: EChartsOption = {
-    tooltip: { trigger: 'item' },
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: chart.tooltipBg,
+      borderColor: chart.tooltipBorder,
+      textStyle: { color: chart.tooltipText },
+    },
     series: [
       {
         type: 'pie',
@@ -281,7 +289,7 @@ export function OverviewCards({
           show: true,
           position: 'center',
           formatter: `${averageCpu.length ? Math.round(averageCpu.reduce((a, b) => a + b, 0) / averageCpu.length) : 0}%`,
-          color: dark ? '#e2e8f0' : '#334155',
+          color: chart.text,
           fontSize: 16,
         },
         data: [
@@ -291,9 +299,9 @@ export function OverviewCards({
                   averageCpu.reduce((a, b) => a + b, 0) / averageCpu.length,
                 )
               : 0,
-            itemStyle: { color: '#48c8bd' },
+            itemStyle: { color: chart.palette[0] },
           },
-          { value: 100, itemStyle: { color: dark ? '#243142' : '#e2e8f0' } },
+          { value: 100, itemStyle: { color: chart.splitLine } },
         ],
       },
       {
@@ -304,7 +312,7 @@ export function OverviewCards({
           show: true,
           position: 'center',
           formatter: `${averageMemory.length ? Math.round(averageMemory.reduce((a, b) => a + b, 0) / averageMemory.length) : 0}%`,
-          color: dark ? '#e2e8f0' : '#334155',
+          color: chart.text,
           fontSize: 16,
         },
         data: [
@@ -315,9 +323,9 @@ export function OverviewCards({
                     averageMemory.length,
                 )
               : 0,
-            itemStyle: { color: '#48c8bd' },
+            itemStyle: { color: chart.palette[0] },
           },
-          { value: 100, itemStyle: { color: dark ? '#243142' : '#e2e8f0' } },
+          { value: 100, itemStyle: { color: chart.splitLine } },
         ],
       },
     ],
@@ -336,8 +344,8 @@ export function OverviewCards({
         smooth: true,
         showSymbol: false,
         data: [],
-        lineStyle: { color: '#48c8bd', width: 2 },
-        areaStyle: { color: 'rgba(72,200,189,.16)' },
+        lineStyle: { color: chart.palette[0], width: 2 },
+        areaStyle: { color: `${chart.palette[0]}29` },
       },
     ],
     graphic: [
@@ -347,7 +355,7 @@ export function OverviewCards({
         top: 'middle',
         style: {
           text: '暂无网络历史数据',
-          fill: dark ? '#94a3b8' : '#64748b',
+          fill: chart.axisLabel,
           fontSize: 12,
         },
       },
@@ -453,6 +461,7 @@ export function DeviceMonitorCard({
   onRotate: () => void;
   onRevoke: () => void;
 }) {
+  const statusTone = useStatusTone();
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState(agent.name || '');
   const [saving, setSaving] = useState(false);

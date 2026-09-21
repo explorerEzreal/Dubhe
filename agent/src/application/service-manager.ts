@@ -39,7 +39,7 @@ export interface ServiceStatus {
   agentVersion: string;
 }
 
-const AGENT_VERSION = '0.1.0';
+const AGENT_VERSION = '1.0.0-beta.0';
 
 function localModelUrl(host: string, port: number): string {
   return `http://${host.includes(':') && !host.startsWith('[') ? `[${host}]` : host}:${port}`;

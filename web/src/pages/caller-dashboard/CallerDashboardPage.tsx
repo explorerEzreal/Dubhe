@@ -19,8 +19,8 @@ export function CallerDashboardPage() {
       groupApi.listChannels(),
       groupApi.listChannelModels(),
       keyApi.list(),
-      usageApi.summary(),
-      usageApi.monitoring('caller', dayjs().subtract(30, 'day').startOf('day').toISOString(), dayjs().endOf('day').toISOString()),
+      usageApi.analytics(),
+      usageApi.analytics('caller', dayjs().subtract(30, 'day').startOf('day').toISOString(), dayjs().endOf('day').toISOString()),
     ]);
     return { channels, channelModels, keys, usage, monitoring };
   }, []);

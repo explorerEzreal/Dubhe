@@ -65,19 +65,23 @@ run('PostgreSQL migrations', () => {
         '0007_traffic_monitoring.sql',
         '0008_monitoring_snapshots.sql',
         '0009_transparent_proxy_metrics.sql',
+        '0010_usage_query_facts.sql',
+        '0011_group_lifecycle_invites.sql',
       ]);
       expect(await runMigrations(scoped, directory)).toEqual([]);
 
       const columns = await scoped.query(
-        "select table_name,column_name from information_schema.columns where table_schema=$1 and ((table_name='sessions' and column_name in ('revoked_at','last_used_at')) or (table_name='agent_credentials' and column_name in ('revoked_at','replaced_by')) or (table_name='inference_requests' and column_name in ('group_id','total_tokens','endpoint','request_bytes','response_bytes','upstream_status_code','usage_available','usage_source','upstream_latency_ms')))",
+        "select table_name,column_name from information_schema.columns where table_schema=$1 and ((table_name='sessions' and column_name in ('revoked_at','last_used_at')) or (table_name='agent_credentials' and column_name in ('revoked_at','replaced_by')) or (table_name='groups' and column_name='deleted_at') or (table_name='inference_requests' and column_name in ('group_id','total_tokens','endpoint','request_bytes','response_bytes','upstream_status_code','usage_available','usage_source','upstream_latency_ms','group_owner_id_snapshot','first_token_latency_ms','reasoning_effort','stream')))",
         [schema],
       );
-      expect(columns.rowCount).toBe(13);
+      expect(columns.rowCount).toBe(18);
       const indexes = await scoped.query(
-        "select indexname from pg_indexes where schemaname=$1 and indexname in ('idx_sessions_token_active','idx_agent_credentials_active','idx_audit_logs_actor_created','idx_audit_logs_action_created','idx_audit_logs_resource_created','idx_inference_requests_group_started','idx_inference_requests_user_started','idx_inference_requests_key_started','idx_inference_requests_agent_started','idx_inference_requests_status_started')",
+        "select indexname from pg_indexes where schemaname=$1 and indexname in ('idx_sessions_token_active','idx_agent_credentials_active','idx_audit_logs_actor_created','idx_audit_logs_action_created','idx_audit_logs_resource_created','idx_inference_requests_group_started','idx_inference_requests_user_started','idx_inference_requests_key_started','idx_inference_requests_agent_started','idx_inference_requests_status_started','idx_inference_requests_owner_started','idx_inference_requests_created_filter','idx_groups_owner_active','idx_group_invites_active')",
         [schema],
       );
-      expect(indexes.rowCount).toBe(10);
+      expect(indexes.rowCount).toBe(14);
+      const inviteTable = await scoped.query("select 1 from information_schema.tables where table_schema=$1 and table_name='group_invites'", [schema]);
+      expect(inviteTable.rowCount).toBe(1);
     } catch (error) {
       throw error;
     }

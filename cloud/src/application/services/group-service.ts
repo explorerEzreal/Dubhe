@@ -34,6 +34,7 @@ export class GroupService {
     try {
       const group = await this.groups.getById(groupId);
       if (!group) throw errors.notFound();
+      if ((group as Record<string, unknown>).deletedAt) throw errors.conflict('分组已停用');
       if (String((group as Record<string, unknown>).userId) !== userId) throw errors.forbidden();
       const agents = await this.groups.listAgentsByGroup(groupId);
       return { ...group, agents };
@@ -62,6 +63,7 @@ export class GroupService {
       const keyCount = await this.groups.countApiKeys(groupId);
       if (keyCount > 0) throw errors.conflict('该分组下存在活跃 API Key，请先删除关联 API Key');
       await this.groups.delete(groupId);
+      await this.groups.revokeInvites(groupId);
       await this.audits.record(userId, 'group.delete', `group:${groupId}`);
     } catch (error) {
       throw error;
@@ -97,8 +99,10 @@ export class GroupService {
       const group = await this.groups.getById(groupId);
       if (!group) throw errors.notFound();
       if (String((group as Record<string, unknown>).userId) !== userId) throw errors.forbidden();
-      // 签发 JWT，有效期 7 天
-      const token = this.security.signPayload({ groupId, issuerId: userId }, 604800);
+      if ((group as Record<string, unknown>).deletedAt) throw errors.conflict('分组已停用');
+      const token = this.security.randomToken('invite');
+      await this.groups.revokeInvites(groupId);
+      await this.groups.createInvite(groupId, userId, this.security.digest(token), new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
       return token;
     } catch (error) {
       throw error;
@@ -107,13 +111,14 @@ export class GroupService {
 
   async acceptInvite(userId: string, token: string): Promise<Record<string, unknown>> {
     try {
-      const decoded = this.security.verifyPayload(token);
+      const decoded = await this.groups.consumeInvite(this.security.digest(token));
       if (!decoded) throw errors.invalidRequest('INVITE_INVALID', '邀请码无效或已过期');
-      const { groupId, issuerId } = decoded as { groupId: string; issuerId: string };
+      const { groupId, issuerId } = decoded;
       if (!groupId || !issuerId) throw errors.invalidRequest('INVITE_INVALID', '邀请码无效或已过期');
       if (issuerId === userId) throw errors.invalidRequest('INVITE_SELF', '不能添加自己的分组');
       const group = await this.groups.getById(groupId);
       if (!group) throw errors.notFound();
+      if ((group as Record<string, unknown>).deletedAt) throw errors.invalidRequest('INVITE_INVALID', '邀请码无效或已过期');
       await this.groups.addAccess(userId, groupId, 'invited');
       await this.audits.record(userId, 'channel.add', `group:${groupId}`);
       return { groupId, channelName: String((group as Record<string, unknown>).name) };

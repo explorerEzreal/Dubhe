@@ -21,7 +21,7 @@ export class PgInferenceRepository implements InferenceRepository {
            from models m
            join model_instances mi on mi.model_id=m.id
            join agents a on a.id=mi.agent_id
-           ${groupId ? 'join group_agents ga on ga.agent_id=mi.agent_id and ga.group_id=$2' : ''}
+           ${groupId ? 'join group_agents ga on ga.agent_id=mi.agent_id and ga.group_id=$2 join groups gr on gr.id=ga.group_id and gr.deleted_at is null' : ''}
           where m.name=$1
           order by mi.updated_at asc nulls first`,
         groupId ? [modelName, groupId] : [modelName],
@@ -47,10 +47,10 @@ export class PgInferenceRepository implements InferenceRepository {
   async createAccepted(input: InferenceCreateInput): Promise<void> {
     try {
       await this.pool.query(
-        `insert into inference_requests(request_id,user_id,api_key_id,group_id,status,endpoint,request_bytes)
-         values($1,$2,$3,$4,'accepted',$5,$6)
+        `insert into inference_requests(request_id,user_id,api_key_id,group_id,group_owner_id_snapshot,status,endpoint,request_bytes,stream,reasoning_effort)
+         values($1,$2,$3,$4,(select user_id from groups where id=$4),'accepted',$5,$6,$7,$8)
          on conflict (request_id) do nothing`,
-        [input.requestId, input.userId, input.apiKeyId, input.groupId, input.endpoint, input.requestBytes],
+        [input.requestId, input.userId, input.apiKeyId, input.groupId, input.endpoint, input.requestBytes, input.stream ?? false, input.reasoningEffort ?? null],
       );
     } catch (error) {
       throw error;

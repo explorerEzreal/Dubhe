@@ -16,7 +16,6 @@ import {
 import { useAsyncList } from '../../hooks';
 import { copyText } from '../../utils/clipboard';
 import { EmptyState, ErrorState } from '../../components';
-import { useAppTheme } from '../../app/providers';
 import {
   AddDeviceModal,
   type AddDeviceFormValues,
@@ -34,14 +33,13 @@ import {
 
 export function DeviceAgentsPage() {
   const { message } = App.useApp();
-  const { mode } = useAppTheme();
   const dashboard = useAsyncList(
     async () => {
       const [agents, models, groups, monitoring] = await Promise.all([
         agentApi.list(),
         modelApi.list(),
         groupApi.list(),
-        usageApi.monitoring('deployer'),
+        usageApi.analytics('deployer'),
       ]);
       return { agents, models, groups, monitoring };
     },
@@ -265,7 +263,7 @@ export function DeviceAgentsPage() {
                 </Typography.Title>
               </div>
             </div>
-            <OverviewCards agents={agents} dark={mode === 'dark'} />
+            <OverviewCards agents={agents} />
             <StatusFilters
               value={statusFilter}
               onChange={setStatusFilter}

@@ -45,6 +45,13 @@
 
 ## 下一步
 
+### Cloud 流量查询与统一使用记录重构（2026-09-21）
+
+- 状态：代码实现完成，真实 PostgreSQL 数据规模、浏览器视觉和部署环境验收待执行。
+- 变更：新增 `inference_requests` 查询事实字段、分组软删除和数据库邀请码迁移；统一保留 `/api/usage-records` 与 `/api/usage-analytics`，补齐权限、分页、筛选、facets、趋势和数据质量统计；Web 使用记录页改为真实分页明细、筛选和停用分组标识；OpenAPI 与架构文档同步更新。
+- 验证：`pnpm lint`、`pnpm build`、`pnpm test`、`pnpm test:postgres`、`pnpm contracts:check` 通过；迁移测试确认连续执行幂等。
+- 待验收：真实 PostgreSQL 历史数据权限边界、超大数据分页性能、浏览器加载/空态/错误态及真实 Cloud 推理链路。
+
 ### 流量监控 M9（阶段一至五，2026-09-20）
 
 - 状态：已完成代码实现，真实 PostgreSQL 与浏览器验收待执行。

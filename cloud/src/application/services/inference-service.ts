@@ -98,7 +98,9 @@ export class InferenceService {
       if (!snapshot.instances.some((item) => item.state === 'ready')) throw errors.modelNotReady();
       throw errors.agentBusy();
     }
-    await this.repository.createAccepted({ requestId, userId: input.userId, apiKeyId: input.apiKeyId, groupId: input.groupId, endpoint: input.endpoint, requestBytes: input.requestBytes });
+    const reasoningEffort = input.payload.reasoning_effort === 'low' || input.payload.reasoning_effort === 'medium' || input.payload.reasoning_effort === 'high'
+      ? input.payload.reasoning_effort : undefined;
+    await this.repository.createAccepted({ requestId, userId: input.userId, apiKeyId: input.apiKeyId, groupId: input.groupId, endpoint: input.endpoint, requestBytes: input.requestBytes, stream: input.payload.stream === true, reasoningEffort });
     await this.publish({ eventId: `${requestId}:started`, eventVersion: 1, type: 'inference.started', requestId, occurredAt: new Date(), userId: input.userId, apiKeyId: input.apiKeyId, groupId: input.groupId, modelName: input.model });
     await this.repository.markRouted({ requestId, agentId: candidate.agentId, modelId: candidate.modelId, modelName: candidate.modelName });
     await this.publish({ eventId: `${requestId}:routed`, eventVersion: 1, type: 'inference.routed', requestId, occurredAt: new Date(), userId: input.userId, apiKeyId: input.apiKeyId, groupId: input.groupId, modelId: candidate.modelId, modelName: candidate.modelName, deviceId: candidate.agentId });

@@ -25,7 +25,7 @@ import { collectSystemMetrics, normalizePlatform } from './infrastructure/system
 import { resolve } from 'node:path';
 import { access } from 'node:fs/promises';
 
-const VERSION = '0.1.0';
+const VERSION = '1.0.0-beta.0';
 const PROTOCOL_VERSION = 1;
 const program = new Command().name('dubhe').description('Bubhe 天枢本地模型 Agent').version(VERSION);
 const paths = (): ReturnType<typeof servicePaths> => servicePaths();

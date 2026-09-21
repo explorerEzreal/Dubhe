@@ -1,11 +1,11 @@
 {
   "name": "dubhe-agent",
-  "version": "0.1.0",
+  "version": "1.0.0-beta.0",
   "description": "Bubhe 天枢本地模型 Agent",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/explorerEzreal/Dubhe.git",
+    "url": "git+https://github.com/explorerEzreal/Dubhe.git",
     "directory": "agent"
   },
   "bugs": {
@@ -15,8 +15,13 @@
   "bin": {
     "dubhe": "dist/main.js"
   },
-  "files": ["dist", "AGENT_OPERATIONS.md"],
-  "engines": { "node": ">=22" },
+  "files": [
+    "dist",
+    "AGENT_OPERATIONS.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "scripts": {
     "dev": "tsx src/main.ts",
@@ -41,5 +46,12 @@
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.6.0",
     "vitest": "^2.0.5"
-  }
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "keywords": [],
+  "author": ""
 }

@@ -12,7 +12,7 @@ export function DeviceTrafficPage() {
     const to = dayjs();
     return [to.subtract(30, 'day'), to];
   });
-  const load = useCallback(() => usageApi.monitoring('deployer', range[0].startOf('day').toISOString(), range[1].endOf('day').toISOString()), [range]);
+  const load = useCallback(() => usageApi.analytics('deployer', range[0].startOf('day').toISOString(), range[1].endOf('day').toISOString()), [range]);
   const dashboard = useAsyncList(load, { poll: true });
   const data = dashboard.data as MonitoringData | undefined;
   const userColumns: ColumnsType<MonitoringData['users'][number]> = useMemo(() => [

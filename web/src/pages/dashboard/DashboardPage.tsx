@@ -14,12 +14,12 @@ const emptyViewModel: DashboardViewModel = { generatedAt: '', granularity: 'day'
 function rangeDates(range: RangeKey, custom: [Dayjs, Dayjs]): [Dayjs, Dayjs] { const end = dayjs(); if (range === 'today') return [end.startOf('day'), end]; if (range === '7d') return [end.subtract(6, 'day').startOf('day'), end]; if (range === '30d') return [end.subtract(29, 'day').startOf('day'), end]; return custom; }
 
 export function DashboardPage(): JSX.Element {
-  const [range, setRange] = useState<RangeKey>('30d');
+  const [range, setRange] = useState<RangeKey>('today');
   const [customRange, setCustomRange] = useState<[Dayjs, Dayjs]>([dayjs().subtract(29, 'day'), dayjs()]);
   const [granularity, setGranularity] = useState<'hour' | 'day'>('day');
   const firstLoad = useRef(true);
   const [from, to] = rangeDates(range, customRange);
-  const load = useCallback(() => usageApi.monitoring(from.toISOString(), to.toISOString(), granularity), [from, granularity, to]);
+  const load = useCallback(() => usageApi.analytics(from.toISOString(), to.toISOString(), granularity), [from, granularity, to]);
   const dashboard = useAsyncList(load, { poll: true });
   useEffect(() => { if (firstLoad.current) { firstLoad.current = false; return; } dashboard.reload(); }, [range, customRange, granularity]);
   const data = dashboard.data ? toDashboardViewModel(dashboard.data) : emptyViewModel;

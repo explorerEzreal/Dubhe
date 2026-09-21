@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bubhe 天枢 · 主题系统预览</title>
+<style>
+  :root {
+    --brand-primary:#0D9488; --brand-hover:#0F766E; --brand-active:#115E59;
+    --brand-bg:#E4F4F2; --brand-border:#8FD8CF; --brand-text:#0F766E;
+    --brand-secondary:#06B6D4; --brand-gradient:linear-gradient(135deg,#0D9488 0%,#06B6D4 100%);
+    --brand-soft:rgba(13,148,136,.12); --brand-veil:rgba(13,148,136,.06);
+    --sidebar-bg:#EDF2F2; --content-bg:#F4F7F8; --panel-bg:#FFFFFF; --elevated-bg:#FFFFFF;
+    --device-track:#EAF0F0; --hover-bg:#E6EDEE; --active-bg:#DFF2F0;
+    --text-color:#0F172A; --menu-color:#475569; --muted-color:#5A6F6C; --icon-color:#6B8280;
+    --border-color:#E2E8EA; --border-strong:#CBD5E1;
+    --color-success:#059669; --color-success-bg:#E7F7F1;
+    --color-warning:#D97706; --color-warning-bg:#FEF3E2;
+    --color-error:#DC2626; --color-error-bg:#FDECEC;
+    --color-info:#0284C7; --color-info-bg:#E8F4FB;
+    --status-online:#059669; --status-connecting:#D97706; --status-degraded:#EA580C;
+    --status-offline:#64748B; --status-revoked:#DC2626;
+    --shadow-card:0 1px 2px rgba(15,23,42,.04),0 4px 16px rgba(15,23,42,.06);
+    --shadow-popover:0 8px 32px rgba(15,23,42,.12);
+    --shadow-brand:0 2px 12px rgba(13,148,136,.28);
+    --glow:0 0 0 3px rgba(13,148,136,.16);
+    --dv-teal:#00A88F; --dv-blue:#2E90FA; --dv-violet:#8B5CF6; --dv-amber:#F59E0B; --dv-pink:#EC4899;
+  }
+  [data-theme="dark"] {
+    --brand-primary:#2DD4BF; --brand-hover:#5EEAD4; --brand-active:#14B8A6;
+    --brand-bg:#123330; --brand-border:#1D5450; --brand-text:#2DD4BF;
+    --brand-secondary:#22D3EE; --brand-gradient:linear-gradient(135deg,#2DD4BF 0%,#22D3EE 100%);
+    --brand-soft:rgba(45,212,191,.14); --brand-veil:rgba(45,212,191,.08);
+    --sidebar-bg:#0D1817; --content-bg:#0A1211; --panel-bg:#131F1E; --elevated-bg:#1A2A28;
+    --device-track:#1B2B2A; --hover-bg:#172726; --active-bg:#123330;
+    --text-color:#E6EFEE; --menu-color:#A3B8B6; --muted-color:#7E968F; --icon-color:#8FA6A4;
+    --border-color:#1F2F2E; --border-strong:#2A3D3B;
+    --color-success:#34D399; --color-success-bg:#0F2A24;
+    --color-warning:#FBBF24; --color-warning-bg:#2E2410;
+    --color-error:#F87171; --color-error-bg:#2E1616;
+    --color-info:#38BDF8; --color-info-bg:#10222E;
+    --status-online:#34D399; --status-connecting:#FBBF24; --status-degraded:#FB923C;
+    --status-offline:#64748B; --status-revoked:#F87171;
+    --shadow-card:0 1px 2px rgba(0,0,0,.40),0 4px 16px rgba(0,0,0,.36);
+    --shadow-popover:0 8px 32px rgba(0,0,0,.56);
+    --shadow-brand:0 2px 14px rgba(45,212,191,.30);
+    --glow:0 0 0 3px rgba(45,212,191,.18);
+    --dv-teal:#2DD4BF; --dv-blue:#60A5FA; --dv-violet:#A78BFA; --dv-amber:#FBBF24; --dv-pink:#F472B6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:0 24px 64px;
+    font-family: Inter, system-ui, -apple-system, 'Segoe UI','PingFang SC','Microsoft YaHei', sans-serif;
+    background: var(--content-bg); color: var(--text-color);
+    transition: background-color .25s ease, color .25s ease;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    padding: 20px 0 16px; margin-bottom: 8px;
+    background: var(--content-bg); border-bottom: 1px solid var(--border-color);
+  }
+  h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: .2px; }
+  .sub { margin: 4px 0 0; font-size: 13px; color: var(--muted-color); }
+  .switcher { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--panel-bg); }
+  .switcher button {
+    padding: 7px 16px; border: 0; border-radius: 7px; cursor: pointer;
+    font: inherit; font-size: 13px; font-weight: 500;
+    background: transparent; color: var(--menu-color); transition: all .15s ease;
+  }
+  .switcher button.on { background: var(--brand-gradient); color: #fff; box-shadow: var(--shadow-brand); }
+
+  section { margin-top: 36px; }
+  h2 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+  .note { margin: 0 0 16px; font-size: 12.5px; color: var(--muted-color); line-height: 1.6; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .swatch {
+    flex: 1 1 128px; min-width: 128px; padding: 12px; border-radius: 12px;
+    border: 1px solid var(--border-color); background: var(--panel-bg); box-shadow: var(--shadow-card);
+  }
+  .chip { height: 44px; border-radius: 8px; margin-bottom: 9px; border: 1px solid var(--border-color); }
+  .swatch b { display: block; font-size: 12.5px; font-weight: 600; }
+  .swatch code { display: block; margin-top: 2px; font-size: 11px; color: var(--muted-color); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  /* 模拟界面 */
+  .mock {
+    display: grid; grid-template-columns: 250px 1fr; gap: 0; height: 480px;
+    border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-popover);
+  }
+  .mock-sider { background: var(--sidebar-bg); padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+  .mock-logo { display: flex; align-items: center; gap: 9px; padding: 0 6px 14px; }
+  .mock-mark { width: 28px; height: 28px; border-radius: 9px; background: var(--brand-gradient); box-shadow: var(--shadow-brand); }
+  .mock-name { font-size: 15px; font-weight: 700; }
+  .mock-ver { font-size: 11px; color: var(--muted-color); }
+  .mock-label { padding: 8px 8px 5px; font-size: 11px; font-weight: 600; color: var(--muted-color); letter-spacing: .4px; }
+  .mock-nav {
+    position: relative; display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px;
+    border-radius: 8px; font-size: 13px; color: var(--menu-color); cursor: default;
+  }
+  .mock-nav:hover { background: var(--hover-bg); }
+  .mock-nav.on { background: var(--active-bg); color: var(--brand-text); font-weight: 600; }
+  .mock-nav.on::before {
+    content: ''; position: absolute; left: 0; top: 7px; bottom: 7px; width: 3px;
+    border-radius: 2px; background: var(--brand-gradient); box-shadow: var(--shadow-brand);
+  }
+  .mock-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-primary); flex: 0 0 auto; }
+  .mock-foot { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 9px; }
+  .mock-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--brand-gradient); box-shadow: var(--shadow-brand); }
+
+  .mock-main { background: var(--content-bg); padding: 18px; overflow: hidden; }
+  .mock-title { font-size: 17px; font-weight: 700; margin: 0 0 3px; }
+  .mock-sub { font-size: 11.5px; color: var(--muted-color); margin: 0 0 14px; display: flex; align-items: center; gap: 6px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--status-online); box-shadow: 0 0 0 3px var(--color-success-bg); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .kpi { padding: 11px 12px; border: 1px solid var(--border-color); border-radius: 11px; background: var(--panel-bg); box-shadow: var(--shadow-card); }
+  .kpi i { display: block; width: 26px; height: 26px; border-radius: 8px; margin-bottom: 8px; }
+  .kpi span { font-size: 11px; color: var(--muted-color); }
+  .kpi b { display: block; font-size: 19px; margin-top: 1px; }
+  .kpi em { font-size: 10.5px; font-style: normal; color: var(--color-success); background: var(--color-success-bg); padding: 1px 5px; border-radius: 999px; }
+  .trend { height: 118px; border: 1px solid var(--border-color); border-radius: 11px; background: var(--panel-bg); box-shadow: var(--shadow-card); padding: 12px; position: relative; }
+  .trend svg { width: 100%; height: 100%; }
+  .devs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .dev { padding: 11px 12px; border: 1px solid var(--border-color); border-left: 3px solid var(--status-online); border-radius: 10px; background: var(--panel-bg); }
+  .dev.warn { border-left-color: var(--status-connecting); }
+  .dev.off { border-left-color: var(--status-offline); }
+  .dev h4 { margin: 0; font-size: 12.5px; font-weight: 600; }
+  .dev p { margin: 4px 0 0; font-size: 10.5px; color: var(--muted-color); }
+  .bar { height: 4px; border-radius: 4px; background: var(--device-track); margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--brand-primary); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-card); }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border-color); }
+  th { background: var(--device-track); font-weight: 600; font-size: 12px; color: var(--menu-color); }
+  tr:last-child td { border-bottom: 0; }
+  .pass { color: var(--color-success); font-weight: 600; }
+  .warn-t { color: var(--color-warning); font-weight: 600; }
+  td code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+  @media (max-width: 880px) {
+    .mock { grid-template-columns: 1fr; height: auto; }
+    .mock-sider { display: none; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .devs { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Bubhe 天枢 · 主题系统 v2</h1>
+    <p class="sub">翡翠青主色 · 深青墨深底 · 鲜明现代</p>
+  </div>
+  <div class="switcher">
+    <button id="btn-light" class="on" onclick="setTheme('light')">浅色</button>
+    <button id="btn-dark" onclick="setTheme('dark')">深色</button>
+  </div>
+</header>
+
+<section>
+  <h2>界面效果</h2>
+  <p class="note">侧栏承载导航最沉、内容区居中、卡片纯色浮起 —— 三层表面拉开后层次立刻出来。选中态用品牌渐变指示条 + 淡青底。</p>
+  <div class="mock">
+    <div class="mock-sider">
+      <div class="mock-logo">
+        <span class="mock-mark"></span>
+        <span>
+          <span class="mock-name">Bubhe 天枢</span><br />
+          <span class="mock-ver">v0.1.0</span>
+        </span>
+      </div>
+      <div class="mock-label">监控</div>
+      <div class="mock-nav on"><span class="mock-dot"></span>设备总览</div>
+      <div class="mock-nav"><span class="mock-dot"></span>设备监控</div>
+      <div class="mock-nav"><span class="mock-dot"></span>用量记录</div>
+      <div class="mock-label">管理</div>
+      <div class="mock-nav"><span class="mock-dot"></span>模型分组</div>
+      <div class="mock-nav"><span class="mock-dot"></span>密钥管理</div>
+      <div class="mock-foot">
+        <span class="mock-avatar"></span>
+        <span>
+          <span style="font-size:12.5px;font-weight:600">管理员</span><br />
+          <span class="mock-ver">admin</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="mock-main">
+      <h3 class="mock-title">设备总览</h3>
+      <p class="mock-sub"><span class="live-dot"></span>实时监控中 · 12 台设备</p>
+      <div class="kpis">
+        <div class="kpi"><i style="background:var(--dv-teal)"></i><span>在线设备</span><b>9</b><em>+2</em></div>
+        <div class="kpi"><i style="background:var(--dv-blue)"></i><span>今日调用</span><b>1.2k</b><em>+8%</em></div>
+        <div class="kpi"><i style="background:var(--dv-violet)"></i><span>Token</span><b>48k</b><em>+12%</em></div>
+        <div class="kpi"><i style="background:var(--dv-amber)"></i><span>降级</span><b>1</b><em>+1</em></div>
+      </div>
+      <div class="trend">
+        <svg viewBox="0 0 600 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="var(--brand-primary)" />
+              <stop offset="100%" stop-color="var(--brand-secondary)" />
+            </linearGradient>
+          </defs>
+          <path d="M0,78 C60,70 90,44 150,52 C210,60 240,26 300,34 C360,42 400,58 450,44 C500,30 540,22 600,30"
+                fill="none" stroke="url(#g1)" stroke-width="2.5" />
+          <path d="M0,78 C60,70 90,44 150,52 C210,60 240,26 300,34 C360,42 400,58 450,44 C500,30 540,22 600,30 L600,100 L0,100 Z"
+                fill="var(--brand-soft)" opacity="0.5" />
+        </svg>
+      </div>
+      <div class="devs">
+        <div class="dev"><h4>Agent-001</h4><p>在线 · 心跳正常</p><div class="bar"><i style="width:62%"></i></div></div>
+        <div class="dev warn"><h4>Agent-002</h4><p>连接中 · 握手</p><div class="bar"><i style="width:24%;background:var(--status-connecting)"></i></div></div>
+        <div class="dev off"><h4>Agent-003</h4><p>离线 · 心跳超时</p><div class="bar"><i style="width:8%;background:var(--status-offline)"></i></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>品牌色</h2>
+  <p class="note">主色 teal-600，辅助色 cyan-500 构成品牌渐变。强调文字单独降一档到 teal-700 以保证正文级对比度。</p>
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:var(--brand-primary)"></div><b>主色</b><code id="c-p"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--brand-hover)"></div><b>悬停</b><code id="c-ph"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--brand-active)"></div><b>按下</b><code id="c-pa"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--brand-secondary)"></div><b>辅助色</b><code id="c-s"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--brand-gradient)"></div><b>品牌渐变</b><code>135deg</code></div>
+    <div class="swatch"><div class="chip" style="background:var(--brand-bg)"></div><b>淡底</b><code id="c-bg"></code></div>
+  </div>
+</section>
+
+<section>
+  <h2>表面层级</h2>
+  <p class="note">中性色全部带青调，告别纯灰。四层表面由沉到浮：侧栏 → 内容底 → 卡片 → 浮层。</p>
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:var(--sidebar-bg)"></div><b>侧栏</b><code id="s-sb"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--content-bg)"></div><b>内容底</b><code id="s-cb"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--panel-bg)"></div><b>卡片</b><code id="s-pb"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--elevated-bg)"></div><b>浮层</b><code id="s-eb"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--device-track)"></div><b>轨道</b><code id="s-tr"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--active-bg)"></div><b>选中底</b><code id="s-ab"></code></div>
+  </div>
+</section>
+
+<section>
+  <h2>语义色与设备状态</h2>
+  <p class="note">原先 success 存在三个版本（#12b76a / #16a34a / #35d399），现已收敛为一套语义色；设备状态色与图表共用同一组值。</p>
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:var(--color-success)"></div><b>成功</b><code id="t-s"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--color-warning)"></div><b>警告</b><code id="t-w"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--color-error)"></div><b>错误</b><code id="t-e"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--color-info)"></div><b>信息</b><code id="t-i"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--status-online)"></div><b>在线</b><code id="d-o"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--status-connecting)"></div><b>连接中</b><code id="d-c"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--status-degraded)"></div><b>降级</b><code id="d-d"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--status-offline)"></div><b>离线</b><code id="d-f"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--status-revoked)"></div><b>已撤销</b><code id="d-r"></code></div>
+  </div>
+</section>
+
+<section>
+  <h2>数据可视化五色</h2>
+  <p class="note">KPI 图标与图表系列共用，深浅模式各自一套，避免深色下颜色发闷。</p>
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:var(--dv-teal)"></div><b>Teal</b><code id="v-t"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--dv-blue)"></div><b>Blue</b><code id="v-b"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--dv-violet)"></div><b>Violet</b><code id="v-v"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--dv-amber)"></div><b>Amber</b><code id="v-a"></code></div>
+    <div class="swatch"><div class="chip" style="background:var(--dv-pink)"></div><b>Pink</b><code id="v-p"></code></div>
+  </div>
+</section>
+
+<section>
+  <h2>对比度校验</h2>
+  <p class="note">基于 WCAG 2.1：正文 AA 需 4.5:1，大文本与非文本 UI 组件需 3:1。</p>
+  <table>
+    <thead><tr><th>组合</th><th>用途</th><th>浅色</th><th>深色</th><th>结论</th></tr></thead>
+    <tbody>
+      <tr><td>正文 / 内容底</td><td>主要阅读文本</td><td>16.6:1</td><td>16.0:1</td><td class="pass">AAA</td></tr>
+      <tr><td>次要文字 / 卡片</td><td>说明、标签</td><td>6.9:1</td><td>8.2:1</td><td class="pass">AAA</td></tr>
+      <tr><td>三级文字 / 卡片</td><td>时间戳、辅助信息</td><td>5.0:1</td><td>5.4:1</td><td class="pass">AA</td></tr>
+      <tr><td>强调文字 / 卡片</td><td>链接、选中导航</td><td>5.5:1</td><td>8.9:1</td><td class="pass">AA</td></tr>
+      <tr><td>主色 / 白字</td><td>主按钮</td><td>3.8:1</td><td>—</td><td class="warn-t">AA（大字）</td></tr>
+      <tr><td>主色 / 卡片</td><td>图标、边框、图表</td><td>3.7:1</td><td>9.1:1</td><td class="pass">AA（非文本）</td></tr>
+      <tr><td>成功色 / 卡片</td><td>状态标签</td><td>4.1:1</td><td>7.8:1</td><td class="pass">AA</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</div>
+
+<script>
+  var ids = {
+    'c-p':'--brand-primary','c-ph':'--brand-hover','c-pa':'--brand-active','c-s':'--brand-secondary','c-bg':'--brand-bg',
+    's-sb':'--sidebar-bg','s-cb':'--content-bg','s-pb':'--panel-bg','s-eb':'--elevated-bg','s-tr':'--device-track','s-ab':'--active-bg',
+    't-s':'--color-success','t-w':'--color-warning','t-e':'--color-error','t-i':'--color-info',
+    'd-o':'--status-online','d-c':'--status-connecting','d-d':'--status-degraded','d-f':'--status-offline','d-r':'--status-revoked',
+    'v-t':'--dv-teal','v-b':'--dv-blue','v-v':'--dv-violet','v-a':'--dv-amber','v-p':'--dv-pink'
+  };
+  function paint() {
+    var cs = getComputedStyle(document.documentElement);
+    for (var id in ids) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = cs.getPropertyValue(ids[id]).trim();
+    }
+  }
+  function setTheme(mode) {
+    document.documentElement.dataset.theme = mode;
+    document.getElementById('btn-light').classList.toggle('on', mode === 'light');
+    document.getElementById('btn-dark').classList.toggle('on', mode === 'dark');
+    paint();
+  }
+  paint();
+</script>
+</body>
+</html>

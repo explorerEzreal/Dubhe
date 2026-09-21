@@ -7,6 +7,7 @@ import type {
   GroupService,
   InferenceService,
   DeployerMonitoringQueryService,
+  UsageQueryService,
 } from '../../application/services/index.js';
 import type { RateLimiter } from '../../application/ports.js';
 
@@ -21,4 +22,5 @@ export interface HttpServices {
   apiLimiter: RateLimiter;
   inference: InferenceService;
   monitoring: DeployerMonitoringQueryService;
+  usage: UsageQueryService;
 }

@@ -26,7 +26,7 @@ Node.js 主版本低于 22 时，使用 Node.js 官方安装包或已有版本�
 ### 安装 Agent
 
 ```bash
-npm install -g dubhe-agent@0.1.0
+npm install -g dubhe-agent@1.0.0-beta.0
 dubhe --version
 dubhe --help
 ```
@@ -198,7 +198,7 @@ model=gemma
 host=127.0.0.1
 port=8000
 local_url=http://127.0.0.1:8000
-agent_version=0.1.0
+agent_version=1.0.0-beta.0
 platform=darwin
 service=com.dubhe.agent
 pid=12345

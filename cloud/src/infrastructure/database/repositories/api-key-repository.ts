@@ -49,7 +49,7 @@ export class PgApiKeyRepository implements ApiKeyRepository {
       }
       const result = await client.query(
         `insert into api_keys(user_id,prefix,key_hash,expires_at,group_id)
-         values($1,$2,$3,$4,$5)
+         select $1,$2,$3,$4,$5 where exists (select 1 from groups where id=$5 and deleted_at is null)
          returning id,prefix,status,created_at as "createdAt",
                    expires_at as "expiresAt", group_id as "groupId"`,
         [input.userId, input.prefix, input.keyHash, input.expiresAt, input.groupId],

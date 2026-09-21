@@ -166,13 +166,35 @@ paths:
         '200': { description: list }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { $ref: '#/components/responses/RateLimited' }
-  /api/usage:
+  /api/usage-records:
     get:
       tags: [inference]
-      summary: 查询调用摘要
+      summary: 查询使用记录明细
       security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 20 } }
+        - { name: created_at_from, in: query, schema: { type: string, format: date-time } }
+        - { name: created_at_to, in: query, schema: { type: string, format: date-time } }
+        - { name: status, in: query, style: form, explode: true, schema: { type: array, items: { type: string } } }
+        - { name: model_ids, in: query, style: form, explode: true, schema: { type: array, items: { type: string, format: uuid } } }
+        - { name: device_ids, in: query, style: form, explode: true, schema: { type: array, items: { type: string, format: uuid } } }
+        - { name: group_ids, in: query, style: form, explode: true, schema: { type: array, items: { type: string, format: uuid } } }
+        - { name: user_ids, in: query, style: form, explode: true, schema: { type: array, items: { type: string, format: uuid } } }
+        - { name: include, in: query, schema: { type: string, enum: [facets] } }
       responses:
-        '200': { description: usage }
+        '200': { description: paginated usage records }
+  /api/usage-analytics:
+    get:
+      tags: [inference]
+      summary: 查询使用分析
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: created_at_from, in: query, schema: { type: string, format: date-time } }
+        - { name: created_at_to, in: query, schema: { type: string, format: date-time } }
+        - { name: granularity, in: query, schema: { type: string, enum: [hour, day], default: day } }
+      responses:
+        '200': { description: usage analytics }
   /v1/models:
     get:
       tags: [models]

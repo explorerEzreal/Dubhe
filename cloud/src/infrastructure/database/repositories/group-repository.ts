@@ -37,7 +37,7 @@ export class PgGroupRepository implements GroupRepository {
                 g.updated_at as "updatedAt",
                 (select count(*) from group_agents where group_id=g.id)::int as "agentCount"
            from groups g
-          where g.user_id=$1
+          where g.user_id=$1 and g.deleted_at is null
           order by g.created_at desc`,
         [userId],
       );
@@ -51,7 +51,8 @@ export class PgGroupRepository implements GroupRepository {
     try {
       const result = await this.pool.query(
         `select g.id,g.user_id as "userId",g.name,g.description,
-                g.created_at as "createdAt",g.updated_at as "updatedAt"
+                g.created_at as "createdAt",g.updated_at as "updatedAt",
+                g.deleted_at as "deletedAt"
            from groups g
           where g.id=$1`,
         [groupId],
@@ -78,7 +79,7 @@ export class PgGroupRepository implements GroupRepository {
   async delete(groupId: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
-        'delete from groups where id=$1',
+        'update groups set deleted_at=coalesce(deleted_at,now()), updated_at=now() where id=$1 and deleted_at is null',
         [groupId],
       );
       return Boolean(result.rowCount);
@@ -227,5 +228,18 @@ export class PgGroupRepository implements GroupRepository {
     } catch (error) {
       throw error;
     }
+  }
+
+  async createInvite(groupId: string, issuerId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    await this.pool.query('insert into group_invites(group_id,issuer_id,token_hash,expires_at) values($1,$2,$3,$4)', [groupId, issuerId, tokenHash, expiresAt]);
+  }
+
+  async consumeInvite(tokenHash: string): Promise<{ groupId: string; issuerId: string } | null> {
+    const result = await this.pool.query(`select group_id as "groupId", issuer_id as "issuerId" from group_invites where token_hash=$1 and revoked_at is null and expires_at>now()`, [tokenHash]);
+    return (result.rows[0] as { groupId: string; issuerId: string } | undefined) ?? null;
+  }
+
+  async revokeInvites(groupId: string): Promise<void> {
+    await this.pool.query('update group_invites set revoked_at=coalesce(revoked_at,now()) where group_id=$1 and revoked_at is null', [groupId]);
   }
 }

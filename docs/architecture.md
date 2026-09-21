@@ -20,7 +20,7 @@
 | 用户 | `GET /api/me`、`PATCH /api/me/profile`、`PATCH /api/me/password` |
 | 设备 | `POST /api/enrollment-tokens`、`GET /api/agents`、`GET /api/agents/:id`、`PATCH /api/agents/:id`、凭证轮换/撤销 |
 | 分组/渠道 | `/api/groups` CRUD、设备关联、邀请码；`/api/channels` 查询、添加、移除、模型广场 |
-| Key/用量 | `/api/keys` 创建、查询、禁用、删除；`GET /api/usage` |
+| Key/用量 | `/api/keys` 创建、查询、禁用、删除；`GET /api/usage-records`、`GET /api/usage-analytics` |
 | 管理员 | `/api/admin/users` 列表、改密、删除 |
 | 推理 | `GET /v1/models`、`POST /v1/chat/completions`、`POST /v1/responses` |
 | 健康 | `/healthz`、`/readyz` |

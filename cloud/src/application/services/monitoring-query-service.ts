@@ -1,4 +1,4 @@
-import type { CatalogRepository, MonitoringQueryService as MonitoringQueryPort } from '../ports.js';
+import type { CatalogRepository, MonitoringQueryService as MonitoringQueryPort, UsageAnalyticsQuery, UsageRecordsQuery, UsageRecordPage } from '../ports.js';
 
 // 将底层兼容查询转换为部署者仪表盘稳定契约。
 export class DeployerMonitoringQueryService implements MonitoringQueryPort {
@@ -25,4 +25,10 @@ export class DeployerMonitoringQueryService implements MonitoringQueryPort {
       granularity,
     };
   }
+}
+
+export class UsageQueryService {
+  constructor(private readonly catalog: CatalogRepository) {}
+  async records(input: UsageRecordsQuery): Promise<UsageRecordPage> { return this.catalog.getUsageRecords(input); }
+  async analytics(input: UsageAnalyticsQuery): Promise<Record<string, unknown>> { return this.catalog.getUsageAnalytics(input); }
 }

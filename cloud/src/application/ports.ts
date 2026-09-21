@@ -121,13 +121,51 @@ export interface GroupRepository {
   listAccessByUser(userId: string): Promise<Array<Record<string, unknown>>>;
   hasAccess(userId: string, groupId: string): Promise<boolean>;
   getAccessById(accessId: string): Promise<Record<string, unknown> | null>;
+  createInvite(groupId: string, issuerId: string, tokenHash: string, expiresAt: Date): Promise<void>;
+  consumeInvite(tokenHash: string): Promise<{ groupId: string; issuerId: string } | null>;
+  revokeInvites(groupId: string): Promise<void>;
 }
 
 export interface CatalogRepository {
   listModels(): Promise<Array<Record<string, unknown>>>;
   getUsage(userId: string): Promise<Record<string, unknown>>;
   getMonitoring(userId: string, from: Date, to: Date, scope: 'caller' | 'deployer', granularity?: 'hour' | 'day'): Promise<Record<string, unknown>>;
+  getUsageRecords(input: UsageRecordsQuery): Promise<UsageRecordPage>;
+  getUsageAnalytics(input: UsageAnalyticsQuery): Promise<Record<string, unknown>>;
 }
+
+export interface UsageRecordsQuery {
+  userId: string;
+  role: string;
+  page: number;
+  pageSize: number;
+  from?: Date;
+  to?: Date;
+  status?: string[];
+  modelIds?: string[];
+  deviceIds?: string[];
+  groupIds?: string[];
+  userIds?: string[];
+  includeFacets?: boolean;
+}
+
+export interface UsageRecordPage {
+  items: Array<Record<string, unknown>>;
+  page: number;
+  pageSize: number;
+  total: number;
+  facets?: UsageRecordFacets;
+}
+
+export interface UsageRecordFacets {
+  statuses: string[];
+  models: Array<{ id: string; name: string }>;
+  devices: Array<{ id: string; name: string }>;
+  groups: Array<{ id: string; name: string; deleted: boolean }>;
+  users?: Array<{ id: string; name: string }>;
+}
+
+export type UsageAnalyticsQuery = Omit<UsageRecordsQuery, 'page' | 'pageSize'> & { granularity: 'hour' | 'day' };
 
 export type MonitoringEventType = 'inference.started' | 'inference.routed' | 'inference.completed' | 'inference.failed' | 'inference.timeout' | 'inference.cancelled' | 'inference.disconnected';
 
@@ -184,6 +222,8 @@ export interface InferenceCreateInput {
   groupId: string | null;
   endpoint: 'chat/completions' | 'responses';
   requestBytes: number;
+  stream?: boolean;
+  reasoningEffort?: 'low' | 'medium' | 'high';
 }
 
 export interface InferenceRouteInput {

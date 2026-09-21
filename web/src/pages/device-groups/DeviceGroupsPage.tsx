@@ -51,7 +51,7 @@ function statusLabel(status: string): { text: string; color: string } {
 export function DeviceGroupsPage() {
   const { message } = App.useApp();
   const dashboard = useAsyncList(async () => {
-    const [groups, agents, monitoring] = await Promise.all([groupApi.list(), agentApi.list(), usageApi.monitoring('deployer')]);
+    const [groups, agents, monitoring] = await Promise.all([groupApi.list(), agentApi.list(), usageApi.analytics('deployer')]);
     return { groups, agents, monitoring };
   }, { poll: true });
   const groups = dashboard.data?.groups ?? [];

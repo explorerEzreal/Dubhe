@@ -39,14 +39,14 @@ export function toDashboardViewModel(data: MonitoringData): DashboardViewModel {
     trend,
     kpis: [
       { key: 'calls', label: '总请求数', value: number(current), unit: '', delta, tone: 'blue' },
-      { key: 'tokens', label: '总 Token', value: number(overview.totalTokens), unit: '', delta, tone: 'green' },
+      { key: 'tokens', label: '总 Token', value: number(overview.totalTokens ?? 0), unit: '', delta, tone: 'green' },
       { key: 'errors', label: '错误率', value: percent(overview.errorRate).replace('%', ''), unit: '%', delta: percent(overview.errorRate), tone: 'red' },
       { key: 'latency', label: 'P95 延迟', value: number(overview.p95LatencyMs), unit: 'ms', delta: '—', tone: 'purple' },
       { key: 'devices', label: '活跃设备', value: String(overview.activeDevices ?? devices.length), unit: `/ ${overview.totalDevices ?? devices.length}`, delta: '—', tone: 'teal' },
     ],
-    health: { todayTokens: number(data.todayOverview.totalTokens), activeUsers: String(overview.activeUsers), activeKeys: String(overview.activeApiKeys), p95: `${number(overview.p95LatencyMs)} ms`, lastCall: overview.lastRequestAt ? new Date(overview.lastRequestAt).toLocaleString() : '—', inputTokens: number(input), outputTokens: number(output), inputRatio, errorRate: Number(overview.errorRate ?? 0) },
+    health: { todayTokens: number(data.todayOverview.totalTokens ?? 0), activeUsers: String(overview.activeUsers), activeKeys: String(overview.activeApiKeys), p95: `${number(overview.p95LatencyMs)} ms`, lastCall: overview.lastRequestAt ? new Date(overview.lastRequestAt).toLocaleString() : '—', inputTokens: number(input), outputTokens: number(output), inputRatio, errorRate: Number(overview.errorRate ?? 0) },
     distributions: { models: distribution(data.models), groups: distribution(data.groups), devices: distribution(devices) },
-    requests: data.requests.map((item) => ({ id: item.requestId, time: new Date(item.startedAt).toLocaleTimeString(), user: item.email, group: item.groupName, model: item.modelName, device: item.deviceName ?? item.agentName ?? '未知设备', status: status(item.status), latency: item.latencyMs, tokens: Number(item.totalTokens ?? 0) })),
+    requests: data.requests.map((item) => ({ id: String(item.requestId ?? ''), time: new Date(String(item.startedAt ?? '')).toLocaleTimeString(), user: String(item.email ?? ''), group: String(item.groupName ?? ''), model: String(item.modelName ?? ''), device: String(item.deviceName ?? item.agentName ?? '未知设备'), status: status(String(item.status ?? '')), latency: typeof item.latencyMs === 'number' ? item.latencyMs : null, tokens: Number(item.totalTokens ?? 0) })),
     quality: { missingTokens: Number(data.dataQuality.missingTokenCalls ?? 0), ungrouped: `${Number(data.dataQuality.ungroupedCalls ?? 0).toLocaleString()}`, truncated: data.dataQuality.truncated },
   };
 }
