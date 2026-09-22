@@ -120,7 +120,7 @@ export function UsageRecordTable({ items, loading, total, page, pageSize, onPage
   return (
     <Table<UsageRecord>
       rowKey="id"
-      size="middle"
+      size="small"
       loading={loading}
       dataSource={items}
       columns={columns}

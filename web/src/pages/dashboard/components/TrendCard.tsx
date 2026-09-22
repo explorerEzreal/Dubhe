@@ -102,7 +102,7 @@ export function TrendCard({
       }
     >
       {trend.length ? (
-        <ReactECharts option={option} style={{ height: 268 }} />
+        <ReactECharts option={option} style={{ height: 230 }} />
       ) : (
         <div className='dashboard-empty'>暂无趋势数据</div>
       )}

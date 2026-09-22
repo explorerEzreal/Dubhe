@@ -6,38 +6,10 @@
   font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* 消息区与输入区统一内容宽度 */
   --wb-content-max: 900px;
-
-  /* 浅色兜底值：JS 同步前的首帧不闪白，随后被主题引擎覆盖为精确值 */
-  --content-bg: #f4f7f8;
-  --sidebar-bg: #edf2f2;
-  --panel-bg: #ffffff;
-  --text-color: #0f172a;
-  --muted-color: #94a3b8;
-  --accent-color: #0d9488;
-  --border-color: #e2e8ea;
 }
 * { box-sizing: border-box; }
-body {
-  margin: 0;
-  min-width: 320px;
-  background: var(--content-bg);
-  color: var(--text-color);
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
+body { margin: 0; min-width: 320px; }
 button { font: inherit; }
-
-/* 主题切换时给大面积表面一个平滑过渡，避免突变刺眼 */
-.wb-app,
-.wb-sider.ant-layout-sider,
-.wb-main,
-.ant-card {
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* 品牌渐变：用于标识、头像、主按钮等需要记忆点的位置 */
-.brand-gradient {
-  background: var(--brand-gradient);
-}
 
 /* ===== 仍被使用的旧系统样式（无硬编码颜色，引用 CSS 变量） ===== */
 .ui-icon { width: 20px; height: 20px; }
@@ -69,8 +41,8 @@ button { font: inherit; }
   .group-device-panel { padding-left: 8px; }
 }
 
-.brand-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--brand-gradient); box-shadow: var(--shadow-brand); color: #fff; font-weight: 800; }
-.auth-overlay { position: relative; display: grid; place-items: center; min-height: 100vh; overflow: hidden; padding: 24px; background: radial-gradient(circle at 20% 20%, var(--brand-soft), transparent 35%), radial-gradient(circle at 82% 78%, var(--brand-veil), transparent 40%), var(--content-bg); }
+.brand-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--accent-color); color: #fff; font-weight: 800; }
+.auth-overlay { position: relative; display: grid; place-items: center; min-height: 100vh; overflow: hidden; padding: 24px; background: radial-gradient(circle at 20% 20%, rgba(16,185,129,.13), transparent 35%), var(--content-bg); }
 .auth-panel { position: relative; z-index: 1; width: min(440px, 100%); padding: 36px; border: 1px solid var(--border-color); border-radius: 20px; background: var(--sidebar-bg); box-shadow: 0 24px 80px rgba(15,23,42,.12); }
 .auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 36px; }
 .auth-brand h2, .auth-heading h3 { margin: 0; }
@@ -79,8 +51,7 @@ button { font: inherit; }
 .auth-error { margin-bottom: 16px; }
 .auth-switch { margin: 18px 0 0; text-align: center; }
 .auth-switch-button { padding: 0; border: 0; background: transparent; color: var(--accent-color); cursor: pointer; }
-.auth-decoration { position: absolute; width: 280px; height: 280px; border-radius: 50%; background: var(--brand-veil); filter: blur(2px); }
-.auth-decoration-one { background: var(--brand-soft); }
+.auth-decoration { position: absolute; width: 280px; height: 280px; border-radius: 50%; background: rgba(16,185,129,.1); filter: blur(2px); }
 .auth-decoration-one { top: -120px; right: -80px; }
 .auth-decoration-two { bottom: -160px; left: -100px; }
 
@@ -133,9 +104,8 @@ button { font: inherit; }
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 9px;
-  background: var(--brand-gradient);
-  box-shadow: var(--shadow-brand);
+  border-radius: 8px;
+  background: var(--accent-color);
   color: #fff;
   font-size: 16px;
 }
@@ -210,7 +180,6 @@ button { font: inherit; }
 }
 
 .wb-nav-item {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -221,35 +190,17 @@ button { font: inherit; }
   font-size: 14px;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .wb-nav-item:hover {
   background: var(--hover-bg);
-  color: var(--text-color);
 }
 
-/* 选中态：淡青底 + 品牌色文字 + 左侧渐变指示条（带发光） */
 .wb-nav-item.is-active {
   background: var(--active-bg);
-  color: var(--brand-primary-text);
+  color: var(--text-color);
   font-weight: 600;
-}
-
-.wb-nav-item.is-active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 7px;
-  bottom: 7px;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--brand-gradient);
-  box-shadow: var(--shadow-brand);
-}
-
-.wb-nav-item.is-active .wb-nav-icon {
-  color: var(--brand-primary);
 }
 
 .wb-nav-item.is-placeholder {
@@ -332,8 +283,7 @@ button { font: inherit; }
   bottom: 8px;
   width: 3px;
   border-radius: 2px;
-  background: var(--brand-gradient);
-  box-shadow: var(--shadow-brand);
+  background: var(--accent-color);
 }
 
 .wb-task-icon {
@@ -377,8 +327,8 @@ button { font: inherit; }
 }
 
 .wb-task-del:hover {
-  color: var(--color-error);
-  background: var(--color-error-bg);
+  color: var(--ant-color-error);
+  background: var(--hover-bg);
 }
 
 .wb-space-item {
@@ -449,8 +399,7 @@ button { font: inherit; }
   height: 36px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--brand-gradient);
-  box-shadow: var(--shadow-brand);
+  background: var(--accent-color);
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -495,8 +444,7 @@ button { font: inherit; }
   height: 44px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: var(--brand-gradient);
-  box-shadow: var(--shadow-brand);
+  background: var(--accent-color);
   color: #fff;
   font-size: 16px;
   font-weight: 600;
@@ -558,13 +506,13 @@ button { font: inherit; }
   padding: 0 10px;
   border-radius: 8px;
   font-size: 13.5px;
-  color: var(--color-error);
+  color: var(--ant-color-error);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .wb-user-panel-logout:hover {
-  background: var(--color-error-bg);
+  background: var(--ant-color-error-bg, rgba(255, 77, 79, 0.08));
 }
 
 .wb-user-panel-version {
@@ -660,10 +608,9 @@ button { font: inherit; }
 }
 
 .wb-chip:hover {
-  border-color: var(--brand-primary);
-  color: var(--brand-primary-text);
-  box-shadow: var(--shadow-brand);
-  transform: translateY(-1px);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  box-shadow: 0 2px 8px rgba(0, 194, 154, 0.12);
 }
 
 .wb-chip:active {
@@ -810,7 +757,7 @@ button { font: inherit; }
 .device-header-actions { flex-wrap: wrap; justify-content: flex-end; }
 .device-updated-at { color: var(--muted-color); font-size: 12px; white-space: nowrap; }
 .monitoring-state { display: inline-flex; align-items: center; gap: 7px; color: var(--muted-color); font-size: 13px; }
-.monitoring-state .status-dot { background: var(--status-online); box-shadow: 0 0 0 4px var(--brand-soft); }
+.monitoring-state .status-dot { background: #35d399; box-shadow: 0 0 0 4px rgba(53,211,153,.12); }
 .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
 .device-group-section { min-width: 0; margin: 2px 0 14px; }
 .device-group-title { padding: 0 0 6px; color: var(--muted-color); font-size: 12px; line-height: 1.4; }
@@ -847,12 +794,11 @@ button { font: inherit; }
 .device-toolbar > .ant-input-affix-wrapper { width: min(300px, 100%); border-color: var(--border-color); background: var(--panel-bg); }
 .device-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .wb-app.is-sidebar-collapsed .device-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.device-monitor-card { min-width: 0; overflow: hidden; border-color: var(--border-color); border-left: 3px solid var(--status-online); background: var(--panel-bg); }
-.device-monitor-card.status-online { border-left-color: var(--status-online); }
-.device-monitor-card.status-created, .device-monitor-card.status-connecting { border-left-color: var(--status-connecting); }
-.device-monitor-card.status-degraded { border-left-color: var(--status-degraded); }
-.device-monitor-card.status-offline { border-left-color: var(--status-offline); }
-.device-monitor-card.status-revoked { border-left-color: var(--status-revoked); }
+.device-monitor-card { min-width: 0; overflow: hidden; border-color: var(--border-color); border-left: 3px solid var(--accent-color); background: var(--panel-bg); }
+.device-monitor-card.status-created, .device-monitor-card.status-connecting { border-left-color: #fbbf24; }
+.device-monitor-card.status-degraded { border-left-color: #f97316; }
+.device-monitor-card.status-offline { border-left-color: #64748b; }
+.device-monitor-card.status-revoked { border-left-color: #ef4444; }
 .device-monitor-card .ant-card-body { min-width: 0; padding: 16px; }
 .device-card-head { display: flex; min-width: 0; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .device-card-head.is-editing { display: block; }
@@ -861,14 +807,14 @@ button { font: inherit; }
 .device-card-heading { min-width: 0; flex: 1; }
 .device-name-text { display: block; min-width: 0; overflow: hidden; color: var(--text-color); font-size: 16px; font-weight: 600; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: color .15s ease; }
 .device-name-text:hover, .device-name-text:focus-visible, .device-model-name:hover, .device-model-name:focus-visible { color: var(--accent-color); text-decoration: underline; outline: none; }
-.device-name-text.is-copied, .device-model-name.is-copied { color: var(--color-success); }
+.device-name-text.is-copied, .device-model-name.is-copied { color: #16a34a; }
 .device-card-status-line { display: flex; min-width: 0; align-items: center; gap: 7px; margin-top: 6px; color: var(--muted-color); font-size: 12px; }
 .device-card-status-line .ant-tag { flex: 0 0 auto; margin: 0; line-height: 20px; }
 .device-card-status-line > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .device-card-actions { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 2px; }
 .device-card-actions .ant-btn, .device-name-editor .ant-btn { width: 32px; min-width: 32px; height: 32px; padding: 0; color: var(--muted-color); }
 .device-card-actions .ant-btn:hover { color: var(--text-color); background: var(--hover-bg); }
-.device-card-actions .ant-btn.is-success { color: var(--color-success); }
+.device-card-actions .ant-btn.is-success { color: #16a34a; }
 .device-name-editor { display: flex; min-width: 0; width: 100%; align-items: center; gap: 8px; }
 .device-name-editor .ant-input { min-width: 0; flex: 1; height: 36px; font-weight: 500; }
 .device-name-editor .ant-btn-primary { color: #fff; }

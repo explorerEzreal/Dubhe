@@ -393,7 +393,7 @@ export function OverviewCards({ agents }: { agents: AgentSummary[] }) {
       <Card title='状态分布' className='device-chart-card'>
         <ReactECharts
           option={statusOption}
-          style={{ height: 130 }}
+          style={{ height: 112 }}
           opts={{ renderer: 'svg' }}
         />
         <div className='chart-legend'>
@@ -413,7 +413,7 @@ export function OverviewCards({ agents }: { agents: AgentSummary[] }) {
       <Card title='平均资源占用' className='device-chart-card'>
         <ReactECharts
           option={resourceOption}
-          style={{ height: 130 }}
+          style={{ height: 112 }}
           opts={{ renderer: 'svg' }}
         />
         <div className='resource-labels'>
@@ -432,7 +432,7 @@ export function OverviewCards({ agents }: { agents: AgentSummary[] }) {
         <div className='network-empty'>暂无网络历史数据</div>
         <ReactECharts
           option={trendOption}
-          style={{ height: 78 }}
+          style={{ height: 70 }}
           opts={{ renderer: 'svg' }}
         />
       </Card>
@@ -723,6 +723,7 @@ function ResourceBar({
   label: string;
   value: number | null;
 }) {
+  const chart = useChartTheme();
   return (
     <div className='device-resource-item'>
       <div className='device-resource-head'>
@@ -733,9 +734,13 @@ function ResourceBar({
         percent={value ?? 0}
         showInfo={false}
         strokeColor={
-          value === null ? '#64748b' : value > 80 ? '#fb7185' : '#48c8bd'
+          value === null
+            ? chart.status.neutral
+            : value > 80
+              ? chart.error
+              : chart.status.online
         }
-        trailColor='var(--device-track)'
+        trailColor={chart.track}
       />
     </div>
   );
