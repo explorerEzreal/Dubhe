@@ -6,11 +6,15 @@ export const appThemeColors = {
   light: {
     primary: '#00c29a',
     sidebar: '#f0f0f0',
+    sidebarBackground: '#ffffff',
+    contentBackground: 'linear-gradient(135deg, #f5fffd 0%, #f7fbff 52%, #ffffff 100%)',
     deviceTrack: '#e2e8f0',
   },
   dark: {
     primary: '#34d399',
     sidebar: '#202020',
+    sidebarBackground: '#202020',
+    contentBackground: 'linear-gradient(135deg, #172b35 0%, #182332 52%, #171b26 100%)',
     deviceTrack: '#202b3a',
   },
 } as const;

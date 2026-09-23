@@ -23,6 +23,8 @@ function ThemeSync() {
     const colors = appThemeColors[mode];
     root.style.setProperty('--sidebar-bg', colors.sidebar);
     root.style.setProperty('--content-bg', token.colorBgLayout);
+    root.style.setProperty('--app-sidebar-background', colors.sidebarBackground);
+    root.style.setProperty('--app-content-background', colors.contentBackground);
     root.style.setProperty('--panel-bg', token.colorBgElevated);
     root.style.setProperty('--text-color', token.colorText);
     root.style.setProperty('--menu-color', token.colorTextSecondary);
