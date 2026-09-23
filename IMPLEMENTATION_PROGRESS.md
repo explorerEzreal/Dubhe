@@ -94,3 +94,13 @@
 - 统计：`inference_requests` 新增 endpoint、请求/响应字节数、上游状态码、usage 可用性、usage 来源和上游延迟；Token 缺失保留为空，不再用 Cloud 侧 0 伪造；监控请求明细和 CSV 展示端点、字节与上游状态。
 - 验证：`pnpm test`、`pnpm build`、`pnpm lint`、`pnpm contracts:check` 通过；三份 Agent 协议 schema 已 JSON 解析并通过两次 `diff -q`。
 - 待验收：真实本地 `/v1/chat/completions` 与 `/v1/responses` 的非流式/流式原始响应、上游 4xx/5xx、客户端取消、Agent 断线恢复，以及 PostgreSQL 新迁移在目标环境的连续幂等执行。
+
+## Web 使用记录公共组件重构（2026-09-23）
+
+- 状态：代码实现完成，浏览器视觉和真实数据交互验收待执行。
+- 变更：新增公共页头、时间范围控件、仪表盘风格指标卡网格、使用记录筛选器、历史记录表格和查询组合组件；仪表盘与使用记录页统一使用 Cloud `UsageRecord` 数据；删除旧仪表盘最近调用组件、使用记录表格/筛选器及 feature 层重复组件。
+- 验证：`pnpm --config.verify-deps-before-run=warn --dir web lint`、`pnpm --config.verify-deps-before-run=warn --dir web build`、`git diff --check` 通过。
+- 待验收：真实浏览器下的仪表盘/使用记录浅色与深色主题、窄屏表格横向滚动、筛选分页和空态视觉。
+- 补充：使用记录汇总、列表和 facets 已启用 15 秒轮询；时间范围控件支持可选刷新按钮，使用记录刷新会并行重载页面全部 usage 查询并更新 `generatedAt`。
+- 补充：公共 `DateRangeControl` 已内置可配置时间粒度、面板背景和右对齐刷新按钮；仪表盘改用公共粒度控件，使用记录页在登录态浏览器中完成控件布局检查。
+- 补充：仪表盘时间范围文案、粒度和日期控件样式已全部收归公共 `DateRangeControl`，`DashboardToolbar.less` 仅保留工具栏布局和数据点提示样式；5173 登录态仪表盘视觉检查通过。

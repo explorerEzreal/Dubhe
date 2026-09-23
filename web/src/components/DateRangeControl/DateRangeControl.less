@@ -1,0 +1,46 @@
+.common-date-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--panel-bg);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.common-date-range > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted-color);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.common-date-range .ant-segmented {
+  padding: 3px;
+  background: var(--content-bg);
+  border: 1px solid var(--border-color);
+}
+.common-date-range-granularity-label {
+  font-weight: 600;
+}
+.common-date-range-refresh {
+  height: 32px;
+  margin-left: auto;
+  border-radius: 10px;
+}
+@media (max-width: 680px) {
+  .common-date-range {
+    width: 100%;
+  }
+  .common-date-range .ant-segmented {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .common-date-range-refresh {
+    margin-left: auto;
+  }
+}

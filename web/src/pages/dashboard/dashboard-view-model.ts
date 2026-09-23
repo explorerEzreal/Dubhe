@@ -1,8 +1,7 @@
-import type { MonitoringData, UsageRecord } from '../../api/usage-api';
+import type { MonitoringData } from '../../api/usage-api';
 
 export type DashboardTrend = { date: string; tokens: number; calls: number; errorRate: number };
 export type DashboardDistribution = { id: string; name: string; value: number; calls: number };
-export type DashboardRequest = { id: string; time: string; user: string; group: string; model: string; device: string; status: 'success' | 'warning' | 'error'; latency: number | null; tokens: number };
 export type DashboardViewModel = {
   generatedAt: string;
   granularity: 'hour' | 'day';
@@ -40,19 +39,5 @@ export function toDashboardViewModel(data: MonitoringData): DashboardViewModel {
       health: { todayTokens: number(Number(data.todayOverview.totalTokens ?? 0)), activeUsers: String(overview.activeUsers), activeKeys: String(overview.activeApiKeys), p95: `${number(Number(overview.p95LatencyMs ?? 0))} ms`, lastCall: overview.lastRequestAt ? new Date(overview.lastRequestAt).toLocaleString() : '—', inputTokens: number(input), outputTokens: number(output), inputRatio, errorRate: Number(overview.errorRate ?? 0) },
     distributions: { models: distribution(data.models), groups: distribution(data.groups), devices: distribution(devices) },
     quality: { missingTokens: Number(data.dataQuality.missingTokenCalls ?? 0), ungrouped: `${Number(data.dataQuality.ungroupedCalls ?? 0).toLocaleString()}`, truncated: data.dataQuality.truncated },
-  };
-}
-
-export function toDashboardRequest(record: UsageRecord): DashboardRequest {
-  return {
-    id: record.id || record.requestId,
-    time: new Date(record.createdAt).toLocaleTimeString(),
-    user: record.userName ?? '—',
-    group: record.groupName || '未分组',
-    model: record.modelName || '未知模型',
-    device: record.deviceName || '未知设备',
-    status: record.status === 'completed' ? 'success' : record.status === 'failed' ? 'error' : 'warning',
-    latency: record.durationMs,
-    tokens: Number(record.totalTokens ?? 0),
   };
 }
