@@ -23,7 +23,6 @@ export function UsageRecordExplorer({
   onReset,
   onRefresh,
   onPageChange,
-  onViewAll,
   title,
   description,
 }: {
@@ -43,7 +42,6 @@ export function UsageRecordExplorer({
   onReset?: () => void;
   onRefresh?: () => void;
   onPageChange?: (page: number, pageSize: number) => void;
-  onViewAll?: () => void;
   title?: ReactNode;
   description?: ReactNode;
 }): JSX.Element {
@@ -72,7 +70,6 @@ export function UsageRecordExplorer({
         onRetry={onRetry}
         onReset={onReset}
         onPageChange={onPageChange}
-        onViewAll={onViewAll}
         title={title}
         description={description}
       />

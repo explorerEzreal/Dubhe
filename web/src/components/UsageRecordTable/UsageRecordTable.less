@@ -1,19 +1,41 @@
-.usage-record-table-card { border: 1px solid var(--border-color); border-radius: 12px; background: var(--panel-bg); box-shadow: 0 1px 2px rgba(16,24,40,.05); overflow: hidden; }
-.usage-record-table-card .ant-card-body { padding: 0; }
-.usage-record-card-title { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
-.usage-record-card-title svg { color: var(--accent-color); }
-.usage-record-card-title small { color: var(--muted-color); font-size: 12px; font-weight: 400; }
-.usage-record-view-all { border: 0; background: transparent; color: var(--accent-color); font: inherit; font-size: 12px; cursor: pointer; }
-.usage-record-description { padding: 9px 12px; border-bottom: 1px solid var(--border-color); color: var(--muted-color); font-size: 12px; }
-.usage-record-table-wrap { overflow-x: auto; }
-.usage-record-table { width: 100%; min-width: 880px; border-collapse: collapse; font-size: 13px; }
-.usage-record-table th { padding: 10px 16px; border-bottom: 1px solid var(--border-color); background: var(--content-bg); color: var(--muted-color); font-size: 12px; font-weight: 500; text-align: left; white-space: nowrap; }
-.usage-record-table td { max-width: 220px; padding: 10px 16px; overflow: hidden; border-bottom: 1px solid var(--border-color); text-overflow: ellipsis; white-space: nowrap; }
-.usage-record-table tbody tr:hover { background: var(--content-bg); }
-.usage-record-strong { color: var(--text-color); font-weight: 550; }
-.usage-record-off { margin-left: 6px; padding: 0 6px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--button-bg); color: var(--muted-color); font-size: 11px; }
-.usage-record-empty { padding: 14px 12px; }
-.usage-record-foot, .usage-record-pagination { display: flex; justify-content: space-between; gap: 12px; padding: 10px 16px; color: var(--muted-color); font-size: 12px; }
-.usage-record-pagination { align-items: center; border-top: 1px solid var(--border-color); }
-.usage-record-pagination .ant-pagination { margin: 0; }
-@media (max-width: 768px) { .usage-record-table th, .usage-record-table td { padding-right: 10px; padding-left: 10px; } }
+.usage-record-table-title-text {
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+}
+.usage-record-table-description {
+  color: var(--muted-color);
+  font-size: 12px;
+}
+.usage-record-strong {
+  color: var(--text-color);
+  font-weight: 550;
+}
+.usage-record-off {
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--button-bg);
+  color: var(--muted-color);
+  font-size: 11px;
+}
+.usage-record-empty {
+  padding: 14px 12px;
+}
+.usage-record-foot,
+.usage-record-pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  color: var(--muted-color);
+  font-size: 12px;
+}
+.usage-record-pagination {
+  align-items: center;
+}
+.usage-record-pagination .ant-pagination {
+  margin: 0;
+}

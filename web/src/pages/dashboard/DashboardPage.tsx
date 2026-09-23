@@ -73,7 +73,7 @@ export function DashboardPage(): JSX.Element {
     { poll: true },
   );
   const records = useUsageRecordsQuery(
-    { ...state.query, page: 1, pageSize: 20, includeFacets: false },
+    { ...state.query, page: 1, pageSize: 9, includeFacets: false },
     { poll: true },
   );
   const data = dashboard.data
@@ -163,13 +163,12 @@ export function DashboardPage(): JSX.Element {
           <UsageRecordExplorer
             mode='dashboard'
             items={requests}
-            truncated={records.data?.items.length === 20}
+            truncated={records.data?.items.length === 9}
             loading={records.loading}
             error={records.error}
             onRetry={() => void records.reload()}
-            onViewAll={() => {
-              window.location.assign('/usage-records');
-            }}
+            title='最近使用'
+            description='仅展示最新 9 条'
           />
           <DataQualityBar quality={data.quality} />
           {!data.trend.length && !requests.length && (

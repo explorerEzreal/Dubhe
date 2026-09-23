@@ -160,7 +160,8 @@ export function UsageRecordsPage(): JSX.Element {
         onRetry={() => void records.reload()}
         onReset={resetFilters}
         onPageChange={updatePage}
-        title='请求明细'
+        title='使用记录'
+        description='用户历史记录'
       />
     </section>
   );
