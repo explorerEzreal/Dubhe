@@ -3,6 +3,7 @@ import { Alert, Button, Form, Input, Typography } from 'antd';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth-api';
 import { useAuthStore } from '../../state';
+import './LoginPage.less';
 
 type LoginForm = { email: string; password: string };
 type LoginLocationState = { from?: string; success?: string };

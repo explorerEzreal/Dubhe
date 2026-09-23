@@ -1,0 +1,14 @@
+.brand-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--accent-color); color: var(--ant-color-white, #fff); font-weight: 800; }
+.auth-overlay { position: relative; display: grid; place-items: center; min-height: 100vh; overflow: hidden; padding: 24px; background: var(--surface-page); }
+.auth-panel { position: relative; z-index: 1; width: min(440px, 100%); padding: 36px; border: 1px solid var(--border-default); border-radius: var(--radius-card); background: var(--surface-elevated); box-shadow: var(--shadow-elevated); }
+.auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 36px; }
+.auth-brand h2, .auth-heading h3 { margin: 0; }
+.auth-heading { margin-bottom: 22px; }
+.auth-heading p { margin-bottom: 0; }
+.auth-error { margin-bottom: 16px; }
+.auth-switch { margin: 18px 0 0; text-align: center; }
+.auth-switch-button { padding: 0; border: 0; background: transparent; color: var(--accent-color); cursor: pointer; }
+.auth-decoration { position: absolute; width: 280px; height: 280px; border-radius: 50%; background: color-mix(in srgb, var(--accent-color) 13%, transparent); filter: blur(2px); }
+.auth-decoration-one { top: -120px; right: -80px; }
+.auth-decoration-two { bottom: -160px; left: -100px; }
+@media (max-width: 760px) { .auth-panel { padding: 26px 22px; } }

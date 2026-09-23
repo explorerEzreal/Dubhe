@@ -1,7 +1,8 @@
 import { CloseOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons';
-import { Button, DatePicker, Segmented, Select } from 'antd';
+import { Button, Select } from 'antd';
 import type { Dayjs } from 'dayjs';
 import type { UsageRecordFacets } from '../../api/usage-api';
+import { DateRangeControl } from '../../features/usage';
 import { statusMeta, type RangeKey, type RecordFilters } from './record-utils';
 
 type Props = {
@@ -33,22 +34,7 @@ export function UsageRecordFilters({
   return (
     <div className="ur-toolbar">
       <div className="ur-toolbar-row">
-        <Segmented
-          value={rangeKey}
-          onChange={(value) => onRangeKeyChange(value as RangeKey)}
-          options={[
-            { label: '今天', value: 'today' },
-            { label: '近 7 天', value: '7d' },
-            { label: '近 30 天', value: '30d' },
-            { label: '自定义', value: 'custom' },
-          ]}
-        />
-        <DatePicker.RangePicker
-          value={customRange}
-          allowClear={false}
-          disabled={rangeKey !== 'custom'}
-          onChange={(value) => { if (value?.[0] && value?.[1]) onCustomRangeChange([value[0], value[1]]); }}
-        />
+        <DateRangeControl value={rangeKey} customRange={customRange} onChange={onRangeKeyChange} onCustomChange={onCustomRangeChange} />
         <span className="ur-spacer" />
         <Button icon={<ReloadOutlined />} loading={loading} onClick={onRefresh}>刷新</Button>
       </div>

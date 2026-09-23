@@ -3,7 +3,7 @@ import { App, Button, Modal, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { keyApi, type ApiKeyCreateResult } from '../../api/key-api';
 import { groupApi } from '../../api/group-api';
-import { usageApi } from '../../api/usage-api';
+import { toMonitoringData, usageApi } from '../../api/usage-api';
 import { config } from '../../config/config';
 import { REQUEST_ERROR_MESSAGE } from '../../constants';
 import { useAsyncList } from '../../hooks';
@@ -19,17 +19,17 @@ export function CallerDashboardPage() {
       groupApi.listChannels(),
       groupApi.listChannelModels(),
       keyApi.list(),
-      usageApi.analytics(),
-      usageApi.analytics('caller', dayjs().subtract(30, 'day').startOf('day').toISOString(), dayjs().endOf('day').toISOString()),
+      usageApi.analytics({}),
+      usageApi.analytics({ from: dayjs().subtract(30, 'day').startOf('day').toISOString(), to: dayjs().endOf('day').toISOString(), granularity: 'day' }),
     ]);
-    return { channels, channelModels, keys, usage, monitoring };
+    return { channels, channelModels, keys, usage: toMonitoringData(usage), monitoring: toMonitoringData(monitoring) };
   }, []);
   const dashboard = useAsyncList(loadData, { poll: true });
   const channels = dashboard.data?.channels ?? [];
   const channelModels = dashboard.data?.channelModels ?? [];
   const keys = dashboard.data?.keys ?? [];
   const usage = dashboard.data?.usage;
-  const apiKeyUsage = new Map((dashboard.data?.monitoring.apiKeys ?? []).map((item) => [item.id, item]));
+  const apiKeyUsage = new Map((dashboard.data?.monitoring.apiKeys ?? []).map((item) => [item.id, { totalCalls: item.totalCalls, totalTokens: Number(item.totalTokens ?? 0) }]));
   const [keyModalOpen, setKeyModalOpen] = useState(false);
   const [createdKey, setCreatedKey] = useState<ApiKeyCreateResult | null>(null);
   const [creating, setCreating] = useState(false);

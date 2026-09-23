@@ -1,17 +1,16 @@
-import { Typography } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import { Button, Typography } from 'antd';
 import './DashboardHeader.less';
 
 export function DashboardHeader({
   generatedAt,
-  loading: _loading,
-  onRefresh: _onRefresh,
+  loading,
+  onRefresh,
 }: {
   generatedAt: string;
   loading: boolean;
   onRefresh: () => void;
 }): JSX.Element {
-  void _loading;
-  void _onRefresh;
   return (
     <header className='design-dashboard-head'>
       <div>
@@ -26,6 +25,7 @@ export function DashboardHeader({
           <span>每 15 秒自动刷新</span>
         </div>
       </div>
+      <Button icon={<ReloadOutlined />} loading={loading} onClick={onRefresh}>刷新</Button>
     </header>
   );
 }

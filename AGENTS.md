@@ -40,3 +40,4 @@ pnpm --dir cloud db:migrate
 - `docs/architecture.md`：架构、路由、协议、数据表速查
 - `agent/AGENT_OPERATIONS.md`：Agent 普通用户操作
 - `cloud/docs/deployment.md`：部署和数据库运维
+- `web/AGENTS.md`：Web 样式分层、主题 token 和图表主题约束

@@ -22,7 +22,7 @@ import {
   DeploymentCommandModal,
 } from '../deployer-dashboard/components';
 import { shellQuote } from '../../utils/format';
-import { usageApi } from '../../api/usage-api';
+import { toMonitoringData, usageApi } from '../../api/usage-api';
 import {
   DeviceMonitorCard,
   GroupRail,
@@ -30,6 +30,7 @@ import {
   StatusFilters,
   type DeviceStatusFilter,
 } from './monitor-components';
+import './DeviceAgentsPage.less';
 
 export function DeviceAgentsPage() {
   const { message } = App.useApp();
@@ -39,16 +40,16 @@ export function DeviceAgentsPage() {
         agentApi.list(),
         modelApi.list(),
         groupApi.list(),
-        usageApi.analytics('deployer'),
+        usageApi.analytics({}),
       ]);
-      return { agents, models, groups, monitoring };
+      return { agents, models, groups, monitoring: toMonitoringData(monitoring) };
     },
     { poll: true },
   );
   const agents = dashboard.data?.agents ?? [];
   const models = dashboard.data?.models ?? [];
   const groups = dashboard.data?.groups ?? [];
-  const agentUsage = new Map((dashboard.data?.monitoring.agents ?? []).map((item) => [item.id, item]));
+  const agentUsage = new Map((dashboard.data?.monitoring.agents ?? []).map((item) => [item.id, { totalCalls: item.totalCalls, totalTokens: Number(item.totalTokens ?? 0) }]));
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [selectedGroupAgentIds, setSelectedGroupAgentIds] = useState<
     string[] | null

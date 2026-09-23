@@ -4,6 +4,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import type { ColumnsType } from 'antd/es/table';
 import type { MonitoringData } from '../../api/usage-api';
+import { useChartTheme } from '../../hooks/useChartTheme';
 
 interface UsageMonitoringProps {
   data: MonitoringData;
@@ -21,10 +22,19 @@ function downloadCsv(data: MonitoringData): void {
 }
 
 export function UsageMonitoring({ data, showUser }: UsageMonitoringProps) {
+  const chart = useChartTheme();
   const [status, setStatus] = useState('all');
   const [group, setGroup] = useState('all');
   const [model, setModel] = useState('all');
   const requests = useMemo(() => data.requests.filter((item) => (status === 'all' || item.status === status) && (group === 'all' || item.groupName === group) && (model === 'all' || item.modelName === model)), [data.requests, group, model, status]);
+  const chartOption = {
+    tooltip: { trigger: 'axis', backgroundColor: chart.tooltipBg, borderColor: chart.tooltipBorder, textStyle: { color: chart.tooltipText } },
+    legend: { data: ['Token', '调用次数'], textStyle: { color: chart.text } },
+    grid: { left: 48, right: 48, bottom: 32, top: 48 },
+    xAxis: { type: 'category', data: data.trend.map((item) => new Date(item.date).toLocaleDateString()), axisLabel: { color: chart.axisLabel }, axisLine: { lineStyle: { color: chart.axisLine } } },
+    yAxis: [{ type: 'value', name: 'Token', axisLabel: { color: chart.axisLabel }, splitLine: { lineStyle: { color: chart.splitLine } } }, { type: 'value', name: '调用次数', axisLabel: { color: chart.axisLabel }, splitLine: { show: false } }],
+    series: [{ name: 'Token', type: 'line', smooth: true, data: data.trend.map((item) => item.totalTokens), itemStyle: { color: chart.palette[0] } }, { name: '调用次数', type: 'bar', yAxisIndex: 1, data: data.trend.map((item) => item.totalCalls), itemStyle: { color: chart.palette[1] } }],
+  };
   const columns: ColumnsType<MonitoringData['requests'][number]> = [
     { title: '时间', dataIndex: 'startedAt', render: (value: string) => new Date(value).toLocaleString() },
     ...(showUser ? [{ title: '用户', dataIndex: 'email' }] : []),
@@ -32,14 +42,13 @@ export function UsageMonitoring({ data, showUser }: UsageMonitoringProps) {
     { title: '输入', dataIndex: 'inputTokens', render: (value: number | null) => value ?? '缺失' }, { title: '输出', dataIndex: 'outputTokens', render: (value: number | null) => value ?? '缺失' }, { title: '总 Token', dataIndex: 'totalTokens' },
     { title: '端点', dataIndex: 'endpoint', render: (value: string | null | undefined) => value ?? '—' }, { title: '请求/响应', key: 'bytes', render: (_: unknown, item) => `${item.requestBytes ?? 0} / ${item.responseBytes ?? 0} B` }, { title: '延迟', dataIndex: 'latencyMs', render: (value: number | null) => value == null ? '—' : `${value} ms` }, { title: '状态', dataIndex: 'status', render: (value: string) => <Tag color={value === 'completed' ? 'green' : 'red'}>{value}</Tag> },
   ];
-  const chartOption = { tooltip: { trigger: 'axis' }, legend: { data: ['Token', '调用次数'] }, grid: { left: 48, right: 48, bottom: 32, top: 48 }, xAxis: { type: 'category', data: data.trend.map((item) => new Date(item.date).toLocaleDateString()) }, yAxis: [{ type: 'value', name: 'Token' }, { type: 'value', name: '调用次数' }], series: [{ name: 'Token', type: 'line', smooth: true, data: data.trend.map((item) => item.totalTokens) }, { name: '调用次数', type: 'bar', yAxisIndex: 1, data: data.trend.map((item) => item.totalCalls) }] };
   const recent = Number(data.trend[data.trend.length - 1]?.totalTokens ?? 0);
   const baseline = data.trend.slice(-8, -1).reduce((sum, item) => sum + Number(item.totalTokens), 0) / Math.max(1, data.trend.slice(-8, -1).length);
   const topUser = data.users[0];
   const stale = Date.now() - new Date(data.generatedAt).getTime() > 5 * 60 * 1000;
   return <>
     {stale && <Alert type='warning' showIcon title='监控数据可能已过期' description={`最近更新时间：${new Date(data.generatedAt).toLocaleString()}`} style={{ marginBottom: 16 }} />}
-    {data.overview.missingTokenCalls > 0 && <Alert type='warning' showIcon title={`${data.overview.missingTokenCalls} 次调用缺少 Token 数据`} description='模型服务未返回完整 usage，相关请求仍计入调用次数，但 Token 可能偏低。' style={{ marginBottom: 16 }} />}
+    {Number(data.overview.missingTokenCalls ?? 0) > 0 && <Alert type='warning' showIcon title={`${data.overview.missingTokenCalls ?? 0} 次调用缺少 Token 数据`} description='模型服务未返回完整 usage，相关请求仍计入调用次数，但 Token 可能偏低。' style={{ marginBottom: 16 }} />}
     {baseline > 0 && recent > baseline * 2 && <Alert type='warning' showIcon title='Token 使用量明显上升' description={`最近一天用量是近 7 天日均的 ${(recent / baseline).toFixed(1)} 倍。`} style={{ marginBottom: 16 }} />}
     {data.overview.errorRate >= 0.1 && <Alert type='error' showIcon title='错误率偏高' description={`当前时间范围错误率为 ${(data.overview.errorRate * 100).toFixed(1)}%。`} style={{ marginBottom: 16 }} />}
     {showUser && topUser && Number(data.overview.totalTokens) > 0 && Number(topUser.totalTokens) / Number(data.overview.totalTokens) >= 0.5 && <Alert type='info' showIcon title='单用户用量集中' description={`${topUser.email} 占总 Token 的 ${(Number(topUser.totalTokens) / Number(data.overview.totalTokens) * 100).toFixed(1)}%。`} style={{ marginBottom: 16 }} />}

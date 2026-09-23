@@ -6,6 +6,7 @@ import { useAppTheme } from '../app/providers';
 import { useAuthStore } from '../state';
 import { AccountSecurityModal } from './AccountSecurityModal';
 import { menuGroups, type IconName } from './app-shell-config';
+import './AppShell.less';
 
 const { Sider, Content } = Layout;
 

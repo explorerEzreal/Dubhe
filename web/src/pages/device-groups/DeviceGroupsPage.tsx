@@ -37,7 +37,8 @@ import {
   InviteTokenModal,
 } from '../deployer-dashboard/components';
 import { REQUEST_ERROR_MESSAGE } from '../../constants';
-import { usageApi } from '../../api/usage-api';
+import { toMonitoringData, usageApi } from '../../api/usage-api';
+import './DeviceGroupsPage.less';
 
 type GroupRow = GroupSummary & { key: string };
 
@@ -51,8 +52,8 @@ function statusLabel(status: string): { text: string; color: string } {
 export function DeviceGroupsPage() {
   const { message } = App.useApp();
   const dashboard = useAsyncList(async () => {
-    const [groups, agents, monitoring] = await Promise.all([groupApi.list(), agentApi.list(), usageApi.analytics('deployer')]);
-    return { groups, agents, monitoring };
+    const [groups, agents, monitoring] = await Promise.all([groupApi.list(), agentApi.list(), usageApi.analytics({})]);
+    return { groups, agents, monitoring: toMonitoringData(monitoring) };
   }, { poll: true });
   const groups = dashboard.data?.groups ?? [];
   const agents = dashboard.data?.agents ?? [];

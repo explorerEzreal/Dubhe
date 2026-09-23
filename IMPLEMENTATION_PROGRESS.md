@@ -45,6 +45,13 @@
 
 ## 下一步
 
+## Web 统一主题与样式分层（2026-09-22）
+
+- 状态：代码实现完成，已通过 Web lint/build；浏览器浅色/深色和多尺寸视觉验收待执行。
+- 变更：新增 `web/src/styles/theme.ts` 作为 Ant Design、CSS 语义变量和 ECharts 的主题来源；providers 同步统一 token；使用监控图表接入统一图表主题；认证、分组和设备监控样式迁移到所属页面 Less；工作台布局、菜单栏和共享页面基础样式从 `global.less` 迁移到 `components/AppShell.less`；新增 `web/AGENTS.md` 样式分层约束并在根约束中建立入口。
+- 验证：`pnpm --config.verify-deps-before-run=warn --dir web lint`、`pnpm --config.verify-deps-before-run=warn --dir web build` 通过。
+- 待验收：剩余历史页面样式仍需继续按组件边界细分，浏览器浅色/深色、窄屏布局和图表视觉需要真实页面检查。
+
 ### Cloud 流量查询与统一使用记录重构（2026-09-21）
 
 - 状态：代码实现完成，真实 PostgreSQL 数据规模、浏览器视觉和部署环境验收待执行。

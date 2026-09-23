@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { App as AntApp, ConfigProvider, theme as antTheme } from 'antd';
 import { THEME_STORAGE_KEY } from '../constants';
+import { appThemeColors, createAppTheme, type AppThemeMode } from '../styles/theme';
 
-type ThemeMode = 'light' | 'dark';
+type ThemeMode = AppThemeMode;
 type ThemeContextValue = { mode: ThemeMode; setTheme: (mode: ThemeMode) => void };
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
@@ -19,8 +20,8 @@ function ThemeSync() {
 
   useEffect(() => {
     const root = document.documentElement;
-    // 侧栏背景色不来自 antd token，手动按模式设置
-    root.style.setProperty('--sidebar-bg', mode === 'dark' ? '#202020' : '#f0f0f0');
+    const colors = appThemeColors[mode];
+    root.style.setProperty('--sidebar-bg', colors.sidebar);
     root.style.setProperty('--content-bg', token.colorBgLayout);
     root.style.setProperty('--panel-bg', token.colorBgElevated);
     root.style.setProperty('--text-color', token.colorText);
@@ -34,7 +35,20 @@ function ThemeSync() {
     root.style.setProperty('--border-color', token.colorBorderSecondary);
     root.style.setProperty('--accent-color', token.colorPrimary);
     root.style.setProperty('--focus-color', token.colorPrimary);
-    root.style.setProperty('--device-track', mode === 'dark' ? '#202b3a' : '#e2e8f0');
+    root.style.setProperty('--device-track', colors.deviceTrack);
+    root.style.setProperty('--text-primary', token.colorText);
+    root.style.setProperty('--text-secondary', token.colorTextSecondary);
+    root.style.setProperty('--text-muted', token.colorTextTertiary);
+    root.style.setProperty('--surface-page', token.colorBgLayout);
+    root.style.setProperty('--surface-panel', token.colorBgContainer);
+    root.style.setProperty('--surface-elevated', token.colorBgElevated);
+    root.style.setProperty('--border-default', token.colorBorder);
+    root.style.setProperty('--radius-card', `${token.borderRadiusLG}px`);
+    root.style.setProperty('--shadow-card', token.boxShadow);
+    root.style.setProperty('--shadow-elevated', token.boxShadowSecondary);
+    root.style.setProperty('--status-success', token.colorSuccess);
+    root.style.setProperty('--status-warning', token.colorWarning);
+    root.style.setProperty('--status-error', token.colorError);
   }, [token, mode]);
 
   return null;
@@ -51,14 +65,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeContext.Provider value={value}>
       <ConfigProvider
-        theme={{
-          algorithm: mode === 'dark' ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
-          token: {
-            colorPrimary: mode === 'dark' ? '#34d399' : '#00c29a',
-            borderRadius: 10,
-          },
-          cssVar: { prefix: 'ant', key: 'app-theme' },
-        }}
+        theme={{ ...createAppTheme(mode), cssVar: { prefix: 'ant', key: 'app-theme' } }}
       >
         <AntApp>
           <ThemeSync />
