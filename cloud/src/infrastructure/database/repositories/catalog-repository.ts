@@ -129,9 +129,10 @@ export class PgCatalogRepository implements CatalogRepository {
   }
 
   private accessClause(input: UsageRecordsQuery | UsageAnalyticsQuery, startIndex: number): { clause: string; params: unknown[]; next: number } {
-    const params: unknown[] = [input.userId];
-    const access = input.role === 'super_admin' ? 'TRUE' : '(ir.user_id=$1 OR ir.group_owner_id_snapshot=$1)';
-    let next = startIndex;
+    const isSuperAdmin = input.role === 'super_admin';
+    const params: unknown[] = isSuperAdmin ? [] : [input.userId];
+    const access = isSuperAdmin ? 'TRUE' : '(ir.user_id=$1 OR ir.group_owner_id_snapshot=$1)';
+    let next = isSuperAdmin ? 1 : startIndex;
     const conditions = [access];
     const add = (sql: string, value: unknown) => { params.push(value); conditions.push(sql.replace('?', `$${next}`)); next += 1; };
     if (input.from) add('ir.started_at >= ?', input.from);
