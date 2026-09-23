@@ -17,9 +17,9 @@ function Icon({ name }: { name: IconName }) {
     dashboard: 'M5 19V9 M12 19V5 M19 19v-7',
     logs: 'M6 4h12v16H6z M9 8h6 M9 12h6 M9 16h4',
     plus: 'M12 5v14 M5 12h14',
-    menu: 'M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z M8 4v16',
+    menu: 'M9 6 3 12l6 6 M3 12h11 M15 6l6 6-6 6 M21 12H10',
     appearance:
-      'M12 3a9 9 0 1 0 0 18h1.2a2.3 2.3 0 0 0 0-4.6H12a2 2 0 0 1 0-4h1.5A7.5 7.5 0 0 0 12 3z M7.5 8.5h.01 M6.5 13h.01 M10 6h.01',
+      'M12 3v2 M12 19v2 M3 12h2 M19 12h2 M5.64 5.64l1.42 1.42 M16.94 16.94l1.42 1.42 M18.36 5.64l-1.42 1.42 M7.06 16.94l-1.42 1.42 M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z',
     logout: 'M10 5H5v14h5 M14 8l4 4-4 4 M18 12H9',
     shield: 'M12 3 19 6v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z M9 12l2 2 4-4',
     sliders: 'M6 4v16 M12 4v16 M18 4v16 M4 8h4 M10 15h4 M16 10h4',
@@ -108,8 +108,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Layout className={`wb-app${collapsed ? ' is-sidebar-collapsed' : ''}`}>
       <Sider
-        width={320}
-        collapsedWidth={68}
+        width={272}
+        collapsedWidth={56}
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
@@ -193,7 +193,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
               <Tooltip title={mode === 'dark' ? '浅色模式' : '深色模式'}>
                 <Button
-                  className='wb-toolbar-btn'
+                  className='wb-toolbar-btn wb-theme-btn'
                   type='text'
                   icon={<Icon name='appearance' />}
                   onClick={() => setTheme(mode === 'dark' ? 'light' : 'dark')}
@@ -202,7 +202,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
               <Tooltip title={collapsed ? '展开侧栏' : '收起侧栏'}>
                 <Button
-                  className='wb-toolbar-btn'
+                  className='wb-toolbar-btn wb-collapse-btn'
                   type='text'
                   icon={<Icon name='menu' />}
                   onClick={() => setCollapsed(!collapsed)}

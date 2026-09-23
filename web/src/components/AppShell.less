@@ -18,7 +18,7 @@
   flex-shrink: 0;
   height: 100vh;
   background: var(--sidebar-bg);
-  padding: 16px 12px 12px;
+  padding: 12px 10px 10px;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -36,8 +36,16 @@
   padding-inline: 0;
 }
 
+.wb-sider.ant-layout-sider-collapsed {
+  padding-inline: 4px;
+}
+
 .wb-sider.ant-layout-sider-collapsed .wb-sider-toolbar {
   justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  gap: 6px;
 }
 
 .wb-logo {
@@ -126,21 +134,30 @@
 }
 
 .wb-nav {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .wb-nav-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
-  padding: 0 10px;
+  height: 34px;
+  padding: 0 8px;
   border-radius: 8px;
   color: var(--menu-color);
   font-size: 14px;
   cursor: pointer;
   user-select: none;
   transition: background-color 0.15s ease;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-section-title {
+  display: none;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-nav-item {
+  justify-content: center;
+  padding-inline: 0;
 }
 
 .wb-nav-item:hover {
@@ -296,15 +313,15 @@
 /* ===== 底部工具栏 ===== */
 .wb-sider-footer {
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--border-color);
 }
 
 .wb-sider-toolbar {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 4px;
+  gap: 2px;
+  padding: 0 2px;
 }
 
 /* 工具栏图标按钮（主题切换、折叠） */
@@ -319,9 +336,48 @@
   border-radius: 8px;
 }
 
+.wb-collapse-btn {
+  background: #1687c9 !important;
+  color: #fff !important;
+  border-left: 1px solid var(--border-color) !important;
+  border-radius: 0 8px 8px 0 !important;
+  margin-left: 2px;
+  padding-left: 6px !important;
+}
+
+.wb-theme-btn {
+  background: #f4b740 !important;
+  color: #4a2f00 !important;
+}
+
+.wb-collapse-btn:hover {
+  background: #0f6fa8 !important;
+  color: #fff !important;
+}
+
+.wb-theme-btn:hover {
+  background: #d99618 !important;
+  color: #2d1d00 !important;
+}
+
+.wb-toolbar-btn:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
 .wb-toolbar-btn.ant-btn.ant-btn-text:hover {
   color: var(--text-color) !important;
   background: var(--hover-bg) !important;
+}
+
+.wb-toolbar-btn.wb-collapse-btn.ant-btn.ant-btn-text:hover {
+  background: #0f6fa8 !important;
+  color: #fff !important;
+}
+
+.wb-toolbar-btn.wb-theme-btn.ant-btn.ant-btn-text:hover {
+  background: #d99618 !important;
+  color: #2d1d00 !important;
 }
 
 /* 用户头像 / 触发区 */
@@ -330,11 +386,53 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
-  flex: 0 1 auto;
-  padding: 8px 10px;
+  flex: 1 1 auto;
+  padding: 6px 8px;
   border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.15s ease;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-sider-toolbar {
+  gap: 6px;
+  padding-inline: 0;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-user-trigger {
+  order: 3;
+  flex: 0 0 auto;
+  width: 30px;
+  justify-content: center;
+  padding: 0;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-toolbar-btn.ant-btn.ant-btn-text {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  padding-inline: 0;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-collapse-btn {
+  order: 1;
+  margin-left: 0;
+  padding-left: 0 !important;
+  border-left: 0 !important;
+  border-radius: 8px !important;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-toolbar-btn:not(.wb-collapse-btn) {
+  order: 2;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-user-meta {
+  display: none;
+}
+
+.wb-sider.ant-layout-sider-collapsed .wb-user-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
 }
 
 .wb-user-trigger:hover {
@@ -697,4 +795,3 @@
   .dashboard-header { align-items: flex-start; flex-direction: column; }
   .auth-panel { padding: 26px 22px; }
 }
-
