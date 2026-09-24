@@ -188,7 +188,31 @@ export class PgGroupRepository implements GroupRepository {
                 (select count(*) from group_agents where group_id=g.id)::int as "agentCount",
                 (select count(distinct mi.model_id) from group_agents ga2
                    join model_instances mi on mi.agent_id=ga2.agent_id
-                  where ga2.group_id=g.id)::int as "modelCount"
+                  where ga2.group_id=g.id)::int as "modelCount",
+                case
+                  when (select count(*) from group_agents ga3 join agents a3 on a3.id=ga3.agent_id
+                        join model_instances mi3 on mi3.agent_id=a3.id
+                       where ga3.group_id=g.id and a3.status='online' and mi3.state='ready') > 0
+                   and (select count(*) from group_agents ga4 join model_instances mi4 on mi4.agent_id=ga4.agent_id
+                       where ga4.group_id=g.id) =
+                       (select count(*) from group_agents ga5 join agents a5 on a5.id=ga5.agent_id
+                        join model_instances mi5 on mi5.agent_id=a5.id
+                       where ga5.group_id=g.id and a5.status='online' and mi5.state='ready')
+                    then 'available'
+                  when (select count(*) from group_agents ga6 join agents a6 on a6.id=ga6.agent_id
+                        join model_instances mi6 on mi6.agent_id=a6.id
+                       where ga6.group_id=g.id and a6.status='online' and mi6.state='ready') > 0
+                    then 'partial'
+                  else 'offline'
+                end as status,
+                coalesce((select sum(ir.total_tokens) from inference_requests ir
+                   where ir.group_id=g.id and ir.user_id=a.user_id
+                     and ir.started_at >= current_date),0)::float as "todayTokens",
+                coalesce((select sum(ir.total_tokens) from inference_requests ir
+                   where ir.group_id=g.id and ir.user_id=a.user_id
+                     and ir.started_at >= current_date - interval '30 days'),0)::float as "last30dTokens",
+                (select max(ir.started_at) from inference_requests ir
+                   where ir.group_id=g.id and ir.user_id=a.user_id) as "lastActiveAt"
            from user_group_access a
            join groups g on g.id=a.group_id
           where a.user_id=$1

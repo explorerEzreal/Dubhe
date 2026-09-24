@@ -24,6 +24,10 @@ export interface ChannelSummary {
   channelDescription?: string | null;
   agentCount: number;
   modelCount: number;
+  status: 'available' | 'partial' | 'offline';
+  todayTokens: number;
+  last30dTokens: number;
+  lastActiveAt?: string | null;
 }
 
 export interface ChannelModels {

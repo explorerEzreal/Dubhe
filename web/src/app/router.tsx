@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell, AuthGate } from '../components';
 import { CallerDashboardPage } from '../pages/caller-dashboard/CallerDashboardPage';
+import { AvailableChannelsPage } from '../pages/available-channels';
 import { DeployerDashboardPage } from '../pages/deployer-dashboard/DeployerDashboardPage';
 import { DeviceAgentsPage } from '../pages/device-agents/DeviceAgentsPage';
 import { DeviceGroupsPage } from '../pages/device-groups/DeviceGroupsPage';
@@ -25,6 +26,7 @@ export function AppRouter() {
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/deployer" element={<AuthGate><AppShell><DeployerDashboardPage /></AppShell></AuthGate>} />
     <Route path="/caller" element={<AuthGate><AppShell><CallerDashboardPage /></AppShell></AuthGate>} />
+    <Route path="/caller/channels" element={<AuthGate><AppShell><AvailableChannelsPage /></AppShell></AuthGate>} />
     <Route path="/dashboard" element={<AuthGate><AppShell><DashboardPage /></AppShell></AuthGate>} />
     <Route path="/usage-records" element={<AuthGate><AppShell><UsageRecordsPage /></AppShell></AuthGate>} />
     <Route path="/device/groups" element={<AuthGate><AppShell><DeviceGroupsPage /></AppShell></AuthGate>} />

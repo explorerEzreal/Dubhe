@@ -13,15 +13,32 @@ type PageHeaderProps = {
   className?: string;
 };
 
-export function PageHeader({ title, subtitle, meta, loading = false, onRefresh, actions, className = '' }: PageHeaderProps): JSX.Element {
+export function PageHeader({
+  title,
+  subtitle,
+  meta,
+  loading = false,
+  onRefresh,
+  actions,
+  className = '',
+}: PageHeaderProps): JSX.Element {
   return (
     <header className={`common-page-head ${className}`.trim()}>
       <div>
         <Typography.Title level={1}>{title}</Typography.Title>
-        {subtitle ? <p className="common-page-subtitle">{subtitle}</p> : null}
-        {meta ? <div className="common-page-meta">{meta}</div> : null}
+        {subtitle ? <p className='common-page-subtitle'>{subtitle}</p> : null}
+        {meta ? <div className='common-page-meta'>{meta}</div> : null}
       </div>
-      {actions ?? (onRefresh ? <Button icon={<ReloadOutlined />} loading={loading} onClick={onRefresh}>刷新</Button> : null)}
+      {actions ??
+        (onRefresh ? (
+          <Button
+            icon={<ReloadOutlined />}
+            loading={loading}
+            onClick={onRefresh}
+          >
+            刷新
+          </Button>
+        ) : null)}
     </header>
   );
 }

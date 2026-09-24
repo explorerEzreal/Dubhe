@@ -1,0 +1,130 @@
+.available-channels-page {
+  min-width: 0;
+}
+
+.available-channels-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.available-channels-toolbar .ant-input-affix-wrapper {
+  width: 260px;
+}
+
+.available-channels-table-shell {
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-color, #fff);
+}
+
+.available-channels-table-shell .ant-table {
+  font-size: 13px;
+}
+
+.available-channels-table-shell .ant-table-thead > tr > th {
+  padding: 11px 14px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.available-channels-table-shell .ant-table-tbody > tr > td {
+  padding: 12px 14px;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.available-channels-table-shell .ant-typography {
+  font-size: 13px;
+}
+
+.available-channels-table-shell .ant-tag {
+  margin-inline-end: 0;
+  padding-inline: 7px;
+  font-size: 12px;
+  line-height: 21px;
+  border-radius: 5px;
+  white-space: normal;
+}
+
+.channel-token-usage {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.available-channels-table-shell .ant-table-cell-fix-right-first {
+  box-shadow: -10px 0 16px -16px rgba(26, 44, 61, 0.55);
+  border-inline-start: 1px solid var(--border-default);
+}
+
+.available-channels-table-shell
+  .ant-table-thead
+  > tr
+  > th.ant-table-cell-fix-right-first {
+  background: var(--surface-color, #fff);
+}
+
+.channel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.channel-action.ant-btn {
+  display: inline-flex;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--text-secondary);
+  line-height: 1.2;
+  border-radius: 4px;
+}
+
+.channel-action.ant-btn .anticon {
+  font-size: 12px;
+}
+
+.channel-action.ant-btn > span:last-child {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.channel-action.ant-btn:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+// .channel-action.ant-btn-dangerous,
+// .channel-action.ant-btn-dangerous:hover {
+//   color: var(--error-color, #c43d4b);
+// }
+
+@media (max-width: 760px) {
+  .available-channels-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .available-channels-toolbar .ant-space,
+  .available-channels-toolbar .ant-input-affix-wrapper {
+    width: 100%;
+  }
+
+  .available-channels-toolbar .ant-space {
+    justify-content: flex-start;
+  }
+
+  .available-channels-table-shell .ant-table {
+    min-width: 1010px;
+  }
+}
