@@ -189,16 +189,16 @@ export function AvailableChannelsPage() {
         <Typography.Text strong>{name}</Typography.Text>
       ),
     },
-    {
-      title: '描述',
-      dataIndex: 'channelDescription',
-      width: 320,
-      render: (description: string | null) => (
-        <Typography.Text type={description ? undefined : 'secondary'}>
-          {description || '暂无描述'}
-        </Typography.Text>
-      ),
-    },
+    // {
+    //   title: '描述',
+    //   dataIndex: 'channelDescription',
+    //   width: 320,
+    //   render: (description: string | null) => (
+    //     <Typography.Text type={description ? undefined : 'secondary'}>
+    //       {description || '暂无描述'}
+    //     </Typography.Text>
+    //   ),
+    // },
     {
       title: '可用模型',
       dataIndex: 'models',
