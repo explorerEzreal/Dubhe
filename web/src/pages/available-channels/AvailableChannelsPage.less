@@ -14,45 +14,6 @@
   width: 260px;
 }
 
-.available-channels-table-shell {
-  overflow: hidden;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--surface-color, #fff);
-}
-
-.available-channels-table-shell .ant-table {
-  font-size: 13px;
-}
-
-.available-channels-table-shell .ant-table-thead > tr > th {
-  padding: 11px 14px;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.available-channels-table-shell .ant-table-tbody > tr > td {
-  padding: 12px 14px;
-  color: var(--text-primary);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.available-channels-table-shell .ant-typography {
-  font-size: 13px;
-}
-
-.available-channels-table-shell .ant-tag {
-  margin-inline-end: 0;
-  padding-inline: 7px;
-  font-size: 12px;
-  line-height: 21px;
-  border-radius: 5px;
-  white-space: normal;
-}
-
 .channel-token-usage {
   display: flex;
   flex-direction: column;
@@ -60,54 +21,59 @@
   white-space: nowrap;
 }
 
-.available-channels-table-shell .ant-table-cell-fix-right-first {
-  box-shadow: -10px 0 16px -16px rgba(26, 44, 61, 0.55);
-  border-inline-start: 1px solid var(--border-default);
-}
-
-.available-channels-table-shell
-  .ant-table-thead
-  > tr
-  > th.ant-table-cell-fix-right-first {
-  background: var(--surface-color, #fff);
-}
-
 .channel-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  gap: clamp(4px, 4%, 12px);
 }
 
-.channel-action.ant-btn {
-  display: inline-flex;
-  height: 52px;
+.table-action-btn {
+  display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 3px;
+  min-width: 0;
+  padding: 6px 5px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
   color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
   line-height: 1.2;
-  border-radius: 4px;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 2px;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
 }
 
-.channel-action.ant-btn .anticon {
-  font-size: 12px;
+.table-action-btn:hover,
+.table-action-btn:focus-visible {
+  background: var(--hover-bg);
+  color: var(--accent-color);
+  outline: none;
 }
 
-.channel-action.ant-btn > span:last-child {
-  font-size: 12px;
+.table-action-btn-danger:hover,
+.table-action-btn-danger:focus-visible {
+  color: var(--error-color, #c43d4b);
+}
+
+.table-action-btn > .anticon {
+  font-size: 13px;
+}
+
+.table-action-btn > span {
+  line-height: 1;
   white-space: nowrap;
 }
 
-.channel-action.ant-btn:hover {
-  color: var(--text-primary);
-  background: var(--hover-bg);
+.table-action-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent-color);
 }
-
-// .channel-action.ant-btn-dangerous,
-// .channel-action.ant-btn-dangerous:hover {
-//   color: var(--error-color, #c43d4b);
-// }
 
 @media (max-width: 760px) {
   .available-channels-toolbar {
@@ -122,9 +88,5 @@
 
   .available-channels-toolbar .ant-space {
     justify-content: flex-start;
-  }
-
-  .available-channels-table-shell .ant-table {
-    min-width: 1010px;
   }
 }

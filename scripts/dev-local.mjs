@@ -71,10 +71,32 @@ function releasePort(port) {
   }
   try {
     const output = execFileSync('lsof', ['-tiTCP:' + port, '-sTCP:LISTEN'], { encoding: 'utf8' });
-    for (const pid of new Set(output.split(/\s+/).filter(Boolean))) {
+    const pids = new Set(output.split(/\s+/).filter(Boolean));
+    for (const pid of pids) {
       try {
         process.kill(Number(pid), 'SIGTERM');
       } catch { /* 进程已退出或命令不可用 */ }
+    }
+    // 等待旧进程退出，避免 SIGTERM 尚未完成时立刻重新监听同一端口。
+    const deadline = Date.now() + 2000;
+    while (Date.now() < deadline) {
+      try {
+        execFileSync('lsof', ['-tiTCP:' + port, '-sTCP:LISTEN'], { stdio: 'ignore' });
+      } catch {
+        return;
+      }
+      const remaining = deadline - Date.now();
+      if (remaining > 0) execFileSync('sleep', ['0.1']);
+    }
+    try {
+      const remainingPids = execFileSync('lsof', ['-tiTCP:' + port, '-sTCP:LISTEN'], { encoding: 'utf8' });
+      for (const pid of new Set(remainingPids.split(/\s+/).filter(Boolean))) {
+        try {
+          process.kill(Number(pid), 'SIGKILL');
+        } catch { /* 进程已退出或命令不可用 */ }
+      }
+    } catch {
+      // 端口已释放。
     }
   } catch {
     // lsof 在没有监听进程时返回非零状态。

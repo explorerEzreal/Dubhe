@@ -13,7 +13,6 @@ export const menuGroups = [
     { key: 'api-keys', label: 'API 密钥', icon: 'key' as IconName, path: '/caller' },
     { key: 'available-channels', label: '可用渠道', icon: 'group' as IconName, path: '/caller/channels' },
     { key: 'caller-statistics', label: '统计', icon: 'dashboard' as IconName },
-    { key: 'usage-records', label: '使用记录', icon: 'logs' as IconName },
   ]},
   { key: 'admin', label: '管理员', items: [
     { key: 'system-users', label: '系统用户', icon: 'key' as IconName, path: '/admin/users' },

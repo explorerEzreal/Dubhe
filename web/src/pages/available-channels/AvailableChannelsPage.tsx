@@ -18,7 +18,13 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { type ApiKeyCreateResult, keyApi } from '../../api/key-api';
 import {
   groupApi,
@@ -42,6 +48,7 @@ import {
 } from '../caller-dashboard/components';
 import './AvailableChannelsPage.less';
 import { BrandTag } from '../../components/BrandTag';
+import { TableActionBtn } from '../../components/TableActionBtn';
 
 type ChannelRow = ChannelSummary & {
   key: string;
@@ -65,6 +72,34 @@ function formatRelativeTime(
 function formatTokens(value: number): string {
   return Number(value ?? 0).toLocaleString();
 }
+
+// type TableActionBtnProps = {
+//   icon: ReactNode;
+//   label: string;
+//   ariaLabel?: string;
+//   danger?: boolean;
+//   onClick: () => void;
+// };
+
+// function TableActionBtn({
+//   icon,
+//   label,
+//   ariaLabel = label,
+//   danger = false,
+//   onClick,
+// }: TableActionBtnProps) {
+//   return (
+//     <button
+//       type='button'
+//       className={`table-action-btn${danger ? ' table-action-btn-danger' : ''}`}
+//       aria-label={ariaLabel}
+//       onClick={onClick}
+//     >
+//       {icon}
+//       <span>{label}</span>
+//     </button>
+//   );
+// }
 
 export function AvailableChannelsPage() {
   const { message } = App.useApp();
@@ -189,16 +224,6 @@ export function AvailableChannelsPage() {
         <Typography.Text strong>{name}</Typography.Text>
       ),
     },
-    // {
-    //   title: '描述',
-    //   dataIndex: 'channelDescription',
-    //   width: 320,
-    //   render: (description: string | null) => (
-    //     <Typography.Text type={description ? undefined : 'secondary'}>
-    //       {description || '暂无描述'}
-    //     </Typography.Text>
-    //   ),
-    // },
     {
       title: '可用模型',
       dataIndex: 'models',
@@ -267,42 +292,33 @@ export function AvailableChannelsPage() {
       title: '操作',
       key: 'actions',
       fixed: 'end',
-      width: 240,
+      width: 150,
       render: (_value, channel) => (
         <div className='channel-actions'>
           <Tooltip title='删除渠道'>
-            <Button
-              className='channel-action'
-              type='text'
+            <TableActionBtn
+              icon={<DeleteOutlined />}
+              label='删除'
+              ariaLabel='删除渠道'
               danger
-              aria-label='删除渠道'
               onClick={() => handleRemoveChannel(channel)}
-            >
-              <DeleteOutlined />
-              <span>删除</span>
-            </Button>
+            />
           </Tooltip>
           <Tooltip title='禁止使用'>
-            <Button
-              className='channel-action'
-              type='text'
-              aria-label='禁止使用'
+            <TableActionBtn
+              icon={<DisconnectOutlined />}
+              label='禁止使用'
+              ariaLabel='禁止使用'
               onClick={() => message.info('功能暂未开放')}
-            >
-              <DisconnectOutlined />
-              <span>禁止使用</span>
-            </Button>
+            />
           </Tooltip>
           <Tooltip title='创建密钥'>
-            <Button
-              className='channel-action'
-              type='text'
-              aria-label='创建密钥'
+            <TableActionBtn
+              icon={<KeyOutlined />}
+              label='创建密钥'
+              ariaLabel='创建密钥'
               onClick={() => setKeyModalChannel(channel)}
-            >
-              <KeyOutlined />
-              <span>创建密钥</span>
-            </Button>
+            />
           </Tooltip>
         </div>
       ),
@@ -328,10 +344,7 @@ export function AvailableChannelsPage() {
   if (channelList.loading && !channelList.data) return <ContentLoadingState />;
   return (
     <section className='available-channels-page'>
-      <PageHeader
-        title='可用渠道'
-        meta="通过邀请码可添加渠道调用模型"
-      />
+      <PageHeader title='可用渠道' meta='通过邀请码可添加渠道调用模型' />
       {channelList.error && (
         <ErrorState onRetry={() => void channelList.reload()} />
       )}

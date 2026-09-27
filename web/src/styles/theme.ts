@@ -10,7 +10,8 @@ export const appThemeColors = {
     error: '#f04438',
     sidebar: '#f0f0f0',
     sidebarBackground: '#ffffff',
-    contentBackground: 'linear-gradient(135deg, #f5fffd 0%, #f7fbff 52%, #ffffff 100%)',
+    contentBackground:
+      'linear-gradient(135deg, #f5fffd 0%, #f7fbff 52%, #ffffff 100%)',
     deviceTrack: '#e2e8f0',
   },
   dark: {
@@ -20,36 +21,39 @@ export const appThemeColors = {
     error: '#f97066',
     sidebar: '#202020',
     sidebarBackground: '#202020',
-    contentBackground: 'linear-gradient(135deg, #172b35 0%, #182332 52%, #171b26 100%)',
+    contentBackground:
+      'linear-gradient(135deg, #172b35 0%, #182332 52%, #171b26 100%)',
     deviceTrack: '#202b3a',
   },
 } as const;
 
 export function createAppTheme(mode: AppThemeMode): ThemeConfig {
   const colors = appThemeColors[mode];
-  const table = mode === 'dark'
-    ? {
-      headerBg: '#252a32',
-      headerColor: '#c7ced8',
-      headerSplitColor: '#3b4350',
-      borderColor: '#3b4350',
-      rowHoverBg: '#2a313b',
-      rowSelectedBg: '#123b35',
-      rowSelectedHoverBg: '#17483f',
-      rowExpandedBg: '#202d2b',
-    }
-    : {
-      headerBg: '#f7f8fa',
-      headerColor: '#667085',
-      headerSplitColor: '#e4e7ec',
-      borderColor: '#e4e7ec',
-      rowHoverBg: '#fafbfc',
-      rowSelectedBg: '#e6fffa',
-      rowSelectedHoverBg: '#d9fff5',
-      rowExpandedBg: '#f8fffd',
-    };
+  const table =
+    mode === 'dark'
+      ? {
+          headerBg: '#f9fafb',
+          headerColor: '#c7ced8',
+          headerSplitColor: '#3b4350',
+          borderColor: '#3b4350',
+          rowHoverBg: '#2a313b',
+          rowSelectedBg: '#123b35',
+          rowSelectedHoverBg: '#17483f',
+          rowExpandedBg: '#202d2b',
+        }
+      : {
+          headerBg: '#f7f8fa',
+          headerColor: '#667085',
+          headerSplitColor: '#e4e7ec',
+          borderColor: '#e4e7ec',
+          rowHoverBg: '#fafbfc',
+          rowSelectedBg: '#e6fffa',
+          rowSelectedHoverBg: '#d9fff5',
+          rowExpandedBg: '#f8fffd',
+        };
   return {
-    algorithm: mode === 'dark' ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
+    algorithm:
+      mode === 'dark' ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
     token: {
       colorPrimary: colors.primary,
       colorSuccess: colors.success,
@@ -63,7 +67,7 @@ export function createAppTheme(mode: AppThemeMode): ThemeConfig {
       Card: { borderRadiusLG: 12 },
       Table: {
         ...table,
-        headerBorderRadius: 8,
+        headerBorderRadius: 12,
         cellPaddingBlock: 12,
         cellPaddingInline: 16,
         cellPaddingBlockMD: 18,

@@ -1,0 +1,279 @@
+.api-keys-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 18px 0 34px;
+  color: var(--text-color);
+}
+
+.api-keys-page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.api-keys-page-head h1.ant-typography {
+  margin: 4px 0 0;
+  font-size: 28px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.api-keys-page-head .ant-typography-secondary {
+  display: block;
+  margin: 8px 0 0;
+}
+
+.api-keys-eyebrow {
+  color: var(--accent-color);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.api-keys-page-head > .ant-btn {
+  min-height: 36px;
+  margin-top: 10px;
+}
+
+.api-key-stats {
+  margin-bottom: 22px;
+}
+
+.api-key-stats .ant-card {
+  height: 100%;
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+.api-key-stats .ant-card-body {
+  min-height: 122px;
+  padding: 16px 18px;
+}
+
+.api-key-stats .ant-statistic-title {
+  color: var(--muted-color);
+  font-size: 12px;
+}
+
+.api-key-stats .ant-statistic-content {
+  margin-top: 8px;
+  color: var(--text-color);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.api-key-stats .ant-statistic-content-suffix {
+  color: var(--muted-color);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.api-stat-foot {
+  display: block;
+  margin-top: 9px;
+  color: var(--muted-color);
+  font-size: 12px;
+}
+
+.api-stat-foot.positive {
+  color: var(--status-success);
+}
+
+.api-key-workspace {
+  overflow: hidden;
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+.api-key-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.api-key-filters {
+  flex: 1;
+}
+
+.api-key-filters .ant-input-affix-wrapper,
+.api-key-filters .ant-select,
+.api-key-filters > .ant-btn {
+  height: 34px;
+}
+
+.api-key-filters .ant-input-affix-wrapper {
+  width: 166px;
+}
+
+.api-key-filters .ant-select {
+  min-width: 124px;
+}
+
+.api-key-result-count {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.api-key-workspace .ant-table-wrapper {
+  overflow: hidden;
+}
+
+.api-key-workspace .ant-table-thead > tr > th {
+  white-space: nowrap;
+  color: var(--muted-color);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.api-key-workspace .ant-table-tbody > tr > td {
+  height: 79px;
+  color: var(--menu-color);
+}
+
+.api-key-subtext {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted-color);
+  font-size: 11px;
+}
+
+.api-key-mono {
+  color: var(--text-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.api-key-value {
+  max-width: 190px;
+}
+
+.api-key-value .ant-typography {
+  min-width: 0;
+}
+
+.api-channel-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.api-concurrency {
+  width: 132px;
+}
+
+.api-concurrency > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--menu-color);
+  font-size: 12px;
+}
+
+.api-concurrency .ant-progress {
+  line-height: 1;
+}
+
+.api-concurrency .ant-progress-inner {
+  background: var(--border-color);
+}
+
+.api-status-tag {
+  border: 0;
+  font-weight: 600;
+}
+
+.api-status-tag.active {
+  color: var(--status-success);
+  background: var(--active-bg);
+}
+
+.api-status-tag.disabled {
+  color: var(--muted-color);
+  background: var(--button-bg);
+}
+
+.api-key-actions .ant-btn-link {
+  padding-inline: 0;
+  font-size: 12px;
+}
+
+.api-key-empty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 46px 24px;
+  color: var(--muted-color);
+}
+
+.api-key-empty strong {
+  color: var(--menu-color);
+  font-size: 15px;
+}
+
+.api-key-empty .ant-btn {
+  margin-top: 8px;
+}
+
+.api-secret-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 11px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--button-bg);
+}
+
+.api-secret-box .api-key-mono {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .api-keys-page {
+    padding-top: 10px;
+  }
+
+  .api-key-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .api-key-result-count {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .api-keys-page-head {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .api-keys-page-head > .ant-btn {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .api-key-filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .api-key-filters .ant-input-affix-wrapper,
+  .api-key-filters .ant-select,
+  .api-key-filters > .ant-btn {
+    width: 100%;
+  }
+}
