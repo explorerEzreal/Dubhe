@@ -5,3 +5,6 @@
   reverse_proxy @cloud cloud:3000
   reverse_proxy web:80
 }
+
+# playground 站点片段由 chart-constructor 流水线写入 /opt/chart-constructor/caddy
+import /etc/caddy/sites/chart-constructor.caddy

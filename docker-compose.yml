@@ -8,6 +8,8 @@ services:
       - "443:443"
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # chart-constructor 流水线维护的 Caddy 站点片段目录
+      - /opt/chart-constructor/caddy:/etc/caddy/sites:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
